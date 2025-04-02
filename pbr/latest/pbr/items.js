@@ -1,0 +1,1 @@
+window.DOCS_ITEMS = [];
