@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<pre class="code-block">
+<code>struct {{ struct_.name }} {
+    {%- for member in struct_.members %}
+    {{ self::display_binding(member.binding.as_ref()) }}{{ member.name }}: {{ self::render_type(member.ty, module_path.level)|safe }}{% if !loop.last %},{% endif %}
+    {%- endfor %}
+}</code>
+</pre>
+{% endblock %}

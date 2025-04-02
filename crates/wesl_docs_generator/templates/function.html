@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<pre class="code-block">
+
+{%- let ws_pre %}
+{%- let ws_post %}
+{%- if function.arguments.len() > 3 %}
+{%- let ws_pre = "\n    " %}
+{%- let ws_post = "\n" %}
+{%- else %}
+{%- let ws_pre = "" %}
+{%- let ws_post = "" %}
+{%- endif -%}
+
+<code>fn {{ function.name }}(
+    {%- for arg in function.arguments %}
+    {{- ws_pre }}
+    {{- self::display_binding(arg.binding.as_ref()) }}{{ arg.name }}: {{ self::render_type(arg.ty, module_path.level)|safe }}
+    {%- if !loop.last %}, {% endif %}
+    {%- endfor %}
+    {{- ws_post -}}
+) {% if let Some(ret) = function.ret %}-> {{ self::render_type(ret, module_path.level)|safe }}{% endif %}</code>
+</pre>
+{% endblock %}

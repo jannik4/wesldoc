@@ -1,0 +1,12 @@
+[package]
+name = "make"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+wesl_docs = { path = "../wesl_docs" }
+wesl_docs_compiler = { path = "../wesl_docs_compiler" }
+wesl_docs_generator = { path = "../wesl_docs_generator" }
+
+wesl = "0.1.2"

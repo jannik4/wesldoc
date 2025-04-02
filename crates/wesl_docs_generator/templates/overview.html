@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if !module.modules.is_empty() %}
+<h3 class="item-list-title">Modules</h3>
+<ul class="item-list">
+    {% for module in module.modules %}
+    <li><a class="module" href="{{ module.name }}/index.html">{{ module.name }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if !module.constants.is_empty() %}
+<h3 class="item-list-title">Constants</h3>
+<ul class="item-list">
+    {% for constant in module.constants %}
+    <li><a class="const" href="const.{{ constant.name }}.html">{{ constant.name }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if !module.global_variables.is_empty() %}
+<h3 class="item-list-title">Global Variables</h3>
+<ul class="item-list">
+    {% for var in module.global_variables %}
+    <li><a class="var" href="var.{{ var.name }}.html">{{ var.name }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if !module.structs.is_empty() %}
+<h3 class="item-list-title">Structs</h3>
+<ul class="item-list">
+    {% for struct_ in module.structs %}
+    <li><a class="struct" href="struct.{{ struct_.name }}.html">{{ struct_.name }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if !module.functions.is_empty() %}
+<h3 class="item-list-title">Functions</h3>
+<ul class="item-list">
+    {% for function in module.functions %}
+    <li><a class="fn" href="fn.{{ function.name }}.html">{{ function.name }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if !module.shader_defs.is_empty() %}
+<h3 class="item-list-title">Shader Definitions</h3>
+<ul class="item-list">
+    {% for shader_def in module.shader_defs %}
+    <li class="def">{{ shader_def }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if module_path.level == 0 && !base.doc.compiled_with.is_empty() %}
+<br><br>
+<h5>Compiled With:</h5>
+<ul style="font-size: 0.8rem;">
+    {% for (key, value) in base.doc.compiled_with %}
+    <li>{{ key }}: {{ value }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% endblock %}

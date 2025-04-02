@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<pre class="code-block">
+<code>
+    {%- if let Some(binding) = var.binding %}@group({{ binding.group }}) @binding({{ binding.binding }}) {% endif -%}
+    var{{ var.space }} {{ var.name }}: {{ self::render_type(var.ty, module_path.level)|safe }}
+    {%- if let Some(init) = var.init %} = {{ init }}{% endif -%};</code>
+</pre>
+{% endblock %}

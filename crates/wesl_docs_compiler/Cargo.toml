@@ -1,0 +1,10 @@
+[package]
+name = "wesl_docs_compiler"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+wesl_docs = { path = "../wesl_docs" }
+
+wesl = "0.1.2"

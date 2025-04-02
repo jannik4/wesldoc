@@ -1,0 +1,25 @@
+{% match ty %}
+{%- when Type::Named with { name, def_path } %}
+{%- if let Some(def_path) = def_path -%}
+<a class="struct"
+    href="{% for _ in 0..module_path_level %}../{% endfor %}{% for seg in def_path %}{{ seg }}/{% endfor %}struct.{{ name }}.html">
+    {{- name -}}
+</a>
+{%- else %}
+{{- name }}
+{%- endif %}
+{%- when Type::Pointer with (inner) -%}
+ptr&lt;{{ Self::render_rec(self, inner.deref())|safe }}&gt;
+{%- when Type::PointerWithAddressSpace with { base, address_space, maybe_access } -%}
+ptr&lt;{{ address_space }}, {{ Self::render_rec(self, base.deref())|safe }}{% if let Some(maybe_access) = maybe_access %}, {{ maybe_access }}{% endif %}&gt;
+{%- when Type::ArrayConstant with (inner, size) -%}
+array&lt;{{ Self::render_rec(self, inner.deref())|safe }}, {{ self::display_array_size(size) }}&gt;
+{%- when Type::ArrayDynamic with (inner) -%}
+array&lt;{{ Self::render_rec(self, inner.deref())|safe }}&gt;
+{%- when Type::BindingArrayConstant with (inner, size) -%}
+binding_array&lt;{{ Self::render_rec(self, inner.deref())|safe }}, {{ self::display_array_size(size) }}&gt;
+{%- when Type::BindingArrayDynamic with (inner) -%}
+binding_array&lt;{{ Self::render_rec(self, inner.deref())|safe }}&gt;
+{%- when Type::Unnamed -%}
+unknown
+{%- endmatch -%}

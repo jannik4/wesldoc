@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+{% block content %}
+<pre class="code-block">
+<code>const {{ constant.name }}: {{ self::render_type(constant.ty, module_path.level)|safe }} = {{ constant.init }};</code>
+</pre>
+{% endblock %}
