@@ -1,4 +1,5 @@
 mod all_items;
+mod index;
 
 use askama::Template;
 use serde_json::Value;
@@ -14,7 +15,10 @@ use wesl_docs::{
     Sampling, Struct, Type, TypeAlias, Version, WeslDocs,
 };
 
-pub fn generate(docs: &WeslDocs, base_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+pub type Error = Box<dyn std::error::Error>;
+pub type Result<T, E = Error> = std::result::Result<T, E>;
+
+pub fn generate(docs: &WeslDocs, base_path: &Path) -> Result<()> {
     let base_path = base_path.join(&docs.root.name);
 
     // Prepare directories
@@ -55,10 +59,13 @@ pub fn generate(docs: &WeslDocs, base_path: &Path) -> Result<(), Box<dyn std::er
     );
     store_common_json(&base_path, &common)?;
 
+    // Update index
+    index::update(&base_path.join(".."))?;
+
     Ok(())
 }
 
-fn load_common_json(base_path: &Path) -> Result<Value, Box<dyn std::error::Error>> {
+fn load_common_json(base_path: &Path) -> Result<Value> {
     let common_path = base_path.join("common.js");
     let source = if common_path.exists() {
         fs::read_to_string(&common_path)?
@@ -77,7 +84,7 @@ fn load_common_json(base_path: &Path) -> Result<Value, Box<dyn std::error::Error
     Ok(serde_json::de::from_str(source)?)
 }
 
-fn store_common_json(base_path: &Path, value: &Value) -> Result<(), Box<dyn std::error::Error>> {
+fn store_common_json(base_path: &Path, value: &Value) -> Result<()> {
     let common_path = base_path.join("common.js");
     let source = format!(
         "window.DOCS_COMMON = {};\n",
@@ -87,7 +94,7 @@ fn store_common_json(base_path: &Path, value: &Value) -> Result<(), Box<dyn std:
     Ok(())
 }
 
-fn existing_versions(path: &Path) -> Result<HashSet<Version>, Box<dyn std::error::Error>> {
+fn existing_versions(path: &Path) -> Result<HashSet<Version>> {
     let mut versions = HashSet::new();
     for entry in fs::read_dir(path)? {
         let entry = entry?;
@@ -101,11 +108,7 @@ fn existing_versions(path: &Path) -> Result<HashSet<Version>, Box<dyn std::error
     Ok(versions)
 }
 
-fn gen_doc(
-    doc: &WeslDocs,
-    build_as_latest: bool,
-    base_path: &Path,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn gen_doc(doc: &WeslDocs, build_as_latest: bool, base_path: &Path) -> Result<()> {
     let base_path = if build_as_latest {
         base_path.join("latest")
     } else {
@@ -156,7 +159,7 @@ fn gen_module(
     module: &Module,
     base_path_docs: &Path,
     base_path_src: &Path,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<()> {
     if let Some(source) = &module.source {
         let template = SourceTemplate {
             base: &base.with_source_view(),
@@ -547,7 +550,7 @@ fn display_binding(binding: Option<&Binding>) -> String {
     }
 }
 
-fn builtin_str(built_in: &BuiltIn) -> Result<&'static str, Box<dyn std::error::Error>> {
+fn builtin_str(built_in: &BuiltIn) -> Result<&'static str> {
     Ok(match built_in {
         BuiltIn::Position { .. } => "position",
         BuiltIn::ViewIndex => "view_index",
