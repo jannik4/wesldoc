@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
         
-        bindings - pbr
+        mesh - pbr
         
     </title>
 
@@ -198,7 +198,7 @@
         <span style="margin-right: 8px;">pbr</span>
         <select class="select" id="selectVersion" onchange="changeVersion()" autocomplete="off">
             <option
-                value="../../../0.0.0/pbr/index.html">
+                value="../../../../0.0.0/pbr/index.html">
                 0.0.0
             </option>
         </select>
@@ -211,55 +211,28 @@
         <div id="innerContent">
             
             <h2>
-                <a class="" href="../index.html">pbr</a><span>::</span><wbr><a class="module" href="index.html">bindings</a>
+                <a class="" href="../../index.html">pbr</a><span>::</span><wbr><a class="" href="../index.html">mesh</a><span>::</span><wbr><a class="" href="index.html">bindings</a><span>::</span><wbr><a class="var" href="#">mesh</a>
             </h2>
 
             
-            <a class="module" href="../../src/pbr/bindings.html">Source</a>
+            <a class="module" href="../../../src/pbr/mesh/bindings.html">Source</a>
             
             
 
             
 
 
-
-
-
-
-<h3 class="item-list-title">Global Variables</h3>
-<ul class="item-list">
-    
-    <li>
-        <a class="var" href="var.material.html">material</a>
-        
-    </li>
-    
-</ul>
-
-
-
-
-
-
-
-
-
-<h3 class="item-list-title">Translate-time features</h3>
-<ul class="item-list">
-    
-    <li class="feature">custom_data_value_index</li>
-    
-</ul>
-
-
-
+<pre class="code-block">
+<code>var&lt;uniform&gt; mesh: <a class="struct"
+    href="../../mesh/types/struct.Mesh.html">Mesh</a>;</code>
+</pre>
 
 
         </div>
     </div>
 
-    <script src="../../../common.js"></script>
-    <script src="../items.js"></script>
+    <script src="../../../../common.js"></script>
+    <script src="../../items.js"></script>
     <script>
         document.getElementById("selectVersion").innerHTML = "";
         addVersion("latest");
@@ -269,7 +242,7 @@
 
         function addVersion(version) {
             var select = document.getElementById("selectVersion");
-            var base = "../../../";
+            var base = "../../../../";
 
             var option = document.createElement("option");
             option.selected = version == "0.0.0";
@@ -377,7 +350,7 @@
             }
 
             var linkElement = document.createElement("a");
-            linkElement.href = "../../" + item.url;
+            linkElement.href = "../../../" + item.url;
 
             for (var i = 0; i < item.path.length; i++) {
                 var segment = document.createElement("span");

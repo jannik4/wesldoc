@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
         
-        bindings - pbr
+        material - pbr
         
     </title>
 
@@ -198,8 +198,8 @@
         <span style="margin-right: 8px;">pbr</span>
         <select class="select" id="selectVersion" onchange="changeVersion()" autocomplete="off">
             <option
-                value="../../../0.0.0/pbr/index.html">
-                0.0.0
+                value="../../../latest/pbr/index.html">
+                latest
             </option>
         </select>
     </div>
@@ -211,7 +211,7 @@
         <div id="innerContent">
             
             <h2>
-                <a class="" href="../index.html">pbr</a><span>::</span><wbr><a class="module" href="index.html">bindings</a>
+                <a class="" href="../index.html">pbr</a><span>::</span><wbr><a class="" href="index.html">bindings</a><span>::</span><wbr><a class="var" href="#">material</a>
             </h2>
 
             
@@ -222,37 +222,10 @@
             
 
 
-
-
-
-
-<h3 class="item-list-title">Global Variables</h3>
-<ul class="item-list">
-    
-    <li>
-        <a class="var" href="var.material.html">material</a>
-        
-    </li>
-    
-</ul>
-
-
-
-
-
-
-
-
-
-<h3 class="item-list-title">Translate-time features</h3>
-<ul class="item-list">
-    
-    <li class="feature">custom_data_value_index</li>
-    
-</ul>
-
-
-
+<pre class="code-block">
+<code>var&lt;uniform&gt; material: <a class="struct"
+    href="../types/struct.StandardMaterial.html">StandardMaterial</a>;</code>
+</pre>
 
 
         </div>
@@ -272,7 +245,7 @@
             var base = "../../../";
 
             var option = document.createElement("option");
-            option.selected = version == "0.0.0";
+            option.selected = version == "latest";
             option.value = base + version + "/pbr/index.html";
             option.innerText = version;
             select.appendChild(option);
