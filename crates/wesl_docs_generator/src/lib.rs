@@ -10,8 +10,8 @@ use std::{
     path::Path,
 };
 use wesl_docs::{
-    Binding, BuiltIn, Constant, Function, GlobalVariable, Interpolation, Module, Sampling, Struct,
-    Type, Version, WeslDocs,
+    Binding, BuiltIn, Constant, DefinitionPath, Function, GlobalVariable, Interpolation, Module,
+    Sampling, Struct, Type, TypeAlias, Version, WeslDocs,
 };
 
 pub fn generate(docs: &WeslDocs, base_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
@@ -107,20 +107,24 @@ fn gen_doc(
     base_path: &Path,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let base_path = if build_as_latest {
-        base_path.join("latest").join(&doc.root.name)
+        base_path.join("latest")
     } else {
-        base_path.join(doc.version.to_string()).join(&doc.root.name)
+        base_path.join(doc.version.to_string())
     };
+    let base_path_docs = base_path.join(&doc.root.name);
+    let base_path_src = base_path.join("src").join(&doc.root.name);
 
     // Prepare directories
     fs::remove_dir_all(&base_path).ok();
-    fs::create_dir_all(&base_path)?;
+    fs::create_dir_all(&base_path_docs)?;
+    fs::create_dir_all(&base_path_src)?;
 
     // Gen modules
     gen_module(
         &Base {
             doc,
             build_as_latest,
+            is_source_view: false,
         },
         &ModulePath {
             segments: vec![(
@@ -131,7 +135,8 @@ fn gen_doc(
             level: 0,
         },
         &doc.root,
-        &base_path,
+        &base_path_docs,
+        &base_path_src,
     )?;
 
     // Store items
@@ -140,7 +145,7 @@ fn gen_doc(
         "window.DOCS_ITEMS = {};\n",
         serde_json::ser::to_string(&items)?
     );
-    fs::write(base_path.join("items.js"), source)?;
+    fs::write(base_path_docs.join("items.js"), source)?;
 
     Ok(())
 }
@@ -149,95 +154,124 @@ fn gen_module(
     base: &Base,
     module_path: &ModulePath,
     module: &Module,
-    base_path: &Path,
+    base_path_docs: &Path,
+    base_path_src: &Path,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    if let Some(source) = &module.source {
+        let template = SourceTemplate {
+            base: &base.with_source_view(),
+            title: &module.name,
+            module_path,
+            module,
+            source,
+        };
+        let mut path = base_path_src.to_path_buf();
+        path.set_extension("html");
+        template.write_into(&mut File::create(path)?)?;
+    }
+
     let template = OverviewTemplate {
         base,
         title: &module.name,
         module_path,
         module,
     };
-    template.write_into(&mut File::create(base_path.join("index.html"))?)?;
+    template.write_into(&mut File::create(base_path_docs.join("index.html"))?)?;
 
     for module in &module.modules {
         let module_path = module_path.extend(&module.name, "index.html", ItemKind::Module, true);
 
-        let base_path = base_path.join(&module.name);
-        fs::create_dir(&base_path)?;
+        let base_path_docs = base_path_docs.join(&module.name);
+        fs::create_dir(&base_path_docs)?;
 
-        gen_module(base, &module_path, module, &base_path)?;
+        let base_path_src = base_path_src.join(&module.name);
+        fs::create_dir(&base_path_src)?;
+
+        gen_module(base, &module_path, module, &base_path_docs, &base_path_src)?;
     }
 
-    for constant in &module.constants {
-        let module_path =
-            module_path.extend(constant.name.to_string(), "#", ItemKind::Constant, false);
+    for (name, item) in &module.constants {
+        let module_path = module_path.extend(name.to_string(), "#", ItemKind::Constant, false);
         let template = ConstantTemplate {
             base,
-            title: &constant.name.to_string(),
+            title: &name.to_string(),
             module_path: &module_path,
             module,
-            constant,
+            constants: &item.instances,
         };
         template.write_into(&mut File::create(
-            base_path.join(format!("const.{}.html", constant.name)),
+            base_path_docs.join(format!("const.{}.html", name)),
         )?)?;
     }
 
-    for var in &module.global_variables {
+    for (name, item) in &module.global_variables {
         let module_path =
-            module_path.extend(var.name.to_string(), "#", ItemKind::GlobalVariable, false);
+            module_path.extend(name.to_string(), "#", ItemKind::GlobalVariable, false);
         let template = GlobalVariableTemplate {
             base,
-            title: &var.name.to_string(),
+            title: &name.to_string(),
             module_path: &module_path,
             module,
-            var,
+            variables: &item.instances,
         };
         template.write_into(&mut File::create(
-            base_path.join(format!("var.{}.html", var.name)),
+            base_path_docs.join(format!("var.{}.html", name)),
         )?)?;
     }
 
-    for struct_ in &module.structs {
-        let module_path =
-            module_path.extend(struct_.name.to_string(), "#", ItemKind::Struct, false);
+    for (name, item) in &module.structs {
+        let module_path = module_path.extend(name.to_string(), "#", ItemKind::Struct, false);
         let template = StructTemplate {
             base,
-            title: &struct_.name.to_string(),
+            title: &name.to_string(),
             module_path: &module_path,
             module,
-            struct_,
+            structs: &item.instances,
         };
         template.write_into(&mut File::create(
-            base_path.join(format!("struct.{}.html", struct_.name)),
+            base_path_docs.join(format!("struct.{}.html", name)),
         )?)?;
     }
 
-    for function in &module.functions {
-        let module_path =
-            module_path.extend(function.name.to_string(), "#", ItemKind::Function, false);
+    for (name, item) in &module.functions {
+        let module_path = module_path.extend(name.to_string(), "#", ItemKind::Function, false);
         let template = FunctionTemplate {
             base,
-            title: &function.name.to_string(),
+            title: &name.to_string(),
             module_path: &module_path,
             module,
-            function,
+            functions: &item.instances,
         };
         template.write_into(&mut File::create(
-            base_path.join(format!("fn.{}.html", function.name)),
+            base_path_docs.join(format!("fn.{}.html", name)),
+        )?)?;
+    }
+
+    for (name, item) in &module.type_aliases {
+        let module_path = module_path.extend(name.to_string(), "#", ItemKind::TypeAlias, false);
+        let template = TypeAliasTemplate {
+            base,
+            title: &name.to_string(),
+            module_path: &module_path,
+            module,
+            type_aliases: &item.instances,
+        };
+        template.write_into(&mut File::create(
+            base_path_docs.join(format!("type.{}.html", name)),
         )?)?;
     }
 
     Ok(())
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ItemKind {
     Module,
     Constant,
     GlobalVariable,
     Struct,
     Function,
+    TypeAlias,
 }
 
 #[derive(Debug, Clone)]
@@ -270,6 +304,44 @@ impl ModulePath {
             level: if is_child { self.level + 1 } else { self.level },
         }
     }
+
+    fn source_href(&self) -> String {
+        let mut href = String::new();
+
+        for _ in 0..self.level {
+            href.push_str("../");
+        }
+        href.push_str("../src/");
+
+        for (idx, (name, _, kind)) in self.segments.iter().enumerate() {
+            let is_last = idx == self.segments.len() - 1;
+
+            if is_last {
+                if *kind == ItemKind::Module {
+                    href.push_str(name);
+                    href.push_str(".html");
+                } else {
+                    href.pop();
+                    href.push_str(".html");
+                }
+            } else {
+                href.push_str(name);
+                href.push('/');
+            }
+        }
+
+        href
+    }
+}
+
+#[derive(Template)]
+#[template(path = "source.html")]
+struct SourceTemplate<'a> {
+    base: &'a Base<'a>,
+    title: &'a str,
+    module_path: &'a ModulePath,
+    module: &'a Module,
+    source: &'a str,
 }
 
 #[derive(Template)]
@@ -288,7 +360,7 @@ struct ConstantTemplate<'a> {
     title: &'a str,
     module_path: &'a ModulePath,
     module: &'a Module,
-    constant: &'a Constant,
+    constants: &'a [Constant],
 }
 
 #[derive(Template)]
@@ -298,7 +370,7 @@ struct GlobalVariableTemplate<'a> {
     title: &'a str,
     module_path: &'a ModulePath,
     module: &'a Module,
-    var: &'a GlobalVariable,
+    variables: &'a [GlobalVariable],
 }
 
 #[derive(Template)]
@@ -308,7 +380,7 @@ struct StructTemplate<'a> {
     title: &'a str,
     module_path: &'a ModulePath,
     module: &'a Module,
-    struct_: &'a Struct,
+    structs: &'a [Struct],
 }
 
 #[derive(Template)]
@@ -318,7 +390,17 @@ struct FunctionTemplate<'a> {
     title: &'a str,
     module_path: &'a ModulePath,
     module: &'a Module,
-    function: &'a Function,
+    functions: &'a [Function],
+}
+
+#[derive(Template)]
+#[template(path = "type_alias.html")]
+struct TypeAliasTemplate<'a> {
+    base: &'a Base<'a>,
+    title: &'a str,
+    module_path: &'a ModulePath,
+    module: &'a Module,
+    type_aliases: &'a [TypeAlias],
 }
 
 #[derive(Template)]
@@ -346,9 +428,57 @@ fn render_type(ty: &Type, module_path_level: &usize) -> String {
     .to_string()
 }
 
+fn show_function_inline(function: &Function) -> bool {
+    function.parameters.len() <= 3 && function.parameters.iter().all(|p| p.conditional.is_none())
+}
+
+fn def_path_href(def_path: &DefinitionPath, module_path_level: &usize) -> String {
+    let mut href = String::new();
+
+    match def_path {
+        DefinitionPath::Absolute(components) => {
+            for _ in 0..*module_path_level {
+                href.push_str("../");
+            }
+            for c in components {
+                href.push_str(c);
+                href.push('/');
+            }
+        }
+        DefinitionPath::Package(dep, version, components) => {
+            for _ in 0..*module_path_level + 3 {
+                href.push_str("../");
+            }
+            href.push_str(dep);
+            href.push('/');
+            href.push_str(&version.to_string());
+            href.push('/');
+            href.push_str(dep);
+            href.push('/');
+            for c in components {
+                href.push_str(c);
+                href.push('/');
+            }
+        }
+    }
+
+    href
+}
+
 struct Base<'a> {
     doc: &'a WeslDocs,
     build_as_latest: bool,
+    is_source_view: bool,
+}
+
+impl Base<'_> {
+    fn with_source_view(&self) -> Self {
+        Self {
+            doc: self.doc,
+            build_as_latest: self.build_as_latest,
+            is_source_view: true,
+        }
+    }
 }
 
 fn module_path_class(kind: &ItemKind, last: &bool) -> &'static str {
@@ -362,6 +492,7 @@ fn module_path_class(kind: &ItemKind, last: &bool) -> &'static str {
         ItemKind::GlobalVariable => "var",
         ItemKind::Struct => "struct",
         ItemKind::Function => "fn",
+        ItemKind::TypeAlias => "type",
     }
 }
 

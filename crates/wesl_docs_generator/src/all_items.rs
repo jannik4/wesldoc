@@ -24,14 +24,14 @@ fn all_items_module(module: &Module, parent: &[String], items: &mut Vec<Item>) {
         ));
     }
 
-    for item in &module.constants {
-        if let Ident::Named(name) = &item.name {
+    for name in module.constants.keys() {
+        if let Ident::Named(name) = name {
             items.push(Item::new(path.clone(), name.clone(), ItemKind::Constant));
         }
     }
 
-    for item in &module.global_variables {
-        if let Ident::Named(name) = &item.name {
+    for name in module.global_variables.keys() {
+        if let Ident::Named(name) = name {
             items.push(Item::new(
                 path.clone(),
                 name.clone(),
@@ -40,15 +40,21 @@ fn all_items_module(module: &Module, parent: &[String], items: &mut Vec<Item>) {
         }
     }
 
-    for item in &module.structs {
-        if let Ident::Named(name) = &item.name {
+    for name in module.structs.keys() {
+        if let Ident::Named(name) = name {
             items.push(Item::new(path.clone(), name.clone(), ItemKind::Struct));
         }
     }
 
-    for item in &module.functions {
-        if let Ident::Named(name) = &item.name {
+    for name in module.functions.keys() {
+        if let Ident::Named(name) = name {
             items.push(Item::new(path.clone(), name.clone(), ItemKind::Function));
+        }
+    }
+
+    for name in module.type_aliases.keys() {
+        if let Ident::Named(name) = name {
+            items.push(Item::new(path.clone(), name.clone(), ItemKind::TypeAlias));
         }
     }
 }
@@ -70,6 +76,7 @@ impl Item {
             ItemKind::GlobalVariable => url.push_str(&format!("/var.{}.html", name)),
             ItemKind::Struct => url.push_str(&format!("/struct.{}.html", name)),
             ItemKind::Function => url.push_str(&format!("/fn.{}.html", name)),
+            ItemKind::TypeAlias => url.push_str(&format!("/type.{}.html", name)),
         }
 
         Self {
@@ -88,4 +95,5 @@ enum ItemKind {
     GlobalVariable,
     Struct,
     Function,
+    TypeAlias,
 }

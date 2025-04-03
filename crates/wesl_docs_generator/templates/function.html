@@ -1,25 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% for function in functions %}
+{% if let Some(conditional) = function.conditional %}
+<div><span class="conditional">{{ conditional }}</span></div>
+{% endif %}
 <pre class="code-block">
 
 {%- let ws_pre %}
 {%- let ws_post %}
-{%- if function.arguments.len() > 3 %}
-{%- let ws_pre = "\n    " %}
-{%- let ws_post = "\n" %}
-{%- else %}
+{%- if self::show_function_inline(function) %}
 {%- let ws_pre = "" %}
 {%- let ws_post = "" %}
+{%- else %}
+{%- let ws_pre = "\n    " %}
+{%- let ws_post = "\n" %}
 {%- endif -%}
 
 <code>fn {{ function.name }}(
-    {%- for arg in function.arguments %}
+    {%- for param in function.parameters %}
     {{- ws_pre }}
-    {{- self::display_binding(arg.binding.as_ref()) }}{{ arg.name }}: {{ self::render_type(arg.ty, module_path.level)|safe }}
+    {%- if let Some(conditional) = param.conditional -%}
+        <span class="conditional-code">{{ conditional }}</span>
+    {%- endif %}
+    {{- self::display_binding(param.binding.as_ref()) }}{{ param.name }}: {{ self::render_type(param.ty, module_path.level)|safe }}
     {%- if !loop.last %}, {% endif %}
     {%- endfor %}
     {{- ws_post -}}
 ) {% if let Some(ret) = function.ret %}-> {{ self::render_type(ret, module_path.level)|safe }}{% endif %}</code>
 </pre>
+{% endfor %}
 {% endblock %}

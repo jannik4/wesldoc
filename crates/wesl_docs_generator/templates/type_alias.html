@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% for type_alias in type_aliases %}
+{% if let Some(conditional) = type_alias.conditional %}
+<div><span class="conditional">{{ conditional }}</span></div>
+{% endif %}
+<pre class="code-block">
+<code>alias {{ type_alias.name }} = {{ self::render_type(type_alias.ty, module_path.level)|safe }};</code>
+</pre>
+{% endfor %}
+{% endblock %}

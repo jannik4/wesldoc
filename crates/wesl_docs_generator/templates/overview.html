@@ -14,8 +14,13 @@
 {% if !module.constants.is_empty() %}
 <h3 class="item-list-title">Constants</h3>
 <ul class="item-list">
-    {% for constant in module.constants %}
-    <li><a class="const" href="const.{{ constant.name }}.html">{{ constant.name }}</a></li>
+    {% for (name, item) in module.constants %}
+    <li>
+        <a class="const" href="const.{{ name }}.html">{{ name }}</a>
+        {% if let Some(conditional) = item.conditional %}
+        <span class="conditional-inline">{{ conditional }}</span>
+        {% endif %}
+    </li>
     {% endfor %}
 </ul>
 {% endif %}
@@ -23,8 +28,13 @@
 {% if !module.global_variables.is_empty() %}
 <h3 class="item-list-title">Global Variables</h3>
 <ul class="item-list">
-    {% for var in module.global_variables %}
-    <li><a class="var" href="var.{{ var.name }}.html">{{ var.name }}</a></li>
+    {% for (name, item) in module.global_variables %}
+    <li>
+        <a class="var" href="var.{{ name }}.html">{{ name }}</a>
+        {% if let Some(conditional) = item.conditional %}
+        <span class="conditional-inline">{{ conditional }}</span>
+        {% endif %}
+    </li>
     {% endfor %}
 </ul>
 {% endif %}
@@ -32,8 +42,13 @@
 {% if !module.structs.is_empty() %}
 <h3 class="item-list-title">Structs</h3>
 <ul class="item-list">
-    {% for struct_ in module.structs %}
-    <li><a class="struct" href="struct.{{ struct_.name }}.html">{{ struct_.name }}</a></li>
+    {% for (name, item) in module.structs %}
+    <li>
+        <a class="struct" href="struct.{{ name }}.html">{{ name }}</a>
+        {% if let Some(conditional) = item.conditional %}
+        <span class="conditional-inline">{{ conditional }}</span>
+        {% endif %}
+    </li>
     {% endfor %}
 </ul>
 {% endif %}
@@ -41,17 +56,36 @@
 {% if !module.functions.is_empty() %}
 <h3 class="item-list-title">Functions</h3>
 <ul class="item-list">
-    {% for function in module.functions %}
-    <li><a class="fn" href="fn.{{ function.name }}.html">{{ function.name }}</a></li>
+    {% for (name, item) in module.functions %}
+    <li>
+        <a class="fn" href="fn.{{ name }}.html">{{ name }}</a>
+        {% if let Some(conditional) = item.conditional %}
+        <span class="conditional-inline">{{ conditional }}</span>
+        {% endif %}
+    </li>
     {% endfor %}
 </ul>
 {% endif %}
 
-{% if !module.shader_defs.is_empty() %}
+{% if !module.type_aliases.is_empty() %}
+<h3 class="item-list-title">Type Aliases</h3>
+<ul class="item-list">
+    {% for (name, item) in module.type_aliases %}
+    <li>
+        <a class="type" href="type.{{ name }}.html">{{ name }}</a>
+        {% if let Some(conditional) = item.conditional %}
+        <span class="conditional-inline">{{ conditional }}</span>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if !module.translate_time_features.is_empty() %}
 <h3 class="item-list-title">Shader Definitions</h3>
 <ul class="item-list">
-    {% for shader_def in module.shader_defs %}
-    <li class="def">{{ shader_def }}</li>
+    {% for translate_time_feature in module.translate_time_features %}
+    <li class="feature">{{ translate_time_feature }}</li>
     {% endfor %}
 </ul>
 {% endif %}

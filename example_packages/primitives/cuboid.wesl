@@ -1,9 +1,24 @@
+// Cuboid primitive
 struct Cuboid {
     half_size: vec3<f32>,
 }
 
 fn new(x_length: f32, y_length: f32, z_length: f32) -> Cuboid {
     return from_size(vec3<f32>(x_length, y_length, z_length));
+}
+
+@if(signed_int)
+fn from_int(int: i32) -> Cuboid {
+    var cuboid: Cuboid;
+    cuboid.half_size = f32(int) / 2.0;
+    return cuboid;
+}
+
+@else
+fn from_int(int: u32) -> Cuboid {
+    var cuboid: Cuboid;
+    cuboid.half_size = f32(int) / 2.0;
+    return cuboid;
 }
 
 @if(cuboid_all_constructors)
@@ -20,7 +35,7 @@ fn from_corners(point1: Vec3, point2: Vec3) -> Cuboid {
     return cuboid;
 }
 
-@if(cuboid_all_constructors)
+@if(cuboid_all_constructors && (magic_flag || magic_flag2))
 fn from_length(length: f32) -> Cuboid {
     var cuboid: Cuboid;
     cuboid.half_size = vec3<f32>(length / 2.0);

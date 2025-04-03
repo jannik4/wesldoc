@@ -106,7 +106,36 @@
             color: #2bab09;
         }
 
-        .def {
+        .type {
+            color: #2dbfb8;
+        }
+
+        .conditional {
+            display: inline-block;
+            background-color: #314559;
+            color: #dddddd;
+            border-radius: 3px;
+            padding: 6px 4px;
+            margin-top: 8px;
+        }
+
+        .conditional-inline {
+            background-color: #314559;
+            color: #dddddd;
+            border-radius: 3px;
+            font-size: 14px;
+            margin-left: 3px;
+        }
+
+        .conditional-code {
+            background-color: #314559;
+            color: #dddddd;
+            border-radius: 3px;
+            font-size: 14px;
+            margin-right: 3px;
+        }
+
+        .feature {
             color: #09bd00;
         }
 
@@ -179,9 +208,12 @@
         </select>
     </div>
     <div class="content">
+        {% if !base.is_source_view %}
         <input type="text" id="search" placeholder="Search" oninput="searchDebounced()" autocomplete="off">
+        {% endif %}
 
         <div id="innerContent">
+            {% if !base.is_source_view %}
             <h2>
                 {% for (name, path, kind) in module_path.segments -%}
                 {% if !loop.first %}<span>::</span><wbr>{% endif -%}
@@ -189,8 +221,9 @@
                 {%- endfor %}
             </h2>
 
-            {% if let Some(source_url) = module.source_url %}
-            <a class="module" href="{{ source_url }}" target="_blank">source</a>
+            {% if let Some(source) = module.source %}
+            <a class="module" href="{{ module_path.source_href() }}">Source</a>
+            {% endif %}
             {% endif %}
 
             {% block content %}{% endblock %}
@@ -308,6 +341,9 @@
                     break;
                 case "Function":
                     className = "fn";
+                    break;
+                case "TypeAlias":
+                    className = "type";
                     break;
                 default: break;
             }

@@ -2,7 +2,7 @@
 {%- when Type::Named with { name, def_path } %}
 {%- if let Some(def_path) = def_path -%}
 <a class="struct"
-    href="{% for _ in 0..module_path_level %}../{% endfor %}{% for seg in def_path %}{{ seg }}/{% endfor %}struct.{{ name }}.html">
+    href="{{ self::def_path_href(def_path, module_path_level) }}struct.{{ name }}.html">
     {{- name -}}
 </a>
 {%- else %}

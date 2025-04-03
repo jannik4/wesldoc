@@ -40,7 +40,7 @@ pub fn make(name: &str, dependencies: &[&str]) -> Result<()> {
     let wesl_package = compile_package(Version::new(0, 0, 0), name, &package, dependencies)?;
 
     // Compile to docs
-    let docs = wesl_docs_compiler::compile(wesl_package)?;
+    let docs = wesl_docs_compiler::compile(&wesl_package)?;
 
     // Generate docs
     wesl_docs_generator::generate(&docs, Path::new("target/wesl_docs"))?;

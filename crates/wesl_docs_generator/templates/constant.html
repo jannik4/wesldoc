@@ -1,7 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% for constant in constants %}
+{% if let Some(conditional) = constant.conditional %}
+<div><span class="conditional">{{ conditional }}</span></div>
+{% endif %}
 <pre class="code-block">
 <code>const {{ constant.name }}: {{ self::render_type(constant.ty, module_path.level)|safe }} = {{ constant.init }};</code>
 </pre>
+{% endfor %}
 {% endblock %}
