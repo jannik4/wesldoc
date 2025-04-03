@@ -102,7 +102,36 @@
             color: #2bab09;
         }
 
-        .def {
+        .type {
+            color: #2dbfb8;
+        }
+
+        .conditional {
+            display: inline-block;
+            background-color: #314559;
+            color: #dddddd;
+            border-radius: 3px;
+            padding: 6px 4px;
+            margin-top: 8px;
+        }
+
+        .conditional-inline {
+            background-color: #314559;
+            color: #dddddd;
+            border-radius: 3px;
+            font-size: 14px;
+            margin-left: 3px;
+        }
+
+        .conditional-code {
+            background-color: #314559;
+            color: #dddddd;
+            border-radius: 3px;
+            font-size: 14px;
+            margin-right: 3px;
+        }
+
+        .feature {
             color: #09bd00;
         }
 
@@ -175,18 +204,32 @@
         </select>
     </div>
     <div class="content">
+        
         <input type="text" id="search" placeholder="Search" oninput="searchDebounced()" autocomplete="off">
+        
 
         <div id="innerContent">
+            
             <h2>
                 <a class="module" href="index.html">primitives</a>
             </h2>
 
             
+            
 
             
 
 
+<h3 class="item-list-title">Modules</h3>
+<ul class="item-list">
+    
+    <li><a class="module" href="constants/index.html">constants</a></li>
+    
+    <li><a class="module" href="cuboid/index.html">cuboid</a></li>
+    
+    <li><a class="module" href="cylinder/index.html">cylinder</a></li>
+    
+</ul>
 
 
 
@@ -196,6 +239,22 @@
 
 
 
+
+
+
+
+<h3 class="item-list-title">Shader Definitions</h3>
+<ul class="item-list">
+    
+    <li class="feature">cuboid_all_constructors</li>
+    
+    <li class="feature">magic_flag</li>
+    
+    <li class="feature">magic_flag2</li>
+    
+    <li class="feature">signed_int</li>
+    
+</ul>
 
 
 
@@ -315,6 +374,9 @@
                     break;
                 case "Function":
                     className = "fn";
+                    break;
+                case "TypeAlias":
+                    className = "type";
                     break;
                 default: break;
             }
