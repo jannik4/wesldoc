@@ -153,10 +153,10 @@ fn compile_module(
                                 Some(ty) => build_type(ty, &source_map, &path, dependencies),
                                 None => Type::Unnamed,
                             },
-                            init: match &declaration.initializer {
-                                Some(_expr) => Some(Expression::Unknown), // TODO: ...
-                                None => None,
-                            },
+                            init: declaration.initializer.as_ref().map(|_expr| {
+                                // TODO: ...
+                                Expression::Unknown
+                            }),
                             conditional: build_conditional(
                                 &mut conditional_scope,
                                 &declaration.attributes,
