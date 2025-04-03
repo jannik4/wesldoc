@@ -137,8 +137,31 @@ fn compile_module(
                     // TODO: ...
                 }
                 syntax::DeclarationKind::Let => (), // should be unreachable?
-                syntax::DeclarationKind::Var(_address_space) => {
-                    // TODO: ...
+                syntax::DeclarationKind::Var(address_space) => {
+                    let address_space = address_space.unwrap_or(syntax::AddressSpace::Handle);
+                    let name = map(&declaration.ident);
+                    module
+                        .global_variables
+                        .entry(name.clone())
+                        .or_default()
+                        .instances
+                        .push(GlobalVariable {
+                            name,
+                            space: map(&address_space),
+                            binding: None, // TODO: ...,
+                            ty: match &declaration.ty {
+                                Some(ty) => build_type(ty, &source_map, &path, dependencies),
+                                None => Type::Unnamed,
+                            },
+                            init: match &declaration.initializer {
+                                Some(_expr) => Some(Expression::Unknown), // TODO: ...
+                                None => None,
+                            },
+                            conditional: build_conditional(
+                                &mut conditional_scope,
+                                &declaration.attributes,
+                            ),
+                        });
                 }
             },
             syntax::GlobalDeclaration::TypeAlias(type_alias) => {
