@@ -199,6 +199,9 @@
 
 <body>
     <div class="nav">
+        <span style="margin-right: 8px;">
+            <a href="{% for _ in 0..module_path.level %}../{% endfor %}../../../index.html">&#8962;</a>
+        </span>
         <span style="margin-right: 8px;">{{ base.doc.root.name }}</span>
         <select class="select" id="selectVersion" onchange="changeVersion()" autocomplete="off">
             <option
