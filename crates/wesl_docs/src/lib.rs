@@ -209,7 +209,7 @@ impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Expression::Literal(literal) => write!(f, "{}", literal),
-            Expression::Unknown => write!(f, ".."),
+            Expression::Unknown => write!(f, "..."),
         }
     }
 }
