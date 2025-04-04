@@ -5,6 +5,8 @@
 {% let this_version = base.doc.version.to_string() %}
 {% endif %}
 
+{% let root_path = module_path.root_path() %}
+
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 
@@ -19,8 +21,8 @@
         {% endif %}
     </title>
 
-    <link rel="stylesheet" href="{% for _ in 0..module_path.level %}../{% endfor %}../../../-/static/themes.css">
-    <link rel="stylesheet" href="{% for _ in 0..module_path.level %}../{% endfor %}../../../-/static/styles.css">
+    <link rel="stylesheet" href="{{ root_path }}-/static/css/themes.css">
+    <link rel="stylesheet" href="{{ root_path }}-/static/css/styles.css">
 
     {% block head %}{% endblock %}
 </head>
@@ -28,7 +30,7 @@
 <body>
     <div class="nav">
         <span style="margin-right: 12px;">
-            <a href="{% for _ in 0..module_path.level %}../{% endfor %}../../../index.html">&#8962;</a>
+            <a href="{{ root_path }}index.html">&#8962;</a>
         </span>
         <span style="margin-right: 12px;">{{ base.doc.root.name }}</span>
         <select class="select" id="selectVersion" onchange="changeVersion()" autocomplete="off">
@@ -64,170 +66,17 @@
 
     <script src="{% for _ in 0..module_path.level %}../{% endfor %}../../common.js"></script>
     <script src="{% for _ in 0..module_path.level %}../{% endfor %}items.js"></script>
+
     <script>
-        document.getElementById("selectVersion").innerHTML = "";
-        addVersion("latest");
-        for (var i = 0; i < window.DOCS_COMMON.versions.length; i++) {
-            addVersion(window.DOCS_COMMON.versions[i]);
-        }
-
-        function addVersion(version) {
-            var select = document.getElementById("selectVersion");
-            var base = "{% for _ in 0..module_path.level %}../{% endfor %}../../";
-
-            var option = document.createElement("option");
-            option.selected = version == "{{ this_version }}";
-            option.value = base + version + "/{{ base.doc.root.name }}/index.html";
-            option.innerText = version;
-            select.appendChild(option);
-        }
-
-        function changeVersion() {
-            var value = document.getElementById("selectVersion").value;
-            location.href = value;
-        }
+        window.DOCS_THIS_PACKAGE = {
+            version: "{{ this_version }}",
+            name: "{{ base.doc.root.name }}",
+            root: "{% for _ in 0..module_path.level %}../{% endfor %}../",
+        };
     </script>
-    <script>
-        window.DOCS_INNER_CONTENT = document.getElementById("innerContent").innerHTML;
-
-        onUrlChange();
-        window.addEventListener('popstate', function (event) {
-            onUrlChange();
-        });
-
-        function onUrlChange() {
-            var query = document.getElementById("search").value;
-
-            if ('URLSearchParams' in window) {
-                var searchParams = new URLSearchParams(window.location.search);
-                var param = searchParams.get("search") || "";
-                if (param !== query) {
-                    document.getElementById("search").value = param;
-                    search();
-                }
-            }
-        }
-
-        function searchDebounced() {
-            if (window.DOCS_SEARCH_DEBOUNCE) {
-                clearTimeout(window.DOCS_SEARCH_DEBOUNCE);
-            }
-            window.DOCS_SEARCH_DEBOUNCE = setTimeout(search, 400);
-        }
-
-        function search() {
-            var innerContentElement = document.getElementById("innerContent");
-            var query = document.getElementById("search").value;
-            var items = window.DOCS_ITEMS || [];
-
-            if ('URLSearchParams' in window) {
-                var searchParams = new URLSearchParams(window.location.search);
-                if ((searchParams.get("search") || "") !== query) {
-                    if (query === "") {
-                        searchParams.delete("search");
-                    } else {
-                        searchParams.set("search", query);
-                    }
-
-                    var searchParamsString = searchParams.toString();
-                    if (searchParamsString === "") {
-                        history.pushState(null, '', window.location.pathname);
-                    } else {
-                        history.pushState(null, '', window.location.pathname + '?' + searchParamsString);
-                    }
-                }
-            }
-
-            if (query === "") {
-                innerContentElement.innerHTML = window.DOCS_INNER_CONTENT;
-                return;
-            }
-
-            var itemsFiltered = items.filter(function (item) {
-                return item.name.toLowerCase().includes(query.toLowerCase());
-            });
-
-            innerContentElement.innerHTML = "";
-            var itemList = document.createElement("ul");
-            itemList.className = "item-list item-list-bordered";
-            for (var i = 0; i < itemsFiltered.length; i++) {
-                itemList.appendChild(createItemElement(itemsFiltered[i]));
-            }
-            innerContentElement.appendChild(itemList);
-        }
-
-        function createItemElement(item) {
-            var className = "";
-            switch (item.kind) {
-                case "Module":
-                    className = "module";
-                    break;
-                case "Constant":
-                    className = "const";
-                    break;
-                case "GlobalVariable":
-                    className = "var";
-                    break;
-                case "Struct":
-                    className = "struct";
-                    break;
-                case "Function":
-                    className = "fn";
-                    break;
-                case "TypeAlias":
-                    className = "type";
-                    break;
-                default: break;
-            }
-
-            var linkElement = document.createElement("a");
-            linkElement.href = "{% for _ in 0..module_path.level %}../{% endfor %}../" + item.url;
-
-            for (var i = 0; i < item.path.length; i++) {
-                var segment = document.createElement("span");
-                segment.className = "path";
-                segment.innerText = item.path[i];
-                linkElement.appendChild(segment);
-
-                var segment = document.createElement("span");
-                segment.className = "path";
-                segment.innerText = "::";
-                linkElement.appendChild(segment);
-
-                linkElement.appendChild(document.createElement("wbr"));
-            }
-
-            var itemElement = document.createElement("span");
-            itemElement.className = className;
-            itemElement.innerText = item.name;
-            linkElement.appendChild(itemElement);
-
-            var listElement = document.createElement("li");
-            listElement.appendChild(linkElement);
-            return listElement;
-        }
-    </script>
-    <script>
-        function currentTheme() {
-            const userPrefersDarkTheme = window.matchMedia("(prefers-color-scheme: dark)");
-            return localStorage.getItem("DOCS_theme") || (userPrefersDarkTheme.matches ? "dark" : "light");
-        }
-
-        function updatePage(theme) {
-            document.querySelector("html").setAttribute("data-theme", theme);
-            const button = document.getElementById("toggleTheme");
-            button.textContent = theme === "dark" ? "🌣" : "☾";
-            button.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
-        }
-
-        function toggleTheme() {
-            const newTheme = currentTheme() === "dark" ? "light" : "dark";
-            localStorage.setItem("DOCS_theme", newTheme);
-            updatePage(newTheme);
-        }
-
-        updatePage(currentTheme());
-    </script>
+    <script src="{{ root_path }}-/static/js/selectVersion.js"></script>
+    <script src="{{ root_path }}-/static/js/search.js"></script>
+    <script src="{{ root_path }}-/static/js/theme.js"></script>
 </body>
 
 </html>

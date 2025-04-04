@@ -312,6 +312,10 @@ impl ModulePath {
         }
     }
 
+    fn root_path(&self) -> String {
+        (0..self.level + 3).map(|_| "../").collect::<String>()
+    }
+
     fn source_href(&self) -> String {
         let mut href = String::new();
 
