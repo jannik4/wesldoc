@@ -1,5 +1,6 @@
 mod all_items;
 mod index;
+mod static_files;
 
 use askama::Template;
 use serde_json::Value;
@@ -19,6 +20,9 @@ pub type Error = Box<dyn std::error::Error>;
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 pub fn generate(docs: &WeslDocs, base_path: &Path) -> Result<()> {
+    // Write static files
+    static_files::write_static_files(base_path)?;
+
     let base_path = base_path.join(&docs.root.name);
 
     // Prepare directories
@@ -486,7 +490,7 @@ impl Base<'_> {
 
 fn module_path_class(kind: &ItemKind, last: &bool) -> &'static str {
     if !*last {
-        return "";
+        return "path";
     }
 
     match kind {

@@ -6,7 +6,7 @@
 {% endif %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -19,196 +19,25 @@
         {% endif %}
     </title>
 
-    <style>
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #3b3b3b;
-            color: #fff;
-
-            font-family: sans-serif;
-            font-size: 16px;
-        }
-
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6 {
-            margin: 16px 0 8px 0;
-        }
-
-        .nav {
-            padding: 8px 16px;
-            background-color: #2e2e2e;
-            border-bottom: 1px solid #555;
-        }
-
-        .content {
-            padding: 16px 16px;
-            max-width: 960px;
-        }
-
-        .select {
-            background-color: #4b4b4b;
-            color: #fff;
-        }
-
-        #selectVersion {
-            min-width: 65px;
-        }
-
-        #search {
-            width: 100%;
-            font-size: 1rem;
-            padding: 6px;
-            margin-bottom: 8px;
-            background-color: #d5d5d5;
-            border: 1px solid #aaa;
-        }
-
-        #search:focus {
-            outline: solid 1px #aaa;
-        }
-
-        a {
-            text-decoration: none;
-            color: #fff;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .path {
-            color: #dcdcdc
-        }
-
-        .module {
-            color: #d2991d;
-        }
-
-        .const {
-            color: #d2991d;
-        }
-
-        .var {
-            color: #d2991d;
-        }
-
-        .struct {
-            color: #2dbfb8;
-        }
-
-        .fn {
-            color: #2bab09;
-        }
-
-        .type {
-            color: #2dbfb8;
-        }
-
-        .conditional {
-            display: inline-block;
-            background-color: #314559;
-            color: #dddddd;
-            border-radius: 3px;
-            padding: 6px 4px;
-            margin-top: 8px;
-        }
-
-        .conditional-inline {
-            background-color: #314559;
-            color: #dddddd;
-            border-radius: 3px;
-            font-size: 14px;
-            margin-left: 3px;
-        }
-
-        .conditional-code {
-            background-color: #314559;
-            color: #dddddd;
-            border-radius: 3px;
-            font-size: 14px;
-            margin-right: 3px;
-        }
-
-        .feature {
-            color: #09bd00;
-        }
-
-        .code-block {
-            background-color: #2b2b2b;
-            padding: 16px 12px;
-            overflow-x: auto;
-        }
-
-        .code-block::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .item-list {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .item-list-title {
-            margin: 32px 0 16px 0;
-            border-bottom: 1px solid #999;
-            padding-bottom: 8px;
-        }
-
-        .item-list-bordered>li {
-            border-bottom: 1px solid #666;
-            padding: 3px 0;
-        }
-
-        .item-list-bordered>li:last-child {
-            border-bottom: none;
-        }
-
-        .item-list-bordered>li:hover {
-            background-color: #666;
-        }
-
-        .item-list-bordered>li>a {
-            text-decoration: none !important;
-        }
-
-        ::-webkit-scrollbar {
-            width: 16px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #353535;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #555;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #666;
-        }
-    </style>
+    <link rel="stylesheet" href="{% for _ in 0..module_path.level %}../{% endfor %}../../../-/static/themes.css">
+    <link rel="stylesheet" href="{% for _ in 0..module_path.level %}../{% endfor %}../../../-/static/styles.css">
 
     {% block head %}{% endblock %}
 </head>
 
 <body>
     <div class="nav">
-        <span style="margin-right: 8px;">
+        <span style="margin-right: 12px;">
             <a href="{% for _ in 0..module_path.level %}../{% endfor %}../../../index.html">&#8962;</a>
         </span>
-        <span style="margin-right: 8px;">{{ base.doc.root.name }}</span>
+        <span style="margin-right: 12px;">{{ base.doc.root.name }}</span>
         <select class="select" id="selectVersion" onchange="changeVersion()" autocomplete="off">
             <option
                 value="{% for _ in 0..module_path.level %}../{% endfor %}../../{{ this_version }}/{{ base.doc.root.name }}/index.html">
                 {{ this_version }}
             </option>
         </select>
+        <button id="toggleTheme" onclick="toggleTheme()"></button>
     </div>
     <div class="content">
         {% if !base.is_source_view %}
@@ -377,6 +206,27 @@
             listElement.appendChild(linkElement);
             return listElement;
         }
+    </script>
+    <script>
+        function currentTheme() {
+            const userPrefersDarkTheme = window.matchMedia("(prefers-color-scheme: dark)");
+            return localStorage.getItem("DOCS_theme") || (userPrefersDarkTheme.matches ? "dark" : "light");
+        }
+
+        function updatePage(theme) {
+            document.querySelector("html").setAttribute("data-theme", theme);
+            const button = document.getElementById("toggleTheme");
+            button.textContent = theme === "dark" ? "🌣" : "☾";
+            button.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
+        }
+
+        function toggleTheme() {
+            const newTheme = currentTheme() === "dark" ? "light" : "dark";
+            localStorage.setItem("DOCS_theme", newTheme);
+            updatePage(newTheme);
+        }
+
+        updatePage(currentTheme());
     </script>
 </body>
 
