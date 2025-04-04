@@ -3,8 +3,10 @@
 
 
 
+
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -15,206 +17,33 @@
         
     </title>
 
-    <style>
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #3b3b3b;
-            color: #fff;
-
-            font-family: sans-serif;
-            font-size: 16px;
-        }
-
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6 {
-            margin: 16px 0 8px 0;
-        }
-
-        .nav {
-            padding: 8px 16px;
-            background-color: #2e2e2e;
-            border-bottom: 1px solid #555;
-        }
-
-        .content {
-            padding: 16px 16px;
-            max-width: 960px;
-        }
-
-        .select {
-            background-color: #4b4b4b;
-            color: #fff;
-        }
-
-        #selectVersion {
-            min-width: 65px;
-        }
-
-        #search {
-            width: 100%;
-            font-size: 1rem;
-            padding: 6px;
-            margin-bottom: 8px;
-            background-color: #d5d5d5;
-            border: 1px solid #aaa;
-        }
-
-        #search:focus {
-            outline: solid 1px #aaa;
-        }
-
-        a {
-            text-decoration: none;
-            color: #fff;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .path {
-            color: #dcdcdc
-        }
-
-        .module {
-            color: #d2991d;
-        }
-
-        .const {
-            color: #d2991d;
-        }
-
-        .var {
-            color: #d2991d;
-        }
-
-        .struct {
-            color: #2dbfb8;
-        }
-
-        .fn {
-            color: #2bab09;
-        }
-
-        .type {
-            color: #2dbfb8;
-        }
-
-        .conditional {
-            display: inline-block;
-            background-color: #314559;
-            color: #dddddd;
-            border-radius: 3px;
-            padding: 6px 4px;
-            margin-top: 8px;
-        }
-
-        .conditional-inline {
-            background-color: #314559;
-            color: #dddddd;
-            border-radius: 3px;
-            font-size: 14px;
-            margin-left: 3px;
-        }
-
-        .conditional-code {
-            background-color: #314559;
-            color: #dddddd;
-            border-radius: 3px;
-            font-size: 14px;
-            margin-right: 3px;
-        }
-
-        .feature {
-            color: #09bd00;
-        }
-
-        .code-block {
-            background-color: #2b2b2b;
-            padding: 16px 12px;
-            overflow-x: auto;
-        }
-
-        .code-block::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .item-list {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .item-list-title {
-            margin: 32px 0 16px 0;
-            border-bottom: 1px solid #999;
-            padding-bottom: 8px;
-        }
-
-        .item-list-bordered>li {
-            border-bottom: 1px solid #666;
-            padding: 3px 0;
-        }
-
-        .item-list-bordered>li:last-child {
-            border-bottom: none;
-        }
-
-        .item-list-bordered>li:hover {
-            background-color: #666;
-        }
-
-        .item-list-bordered>li>a {
-            text-decoration: none !important;
-        }
-
-        ::-webkit-scrollbar {
-            width: 16px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #353535;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #555;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #666;
-        }
-    </style>
+    <link rel="stylesheet" href="../../../../-/static/css/themes.css">
+    <link rel="stylesheet" href="../../../../-/static/css/styles.css">
 
     
 </head>
 
 <body>
     <div class="nav">
-        <span style="margin-right: 8px;">
+        <span style="margin-right: 12px;">
             <a href="../../../../index.html">&#8962;</a>
         </span>
-        <span style="margin-right: 8px;">pbr</span>
+        <span style="margin-right: 12px;">pbr</span>
         <select class="select" id="selectVersion" onchange="changeVersion()" autocomplete="off">
             <option
                 value="../../../0.0.0/pbr/index.html">
                 0.0.0
             </option>
         </select>
+        <button id="toggleTheme" onclick="toggleTheme()"></button>
     </div>
     <div class="content">
-        
         <input type="text" id="search" placeholder="Search" oninput="searchDebounced()" autocomplete="off">
-        
 
         <div id="innerContent">
             
             <h2>
-                <a class="" href="../index.html">pbr</a><span>::</span><wbr><a class="" href="index.html">fog</a><span>::</span><wbr><a class="fn" href="#">linear_fog</a>
+                <a class="path" href="../index.html">pbr</a><span>::</span><wbr><a class="path" href="index.html">fog</a><span>::</span><wbr><a class="fn" href="#">linear_fog</a>
             </h2>
 
             
@@ -241,150 +70,18 @@
     </div>
 
     <script src="../../../common.js"></script>
-    <script src="../items.js"></script>
+    <script src="../../items.js"></script>
+
     <script>
-        document.getElementById("selectVersion").innerHTML = "";
-        addVersion("latest");
-        for (var i = 0; i < window.DOCS_COMMON.versions.length; i++) {
-            addVersion(window.DOCS_COMMON.versions[i]);
-        }
-
-        function addVersion(version) {
-            var select = document.getElementById("selectVersion");
-            var base = "../../../";
-
-            var option = document.createElement("option");
-            option.selected = version == "0.0.0";
-            option.value = base + version + "/pbr/index.html";
-            option.innerText = version;
-            select.appendChild(option);
-        }
-
-        function changeVersion() {
-            var value = document.getElementById("selectVersion").value;
-            location.href = value;
-        }
+        window.DOCS_THIS_PACKAGE = {
+            version: "0.0.0",
+            name: "pbr",
+            root: "../../",
+        };
     </script>
-    <script>
-        window.DOCS_INNER_CONTENT = document.getElementById("innerContent").innerHTML;
-
-        onUrlChange();
-        window.addEventListener('popstate', function (event) {
-            onUrlChange();
-        });
-
-        function onUrlChange() {
-            var query = document.getElementById("search").value;
-
-            if ('URLSearchParams' in window) {
-                var searchParams = new URLSearchParams(window.location.search);
-                var param = searchParams.get("search") || "";
-                if (param !== query) {
-                    document.getElementById("search").value = param;
-                    search();
-                }
-            }
-        }
-
-        function searchDebounced() {
-            if (window.DOCS_SEARCH_DEBOUNCE) {
-                clearTimeout(window.DOCS_SEARCH_DEBOUNCE);
-            }
-            window.DOCS_SEARCH_DEBOUNCE = setTimeout(search, 400);
-        }
-
-        function search() {
-            var innerContentElement = document.getElementById("innerContent");
-            var query = document.getElementById("search").value;
-            var items = window.DOCS_ITEMS || [];
-
-            if ('URLSearchParams' in window) {
-                var searchParams = new URLSearchParams(window.location.search);
-                if ((searchParams.get("search") || "") !== query) {
-                    if (query === "") {
-                        searchParams.delete("search");
-                    } else {
-                        searchParams.set("search", query);
-                    }
-
-                    var searchParamsString = searchParams.toString();
-                    if (searchParamsString === "") {
-                        history.pushState(null, '', window.location.pathname);
-                    } else {
-                        history.pushState(null, '', window.location.pathname + '?' + searchParamsString);
-                    }
-                }
-            }
-
-            if (query === "") {
-                innerContentElement.innerHTML = window.DOCS_INNER_CONTENT;
-                return;
-            }
-
-            var itemsFiltered = items.filter(function (item) {
-                return item.name.toLowerCase().includes(query.toLowerCase());
-            });
-
-            innerContentElement.innerHTML = "";
-            var itemList = document.createElement("ul");
-            itemList.className = "item-list item-list-bordered";
-            for (var i = 0; i < itemsFiltered.length; i++) {
-                itemList.appendChild(createItemElement(itemsFiltered[i]));
-            }
-            innerContentElement.appendChild(itemList);
-        }
-
-        function createItemElement(item) {
-            var className = "";
-            switch (item.kind) {
-                case "Module":
-                    className = "module";
-                    break;
-                case "Constant":
-                    className = "const";
-                    break;
-                case "GlobalVariable":
-                    className = "var";
-                    break;
-                case "Struct":
-                    className = "struct";
-                    break;
-                case "Function":
-                    className = "fn";
-                    break;
-                case "TypeAlias":
-                    className = "type";
-                    break;
-                default: break;
-            }
-
-            var linkElement = document.createElement("a");
-            linkElement.href = "../../" + item.url;
-
-            for (var i = 0; i < item.path.length; i++) {
-                var segment = document.createElement("span");
-                segment.className = "path";
-                segment.innerText = item.path[i];
-                linkElement.appendChild(segment);
-
-                var segment = document.createElement("span");
-                segment.className = "path";
-                segment.innerText = "::";
-                linkElement.appendChild(segment);
-
-                linkElement.appendChild(document.createElement("wbr"));
-            }
-
-            var itemElement = document.createElement("span");
-            itemElement.className = className;
-            itemElement.innerText = item.name;
-            linkElement.appendChild(itemElement);
-
-            var listElement = document.createElement("li");
-            listElement.appendChild(linkElement);
-            return listElement;
-        }
-    </script>
+    <script src="../../../../-/static/js/selectVersion.js"></script>
+    <script src="../../../../-/static/js/search.js"></script>
+    <script src="../../../../-/static/js/theme.js"></script>
 </body>
 
 </html>
