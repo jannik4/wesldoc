@@ -152,7 +152,7 @@ fn gen_doc(doc: &WeslDocs, build_as_latest: bool, base_path: &Path) -> Result<()
         "window.DOCS_ITEMS = {};\n",
         serde_json::ser::to_string(&items)?
     );
-    fs::write(base_path_docs.join("items.js"), source)?;
+    fs::write(base_path.join("items.js"), source)?;
 
     Ok(())
 }

@@ -42,9 +42,7 @@
         <button id="toggleTheme" onclick="toggleTheme()"></button>
     </div>
     <div class="content">
-        {% if !base.is_source_view %}
         <input type="text" id="search" placeholder="Search" oninput="searchDebounced()" autocomplete="off">
-        {% endif %}
 
         <div id="innerContent">
             {% if !base.is_source_view %}
@@ -65,7 +63,7 @@
     </div>
 
     <script src="{% for _ in 0..module_path.level %}../{% endfor %}../../common.js"></script>
-    <script src="{% for _ in 0..module_path.level %}../{% endfor %}items.js"></script>
+    <script src="{% for _ in 0..module_path.level %}../{% endfor %}../items.js"></script>
 
     <script>
         window.DOCS_THIS_PACKAGE = {
