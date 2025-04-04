@@ -1,62 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WESL Docs</title>
 
-    <style>
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #3b3b3b;
-            color: #fff;
-
-            font-family: sans-serif;
-            font-size: 16px;
-        }
-
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6 {
-            margin: 16px 0 8px 0;
-        }
-
-        .content {
-            padding: 16px 16px;
-            max-width: 960px;
-        }
-
-        ::-webkit-scrollbar {
-            width: 16px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #353535;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #555;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #666;
-        }
-    </style>
+    <link rel="stylesheet" href="-/static/css/themes.css">
+    <link rel="stylesheet" href="-/static/css/styles.css">
 </head>
 
 <body>
-    <div class="content">
-        <h1>WESL Docs</h1>
-        {% for package in packages %}
-        <h3><a href="./{{ package }}/latest/{{ package }}/index.html" style="color:#fff;">{{ package }}</a></h3>
-        {% endfor %}
+    <div class="nav">
+        <span style="margin-right: 12px;">WESL Docs</span>
+        <button id="toggleTheme" onclick="toggleTheme()"></button>
     </div>
+    <div class="content">
+        <h3 class="item-list-title">Packages</h3>
+        <ul class="item-list">
+            {% for package in packages %}
+            <li>
+                <a href="./{{ package }}/latest/{{ package }}/index.html">{{ package }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script src="-/static/js/theme.js"></script>
 </body>
 
 </html>

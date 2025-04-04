@@ -24,6 +24,7 @@ h6 {
 
 .nav {
   display: flex;
+  height: 38px;
   padding: 8px 16px;
   background-color: var(--nav-background-color);
   border-bottom: 1px solid var(--nav-border-color);
