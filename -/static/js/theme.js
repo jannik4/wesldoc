@@ -17,3 +17,6 @@ function toggleTheme() {
 }
 
 updatePage(currentTheme());
+
+// Update on show, e.g. when navigating back to the page
+addEventListener("pageshow", () => { updatePage(currentTheme()); });
