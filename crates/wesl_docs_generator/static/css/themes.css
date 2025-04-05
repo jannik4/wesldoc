@@ -23,6 +23,7 @@
   --conditional-color: #dddddd;
 
   --code-block-background-color: #2b2b2b;
+  --line-number-color: #3b91e2;
 
   --item-list-title-border-color: #999;
   --item-list-bordered-border-color: #666;
@@ -57,6 +58,7 @@
   --conditional-color: #000;
 
   --code-block-background-color: #f5f5f5;
+  --line-number-color: #c67e2d;
 
   --item-list-title-border-color: #666;
   --item-list-bordered-border-color: #b8b8b8;

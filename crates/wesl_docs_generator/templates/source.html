@@ -1,7 +1,19 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% let digits = source.lines().count().max(1).ilog10() + 1 %}
 <pre class="code-block">
-<code>{{ source }}</code>
+<code>
+    {%- for (idx, line) in source.lines().enumerate() -%}
+        <a
+            href="#{{ idx + 1 }}"
+            id="{{ idx + 1 }}"
+            class="line-number line-number-digits-{{ digits }}"
+            data-nosnippet
+        >
+            {{- idx + 1 -}}
+        </a>{{ line }}{{ "\n" }}
+    {%- endfor -%}
+</code>
 </pre>
 {% endblock %}
