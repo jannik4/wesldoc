@@ -44,30 +44,140 @@
             
 
             
-<pre class="code-block">
-<code>struct Fog {
-    base_color: vec4&lt;f32&gt;,
-    @if(emissive)
-    emissive: vec4&lt;f32&gt;,
-    @if(fog_flags_unsigned)
-    flags: u32,
-    @elif(fog_flags_signed)
-    flags: i32,
-    @else
-    flags: bool,
-}
 
-@if(linear_fog)
-fn linear_fog(
-    fog: Fog,
-    input_color: vec4&lt;f32&gt;,
-    distance: f32,
-    @if(fog_extra_flags)
-    extra_flags: u32,
-) -&gt; vec4&lt;f32&gt; {
-    return mix(input_color, fog.base_color, distance);
-}
-</code>
+<pre class="code-block">
+<code><a
+            href="#1"
+            id="1"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >1</a>struct Fog {
+<a
+            href="#2"
+            id="2"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >2</a>    base_color: vec4&lt;f32&gt;,
+<a
+            href="#3"
+            id="3"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >3</a>    @if(emissive)
+<a
+            href="#4"
+            id="4"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >4</a>    emissive: vec4&lt;f32&gt;,
+<a
+            href="#5"
+            id="5"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >5</a>    @if(fog_flags_unsigned)
+<a
+            href="#6"
+            id="6"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >6</a>    flags: u32,
+<a
+            href="#7"
+            id="7"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >7</a>    @elif(fog_flags_signed)
+<a
+            href="#8"
+            id="8"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >8</a>    flags: i32,
+<a
+            href="#9"
+            id="9"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >9</a>    @else
+<a
+            href="#10"
+            id="10"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >10</a>    flags: bool,
+<a
+            href="#11"
+            id="11"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >11</a>}
+<a
+            href="#12"
+            id="12"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >12</a>
+<a
+            href="#13"
+            id="13"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >13</a>@if(linear_fog)
+<a
+            href="#14"
+            id="14"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >14</a>fn linear_fog(
+<a
+            href="#15"
+            id="15"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >15</a>    fog: Fog,
+<a
+            href="#16"
+            id="16"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >16</a>    input_color: vec4&lt;f32&gt;,
+<a
+            href="#17"
+            id="17"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >17</a>    distance: f32,
+<a
+            href="#18"
+            id="18"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >18</a>    @if(fog_extra_flags)
+<a
+            href="#19"
+            id="19"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >19</a>    extra_flags: u32,
+<a
+            href="#20"
+            id="20"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >20</a>) -&gt; vec4&lt;f32&gt; {
+<a
+            href="#21"
+            id="21"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >21</a>    return mix(input_color, fog.base_color, distance);
+<a
+            href="#22"
+            id="22"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >22</a>}</code>
 </pre>
 
         </div>
@@ -86,6 +196,7 @@ fn linear_fog(
     <script src="../../../../-/static/js/selectVersion.js"></script>
     <script src="../../../../-/static/js/search.js"></script>
     <script src="../../../../-/static/js/theme.js"></script>
+    <script src="../../../../-/static/js/lineNumbers.js"></script>
 </body>
 
 </html>

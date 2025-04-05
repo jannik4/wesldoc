@@ -140,6 +140,46 @@ a:hover {
   width: 8px;
 }
 
+.line-number {
+  display: inline-block;
+  text-align: right;
+  padding: 0 4px;
+  margin-right: 16px;
+  color: var(--line-number-color);
+}
+
+.line-number-highlighted {
+  background-color: var(--line-number-highlighted-background-color);
+}
+
+.line-number-digits-1 {
+  width: calc(1ch + 8px);
+}
+.line-number-digits-2 {
+  width: calc(2ch + 8px);
+}
+.line-number-digits-3 {
+  width: calc(3ch + 8px);
+}
+.line-number-digits-4 {
+  width: calc(4ch + 8px);
+}
+.line-number-digits-5 {
+  width: calc(5ch + 8px);
+}
+.line-number-digits-6 {
+  width: calc(6ch + 8px);
+}
+.line-number-digits-7 {
+  width: calc(7ch + 8px);
+}
+.line-number-digits-8 {
+  width: calc(8ch + 8px);
+}
+.line-number-digits-9 {
+  width: calc(9ch + 8px);
+}
+
 .item-list {
   list-style-type: none;
   padding: 0;

@@ -44,22 +44,92 @@
             
 
             
+
 <pre class="code-block">
-<code>import package::constants;
-import package::constants::PI;
-
-fn ease_in_cubic(t: f32) -&gt; f32 {
-    return t * t * t;
-}
-
-fn ease_in_quadratic(t: f32) -&gt; f32 {
-    return t * t;
-}
-
-fn ease_in_sine(t: f32) -&gt; f32 {
-    return 1.0 - cos(t * constants::HALF_PI);
-}
-</code>
+<code><a
+            href="#1"
+            id="1"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >1</a>import package::constants;
+<a
+            href="#2"
+            id="2"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >2</a>import package::constants::PI;
+<a
+            href="#3"
+            id="3"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >3</a>
+<a
+            href="#4"
+            id="4"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >4</a>fn ease_in_cubic(t: f32) -&gt; f32 {
+<a
+            href="#5"
+            id="5"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >5</a>    return t * t * t;
+<a
+            href="#6"
+            id="6"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >6</a>}
+<a
+            href="#7"
+            id="7"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >7</a>
+<a
+            href="#8"
+            id="8"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >8</a>fn ease_in_quadratic(t: f32) -&gt; f32 {
+<a
+            href="#9"
+            id="9"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >9</a>    return t * t;
+<a
+            href="#10"
+            id="10"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >10</a>}
+<a
+            href="#11"
+            id="11"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >11</a>
+<a
+            href="#12"
+            id="12"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >12</a>fn ease_in_sine(t: f32) -&gt; f32 {
+<a
+            href="#13"
+            id="13"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >13</a>    return 1.0 - cos(t * constants::HALF_PI);
+<a
+            href="#14"
+            id="14"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >14</a>}</code>
 </pre>
 
         </div>
@@ -78,6 +148,7 @@ fn ease_in_sine(t: f32) -&gt; f32 {
     <script src="../../../../-/static/js/selectVersion.js"></script>
     <script src="../../../../-/static/js/search.js"></script>
     <script src="../../../../-/static/js/theme.js"></script>
+    <script src="../../../../-/static/js/lineNumbers.js"></script>
 </body>
 
 </html>

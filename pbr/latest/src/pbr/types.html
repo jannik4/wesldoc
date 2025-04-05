@@ -44,27 +44,122 @@
             
 
             
+
 <pre class="code-block">
-<code>struct StandardMaterial {
-    base_color: vec4&lt;f32&gt;,
-    emissive: vec4&lt;f32&gt;,
-    metallic: f32,
-    roughness: f32,
-    custom_data: CustomData,
-}
-
-@if(custom_data_value_index)
-struct CustomData {
-    value: f32,
-    index: u32,
-}
-
-@if(!custom_data_value_index)
-struct CustomData {
-    position: vec3&lt;f32&gt;,
-    normal: vec3&lt;f32&gt;,
-}
-</code>
+<code><a
+            href="#1"
+            id="1"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >1</a>struct StandardMaterial {
+<a
+            href="#2"
+            id="2"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >2</a>    base_color: vec4&lt;f32&gt;,
+<a
+            href="#3"
+            id="3"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >3</a>    emissive: vec4&lt;f32&gt;,
+<a
+            href="#4"
+            id="4"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >4</a>    metallic: f32,
+<a
+            href="#5"
+            id="5"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >5</a>    roughness: f32,
+<a
+            href="#6"
+            id="6"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >6</a>    custom_data: CustomData,
+<a
+            href="#7"
+            id="7"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >7</a>}
+<a
+            href="#8"
+            id="8"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >8</a>
+<a
+            href="#9"
+            id="9"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >9</a>@if(custom_data_value_index)
+<a
+            href="#10"
+            id="10"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >10</a>struct CustomData {
+<a
+            href="#11"
+            id="11"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >11</a>    value: f32,
+<a
+            href="#12"
+            id="12"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >12</a>    index: u32,
+<a
+            href="#13"
+            id="13"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >13</a>}
+<a
+            href="#14"
+            id="14"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >14</a>
+<a
+            href="#15"
+            id="15"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >15</a>@if(!custom_data_value_index)
+<a
+            href="#16"
+            id="16"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >16</a>struct CustomData {
+<a
+            href="#17"
+            id="17"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >17</a>    position: vec3&lt;f32&gt;,
+<a
+            href="#18"
+            id="18"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >18</a>    normal: vec3&lt;f32&gt;,
+<a
+            href="#19"
+            id="19"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >19</a>}</code>
 </pre>
 
         </div>
@@ -83,6 +178,7 @@ struct CustomData {
     <script src="../../../../-/static/js/selectVersion.js"></script>
     <script src="../../../../-/static/js/search.js"></script>
     <script src="../../../../-/static/js/theme.js"></script>
+    <script src="../../../../-/static/js/lineNumbers.js"></script>
 </body>
 
 </html>
