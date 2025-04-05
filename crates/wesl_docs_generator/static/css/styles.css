@@ -148,6 +148,10 @@ a:hover {
   color: var(--line-number-color);
 }
 
+.line-number-highlighted {
+  background-color: var(--line-number-highlighted-background-color);
+}
+
 .line-number-digits-1 {
   width: calc(1ch + 8px);
 }
