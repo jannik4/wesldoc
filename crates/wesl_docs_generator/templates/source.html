@@ -12,7 +12,7 @@
             data-nosnippet
         >
             {{- idx + 1 -}}
-        </a>{{ line }}{{ "\n" }}
+        </a>{{ line }}{% if !loop.last %}{{ "\n" }}{% endif %}
     {%- endfor -%}
 </code>
 </pre>
