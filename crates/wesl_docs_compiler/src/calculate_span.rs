@@ -19,7 +19,7 @@ pub fn calculate_span(decl: &syntax::GlobalDeclaration, source_map: &SourceMap) 
         if line.contains(&name) {
             return Some(Span {
                 line_start: idx + 1,
-                line_end: idx + 4, // just assume 3 lines for now
+                line_end: idx + 3, // just assume 3 lines for now
             });
         }
     }
