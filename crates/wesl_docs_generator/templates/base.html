@@ -52,10 +52,6 @@
                 <a class="{{ self::module_path_class(kind, loop.last) }}" href="{{ path }}">{{ name }}</a>
                 {%- endfor %}
             </h2>
-
-            {% if let Some(source) = module.source %}
-            <a class="module" href="{{ module_path.source_href() }}">Source</a>
-            {% endif %}
             {% endif %}
 
             {% block content %}{% endblock %}

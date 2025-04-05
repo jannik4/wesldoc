@@ -2,6 +2,9 @@
 
 {% block content %}
 {% for struct_ in structs %}
+{% if module.source.is_some() %}
+<a class="module" href="{{ module_path.source_href(struct_.span.clone()) }}">Source</a>
+{% endif %}
 {% if let Some(conditional) = struct_.conditional %}
 <div><span class="conditional">{{ conditional }}</span></div>
 {% endif %}

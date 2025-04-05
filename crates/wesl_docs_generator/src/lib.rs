@@ -13,7 +13,7 @@ use std::{
 };
 use wesl_docs::{
     Binding, BuiltIn, Constant, DefinitionPath, Function, GlobalVariable, Interpolation, Module,
-    Sampling, Struct, Type, TypeAlias, Version, WeslDocs,
+    Sampling, Span, Struct, Type, TypeAlias, Version, WeslDocs,
 };
 
 pub type Error = Box<dyn std::error::Error>;
@@ -169,7 +169,6 @@ fn gen_module(
             base: &base.with_source_view(),
             title: &module.name,
             module_path,
-            module,
             source,
         };
         let mut path = base_path_src.to_path_buf();
@@ -316,7 +315,7 @@ impl ModulePath {
         (0..self.level + 3).map(|_| "../").collect::<String>()
     }
 
-    fn source_href(&self) -> String {
+    fn source_href(&self, span: Option<Span>) -> String {
         let mut href = String::new();
 
         for _ in 0..self.level {
@@ -341,6 +340,15 @@ impl ModulePath {
             }
         }
 
+        if let Some(span) = span {
+            href.push('#');
+            href.push_str(&span.line_start.to_string());
+            if span.line_start != span.line_end {
+                href.push('-');
+                href.push_str(&span.line_end.to_string());
+            }
+        }
+
         href
     }
 }
@@ -351,7 +359,6 @@ struct SourceTemplate<'a> {
     base: &'a Base<'a>,
     title: &'a str,
     module_path: &'a ModulePath,
-    module: &'a Module,
     source: &'a str,
 }
 

@@ -1,5 +1,6 @@
 mod build_conditional;
 mod build_type;
+mod calculate_span;
 mod collect_features;
 mod map;
 mod post_process;
@@ -8,12 +9,13 @@ mod source_map;
 use self::{
     build_conditional::{ConditionalScope, build_conditional},
     build_type::build_type,
+    calculate_span::calculate_span,
     collect_features::collect_features,
     map::map,
     source_map::SourceMap,
 };
 use std::collections::HashMap;
-use wesl::{CompileResult, SourceMap as _, syntax};
+use wesl::{CompileResult, syntax};
 use wesl_docs::*;
 
 pub type Error = Box<dyn std::error::Error>;
@@ -70,11 +72,7 @@ fn compile_module(
     let mut source_map = SourceMap::new(compiled.sourcemap.as_ref());
 
     // Set source
-    if let Some(source) = compiled
-        .sourcemap
-        .as_ref()
-        .and_then(|s| s.get_default_source())
-    {
+    if let Some(source) = source_map.default_source() {
         module.source = Some(source.to_string());
     }
 
@@ -107,6 +105,7 @@ fn compile_module(
         if !source_map.is_local(decl) {
             continue;
         }
+        let span = calculate_span(decl, &source_map);
         match decl {
             syntax::GlobalDeclaration::Void => (),
             syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
@@ -131,6 +130,7 @@ fn compile_module(
                                 &mut conditional_scope,
                                 &declaration.attributes,
                             ),
+                            span,
                         });
                 }
                 syntax::DeclarationKind::Override => {
@@ -161,6 +161,7 @@ fn compile_module(
                                 &mut conditional_scope,
                                 &declaration.attributes,
                             ),
+                            span,
                         });
                 }
             },
@@ -178,6 +179,7 @@ fn compile_module(
                             &mut conditional_scope,
                             &type_alias.attributes,
                         ),
+                        span,
                     });
             }
             syntax::GlobalDeclaration::Struct(struct_) => {
@@ -214,6 +216,7 @@ fn compile_module(
                                 .collect()
                         },
                         conditional: build_conditional(&mut conditional_scope, &struct_.attributes),
+                        span,
                     });
             }
             syntax::GlobalDeclaration::Function(function) => {
@@ -252,6 +255,7 @@ fn compile_module(
                             &mut conditional_scope,
                             &function.attributes,
                         ),
+                        span,
                     });
             }
             syntax::GlobalDeclaration::ConstAssert(_const_assert) => (),

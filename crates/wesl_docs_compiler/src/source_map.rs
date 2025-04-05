@@ -48,4 +48,8 @@ impl SourceMap<'_> {
 
         None
     }
+
+    pub fn default_source(&self) -> Option<&str> {
+        self.inner.and_then(|s| s.get_default_source())
+    }
 }

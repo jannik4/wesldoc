@@ -2,6 +2,9 @@
 
 {% block content %}
 {% for type_alias in type_aliases %}
+{% if module.source.is_some() %}
+<a class="module" href="{{ module_path.source_href(type_alias.span.clone()) }}">Source</a>
+{% endif %}
 {% if let Some(conditional) = type_alias.conditional %}
 <div><span class="conditional">{{ conditional }}</span></div>
 {% endif %}

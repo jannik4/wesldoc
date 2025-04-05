@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if module.source.is_some() %}
+<a class="module" href="{{ module_path.source_href(None) }}">Source</a>
+{% endif %}
 
 {% if !module.modules.is_empty() %}
 <h3 class="item-list-title">Modules</h3>

@@ -111,6 +111,12 @@ impl fmt::Display for Conditional {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct Span {
+    pub line_start: usize,
+    pub line_end: usize,
+}
+
 #[derive(Debug, Clone)]
 pub struct Item<T> {
     pub instances: Vec<T>,
@@ -138,6 +144,7 @@ pub struct Constant {
     pub ty: Type,
     pub init: Expression,
     pub conditional: Option<Conditional>,
+    pub span: Option<Span>,
 }
 
 impl ItemInstance for Constant {
@@ -154,6 +161,7 @@ pub struct GlobalVariable {
     pub ty: Type,
     pub init: Option<Expression>,
     pub conditional: Option<Conditional>,
+    pub span: Option<Span>,
 }
 
 impl ItemInstance for GlobalVariable {
@@ -250,6 +258,7 @@ pub struct Struct {
     pub name: Ident,
     pub members: Vec<StructMember>,
     pub conditional: Option<Conditional>,
+    pub span: Option<Span>,
 }
 
 impl ItemInstance for Struct {
@@ -297,6 +306,7 @@ pub struct Function {
     pub parameters: Vec<FunctionParameter>,
     pub ret: Option<Type>,
     pub conditional: Option<Conditional>,
+    pub span: Option<Span>,
 }
 
 impl ItemInstance for Function {
@@ -318,6 +328,7 @@ pub struct TypeAlias {
     pub name: Ident,
     pub ty: Type,
     pub conditional: Option<Conditional>,
+    pub span: Option<Span>,
 }
 
 impl ItemInstance for TypeAlias {

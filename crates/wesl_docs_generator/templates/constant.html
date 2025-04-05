@@ -2,6 +2,9 @@
 
 {% block content %}
 {% for constant in constants %}
+{% if module.source.is_some() %}
+<a class="module" href="{{ module_path.source_href(constant.span.clone()) }}">Source</a>
+{% endif %}
 {% if let Some(conditional) = constant.conditional %}
 <div><span class="conditional">{{ conditional }}</span></div>
 {% endif %}

@@ -24,7 +24,10 @@ function updateLineNumbers() {
     const range = lineNumbersRange();
     if (range) {
         for (let n = range.start; n <= range.end; n++) {
-            document.getElementById(`${n}`).classList.add("line-number-highlighted");
+            const element = document.getElementById(`${n}`);
+            if (element) {
+                element.classList.add("line-number-highlighted");
+            }
         }
     }
 }
