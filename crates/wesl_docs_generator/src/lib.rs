@@ -12,8 +12,9 @@ use std::{
     path::Path,
 };
 use wesl_docs::{
-    Binding, BuiltIn, Constant, DefinitionPath, Expression, Function, GlobalVariable,
-    Interpolation, Module, Sampling, Span, Struct, TypeAlias, TypeExpression, Version, WeslDocs,
+    Binding, BuiltIn, Constant, DefinitionPath, Expression, Function, GlobalVariable, Ident,
+    Interpolation, ItemKind, Module, Sampling, Span, Struct, TypeAlias, TypeExpression, Version,
+    WeslDocs,
 };
 
 pub type Error = Box<dyn std::error::Error>;
@@ -270,16 +271,6 @@ fn gen_module(
     Ok(())
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum ItemKind {
-    Module,
-    Constant,
-    GlobalVariable,
-    Struct,
-    Function,
-    TypeAlias,
-}
-
 #[derive(Debug, Clone)]
 struct ModulePath {
     segments: Vec<(String, String, ItemKind)>,
@@ -465,7 +456,12 @@ fn show_function_inline(function: &Function) -> bool {
     function.parameters.len() <= 3 && function.parameters.iter().all(|p| p.conditional.is_none())
 }
 
-fn def_path_href(def_path: &DefinitionPath, module_path_level: &usize) -> String {
+fn def_path_href(
+    name: &Ident,
+    kind: &ItemKind,
+    def_path: &DefinitionPath,
+    module_path_level: &usize,
+) -> String {
     let mut href = String::new();
 
     match def_path {
@@ -493,6 +489,15 @@ fn def_path_href(def_path: &DefinitionPath, module_path_level: &usize) -> String
                 href.push('/');
             }
         }
+    }
+
+    match *kind {
+        ItemKind::Module => href.push_str("index.html"),
+        ItemKind::Constant => href.push_str(&format!("const.{}.html", name.0)),
+        ItemKind::GlobalVariable => href.push_str(&format!("var.{}.html", name.0)),
+        ItemKind::Struct => href.push_str(&format!("struct.{}.html", name.0)),
+        ItemKind::Function => href.push_str(&format!("fn.{}.html", name.0)),
+        ItemKind::TypeAlias => href.push_str(&format!("type.{}.html", name.0)),
     }
 
     href

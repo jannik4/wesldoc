@@ -1,17 +1,18 @@
-use std::collections::HashSet;
-use wesl::{BasicSourceMap, ModulePath, SourceMap as _, syntax};
+use std::collections::HashMap;
+use wesl::{CompileResult, ModulePath, SourceMap as _, syntax};
+use wesl_docs::ItemKind;
 
 pub struct SourceMap<'a> {
-    inner: Option<&'a BasicSourceMap>,
-    local: HashSet<String>,
+    compiled: &'a CompileResult,
+    local: HashMap<String, ItemKind>,
     local_path: ModulePath,
 }
 
 impl SourceMap<'_> {
-    pub fn new(inner: Option<&BasicSourceMap>) -> SourceMap<'_> {
+    pub fn new(compiled: &CompileResult) -> SourceMap<'_> {
         SourceMap {
-            inner,
-            local: HashSet::new(),
+            compiled,
+            local: HashMap::new(),
             local_path: ModulePath {
                 origin: syntax::PathOrigin::Relative(0),
                 components: Vec::new(),
@@ -19,9 +20,9 @@ impl SourceMap<'_> {
         }
     }
 
-    pub fn insert_local(&mut self, decl: &str) {
+    pub fn insert_local(&mut self, decl: &str, kind: ItemKind) {
         if self.get_decl(decl).is_none() {
-            self.local.insert(decl.to_string());
+            self.local.insert(decl.to_string(), kind);
         }
     }
 
@@ -34,22 +35,52 @@ impl SourceMap<'_> {
             syntax::GlobalDeclaration::Function(function) => &function.ident,
             syntax::GlobalDeclaration::ConstAssert(_const_assert) => return false,
         };
-        self.local.contains(decl.name().as_str())
+        self.local.contains_key(decl.name().as_str())
     }
 
-    pub fn get_decl(&self, decl: &str) -> Option<(&ModulePath, &str)> {
-        if let Some(decl) = self.local.get(decl) {
-            return Some((&self.local_path, decl));
+    pub fn get_decl(&self, decl: &str) -> Option<(&str, ItemKind, &ModulePath)> {
+        if let Some((decl, kind)) = self.local.get_key_value(decl) {
+            return Some((decl, *kind, &self.local_path));
         }
 
-        if let Some(inner) = self.inner {
-            return inner.get_decl(decl);
+        if let Some(inner) = self.compiled.sourcemap.as_ref() {
+            let kind = item_kind_from_name(self.compiled, decl)?;
+            let (path, name) = inner.get_decl(decl)?;
+            return Some((name, kind, path));
         }
 
         None
     }
 
     pub fn default_source(&self) -> Option<&str> {
-        self.inner.and_then(|s| s.get_default_source())
+        self.compiled
+            .sourcemap
+            .as_ref()
+            .and_then(|s| s.get_default_source())
     }
+}
+
+fn item_kind_from_name(compiled: &CompileResult, name: &str) -> Option<ItemKind> {
+    for decl in &compiled.syntax.global_declarations {
+        if decl
+            .ident()
+            .is_some_and(|decl| decl.name().as_str() == name)
+        {
+            return match decl {
+                syntax::GlobalDeclaration::Void => None,
+                syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
+                    syntax::DeclarationKind::Const => Some(ItemKind::Constant),
+                    syntax::DeclarationKind::Override => None,
+                    syntax::DeclarationKind::Let => None, // should be unreachable?
+                    syntax::DeclarationKind::Var(_) => Some(ItemKind::GlobalVariable),
+                },
+                syntax::GlobalDeclaration::TypeAlias(_) => Some(ItemKind::TypeAlias),
+                syntax::GlobalDeclaration::Struct(_) => Some(ItemKind::Struct),
+                syntax::GlobalDeclaration::Function(_) => Some(ItemKind::Function),
+                syntax::GlobalDeclaration::ConstAssert(_const_assert) => None,
+            };
+        }
+    }
+
+    None
 }

@@ -93,6 +93,16 @@ impl fmt::Display for Conditional {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ItemKind {
+    Module,
+    Constant,
+    GlobalVariable,
+    Struct,
+    Function,
+    TypeAlias,
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct Span {
     pub line_start: usize,
@@ -250,8 +260,9 @@ pub enum TypeExpression {
         name: Ident,
         template_args: Option<Vec<Expression>>,
     },
-    Imported {
+    ReferencedType {
         name: Ident,
+        kind: ItemKind,
         def_path: Option<DefinitionPath>,
     },
     Unknown,

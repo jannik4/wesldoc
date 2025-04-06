@@ -70,7 +70,7 @@ fn compile_module(
             wesl_module.name
         );
     }
-    let mut source_map = SourceMap::new(compiled.sourcemap.as_ref());
+    let mut source_map = SourceMap::new(compiled);
 
     // Set source
     if let Some(source) = source_map.default_source() {
@@ -84,17 +84,26 @@ fn compile_module(
     for decl in &compiled.syntax.global_declarations {
         match decl {
             syntax::GlobalDeclaration::Void => (),
-            syntax::GlobalDeclaration::Declaration(declaration) => {
-                source_map.insert_local(&declaration.ident.name());
-            }
+            syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
+                syntax::DeclarationKind::Const => {
+                    source_map.insert_local(&declaration.ident.name(), ItemKind::Constant);
+                }
+                syntax::DeclarationKind::Override => {
+                    // TODO: ...
+                }
+                syntax::DeclarationKind::Let => (), // should be unreachable?
+                syntax::DeclarationKind::Var(_) => {
+                    source_map.insert_local(&declaration.ident.name(), ItemKind::GlobalVariable);
+                }
+            },
             syntax::GlobalDeclaration::TypeAlias(type_alias) => {
-                source_map.insert_local(&type_alias.ident.name());
+                source_map.insert_local(&type_alias.ident.name(), ItemKind::TypeAlias);
             }
             syntax::GlobalDeclaration::Struct(struct_) => {
-                source_map.insert_local(&struct_.ident.name());
+                source_map.insert_local(&struct_.ident.name(), ItemKind::Struct);
             }
             syntax::GlobalDeclaration::Function(function) => {
-                source_map.insert_local(&function.ident.name());
+                source_map.insert_local(&function.ident.name(), ItemKind::Function);
             }
             syntax::GlobalDeclaration::ConstAssert(_const_assert) => (),
         }
