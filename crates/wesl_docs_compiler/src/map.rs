@@ -44,3 +44,17 @@ impl Map<AddressSpace> for syntax::AddressSpace {
         }
     }
 }
+
+impl Map<Literal> for syntax::LiteralExpression {
+    fn map(&self) -> Literal {
+        match *self {
+            syntax::LiteralExpression::Bool(value) => Literal::Bool(value),
+            syntax::LiteralExpression::AbstractInt(value) => Literal::AbstractInt(value),
+            syntax::LiteralExpression::AbstractFloat(value) => Literal::AbstractFloat(value),
+            syntax::LiteralExpression::I32(value) => Literal::I32(value),
+            syntax::LiteralExpression::U32(value) => Literal::U32(value),
+            syntax::LiteralExpression::F32(value) => Literal::F32(value),
+            syntax::LiteralExpression::F16(value) => Literal::F16(value),
+        }
+    }
+}

@@ -1,0 +1,10 @@
+{% match expr %}
+{%- when Expression::Literal with (lit) -%}
+{{ lit }}
+{%- when Expression::Parenthesized with (inner) -%}
+({{ Self::render_rec(self, inner.deref())|safe }})
+{%- when Expression::TypeOrIdentifier with (type_expr) -%}
+{{ self::render_type(type_expr, module_path_level)|safe }}
+{%- when Expression::Unknown -%}
+...
+{%- endmatch -%}

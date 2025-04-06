@@ -9,7 +9,9 @@
 <div><span class="conditional">{{ conditional }}</span></div>
 {% endif %}
 <pre class="code-block">
-<code>const {{ constant.name }}: {{ self::render_type(constant.ty, module_path.level)|safe }} = {{ constant.init }};</code>
+<code>const {{ constant.name }}
+{%- if let Some(ty) = constant.ty %}: {{ self::render_type(ty, module_path.level)|safe }} = {% else %} = {% endif %}
+{{- self::render_expression(constant.init, module_path.level)|safe }};</code>
 </pre>
 {% endfor %}
 {% endblock %}

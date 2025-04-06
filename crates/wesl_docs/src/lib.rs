@@ -123,7 +123,7 @@ pub trait ItemInstance {
 #[derive(Debug, Clone)]
 pub struct Constant {
     pub name: Ident,
-    pub ty: Type,
+    pub ty: Option<TypeExpression>,
     pub init: Expression,
     pub conditional: Option<Conditional>,
     pub span: Option<Span>,
@@ -140,7 +140,7 @@ pub struct GlobalVariable {
     pub name: Ident,
     pub space: AddressSpace,
     pub binding: Option<ResourceBinding>,
-    pub ty: Type,
+    pub ty: Option<TypeExpression>,
     pub init: Option<Expression>,
     pub conditional: Option<Conditional>,
     pub span: Option<Span>,
@@ -192,45 +192,32 @@ pub struct ResourceBinding {
 #[derive(Debug, Clone)]
 pub enum Expression {
     Literal(Literal),
+    Parenthesized(Box<Expression>),
+    TypeOrIdentifier(TypeExpression),
     Unknown,
-}
-
-impl fmt::Display for Expression {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Expression::Literal(literal) => write!(f, "{}", literal),
-            Expression::Unknown => write!(f, "..."),
-        }
-    }
 }
 
 #[derive(Debug, Clone)]
 pub enum Literal {
-    F64(f64),
-    F32(f32),
-    U32(u32),
-    I32(i32),
-    U64(u64),
-    I64(i64),
     Bool(bool),
-
     AbstractInt(i64),
     AbstractFloat(f64),
+    I32(i32),
+    U32(u32),
+    F32(f32),
+    F16(f32),
 }
 
 impl fmt::Display for Literal {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Literal::F64(value) => write!(f, "{}", value),
-            Literal::F32(value) => write!(f, "{}", value),
-            Literal::U32(value) => write!(f, "{}", value),
-            Literal::I32(value) => write!(f, "{}", value),
-            Literal::U64(value) => write!(f, "{}", value),
-            Literal::I64(value) => write!(f, "{}", value),
             Literal::Bool(value) => write!(f, "{}", value),
-
             Literal::AbstractInt(value) => write!(f, "{}", value),
             Literal::AbstractFloat(value) => write!(f, "{}", value),
+            Literal::I32(value) => write!(f, "{}", value),
+            Literal::U32(value) => write!(f, "{}", value),
+            Literal::F32(value) => write!(f, "{}", value),
+            Literal::F16(value) => write!(f, "{}", value),
         }
     }
 }
@@ -252,28 +239,22 @@ impl ItemInstance for Struct {
 #[derive(Debug, Clone)]
 pub struct StructMember {
     pub name: Ident,
-    pub ty: Type,
+    pub ty: TypeExpression,
     pub binding: Option<Binding>,
     pub conditional: Option<Conditional>,
 }
 
 #[derive(Debug, Clone)]
-pub enum Type {
-    Named {
-        name: String,
+pub enum TypeExpression {
+    TypeIdentifier {
+        name: Ident,
+        template_args: Option<Vec<Expression>>,
+    },
+    Imported {
+        name: Ident,
         def_path: Option<DefinitionPath>,
     },
-    Pointer(Box<Type>),
-    PointerWithAddressSpace {
-        base: Box<Type>,
-        address_space: &'static str,
-        maybe_access: Option<&'static str>,
-    },
-    ArrayConstant(Box<Type>, Option<u32>),
-    ArrayDynamic(Box<Type>),
-    BindingArrayConstant(Box<Type>, Option<u32>),
-    BindingArrayDynamic(Box<Type>),
-    Unnamed,
+    Unknown,
 }
 
 #[derive(Debug, Clone)]
@@ -286,7 +267,7 @@ pub enum DefinitionPath {
 pub struct Function {
     pub name: Ident,
     pub parameters: Vec<FunctionParameter>,
-    pub ret: Option<Type>,
+    pub ret: Option<TypeExpression>,
     pub conditional: Option<Conditional>,
     pub span: Option<Span>,
 }
@@ -300,7 +281,7 @@ impl ItemInstance for Function {
 #[derive(Debug, Clone)]
 pub struct FunctionParameter {
     pub name: Ident,
-    pub ty: Type,
+    pub ty: TypeExpression,
     pub binding: Option<Binding>,
     pub conditional: Option<Conditional>,
 }
@@ -308,7 +289,7 @@ pub struct FunctionParameter {
 #[derive(Debug, Clone)]
 pub struct TypeAlias {
     pub name: Ident,
-    pub ty: Type,
+    pub ty: TypeExpression,
     pub conditional: Option<Conditional>,
     pub span: Option<Span>,
 }

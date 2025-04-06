@@ -1,4 +1,4 @@
-use crate::source_map::SourceMap;
+use crate::{build_expression, source_map::SourceMap};
 use std::collections::HashMap;
 use wesl::syntax;
 use wesl_docs::*;
@@ -8,12 +8,12 @@ pub fn build_type(
     source_map: &SourceMap,
     module_path: &[String],
     dependencies: &HashMap<String, Version>,
-) -> Type {
+) -> TypeExpression {
     let name = ty.ident.name().clone();
 
     match source_map.get_decl(&name) {
-        Some((path, name)) => Type::Named {
-            name: name.to_string(),
+        Some((path, name)) => TypeExpression::Imported {
+            name: Ident(name.to_string()),
             def_path: match path.origin {
                 syntax::PathOrigin::Absolute => {
                     Some(DefinitionPath::Absolute(path.components.clone()))
@@ -55,40 +55,20 @@ pub fn build_type(
                 },
             },
         },
-        None => Type::Named {
-            name: type_to_string(ty),
-            def_path: None,
+        None => TypeExpression::TypeIdentifier {
+            name: Ident(name),
+            template_args: ty.template_args.as_ref().map(|args| {
+                args.iter()
+                    .map(|arg| {
+                        build_expression(
+                            arg.expression.node(),
+                            source_map,
+                            module_path,
+                            dependencies,
+                        )
+                    })
+                    .collect()
+            }),
         },
-    }
-}
-
-fn type_to_string(ty: &syntax::TypeExpression) -> String {
-    let mut name = ty.ident.name().clone();
-
-    if let Some(template_args) = &ty.template_args {
-        name.push('<');
-        for (idx, arg) in template_args.iter().enumerate() {
-            if idx > 0 {
-                name.push_str(", ");
-            }
-            name.push_str(&expr_to_string(arg.expression.node()));
-        }
-        name.push('>');
-    }
-
-    name
-}
-
-#[expect(unused_variables)] // TODO: Remove this when implemented
-fn expr_to_string(expr: &syntax::Expression) -> String {
-    match expr {
-        syntax::Expression::Literal(literal_expression) => "?".to_string(),
-        syntax::Expression::Parenthesized(parenthesized_expression) => "?".to_string(),
-        syntax::Expression::NamedComponent(named_component_expression) => "?".to_string(),
-        syntax::Expression::Indexing(indexing_expression) => "?".to_string(),
-        syntax::Expression::Unary(unary_expression) => "?".to_string(),
-        syntax::Expression::Binary(binary_expression) => "?".to_string(),
-        syntax::Expression::FunctionCall(function_call) => "?".to_string(),
-        syntax::Expression::TypeOrIdentifier(type_expression) => type_to_string(type_expression),
     }
 }

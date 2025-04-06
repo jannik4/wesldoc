@@ -12,8 +12,8 @@ use std::{
     path::Path,
 };
 use wesl_docs::{
-    Binding, BuiltIn, Constant, DefinitionPath, Function, GlobalVariable, Interpolation, Module,
-    Sampling, Span, Struct, Type, TypeAlias, Version, WeslDocs,
+    Binding, BuiltIn, Constant, DefinitionPath, Expression, Function, GlobalVariable,
+    Interpolation, Module, Sampling, Span, Struct, TypeAlias, TypeExpression, Version, WeslDocs,
 };
 
 pub type Error = Box<dyn std::error::Error>;
@@ -424,23 +424,38 @@ struct TypeAliasTemplate<'a> {
 #[derive(Template)]
 #[template(path = "render_type.html")]
 struct RenderTypeTemplate<'a> {
-    ty: &'a Type,
+    ty: &'a TypeExpression,
     module_path_level: usize,
 }
 
-impl RenderTypeTemplate<'_> {
-    fn render_rec(&self, ty: &Type) -> String {
-        RenderTypeTemplate {
-            ty,
+fn render_type(ty: &TypeExpression, module_path_level: &usize) -> String {
+    RenderTypeTemplate {
+        ty,
+        module_path_level: *module_path_level,
+    }
+    .to_string()
+}
+
+#[derive(Template)]
+#[template(path = "render_expression.html")]
+struct RenderExpressionTemplate<'a> {
+    expr: &'a Expression,
+    module_path_level: usize,
+}
+
+impl RenderExpressionTemplate<'_> {
+    fn render_rec(&self, expr: &Expression) -> String {
+        RenderExpressionTemplate {
+            expr,
             module_path_level: self.module_path_level,
         }
         .to_string()
     }
 }
 
-fn render_type(ty: &Type, module_path_level: &usize) -> String {
-    RenderTypeTemplate {
-        ty,
+fn render_expression(expr: &Expression, module_path_level: &usize) -> String {
+    RenderExpressionTemplate {
+        expr,
         module_path_level: *module_path_level,
     }
     .to_string()
@@ -511,13 +526,6 @@ fn module_path_class(kind: &ItemKind, last: &bool) -> &'static str {
         ItemKind::Struct => "struct",
         ItemKind::Function => "fn",
         ItemKind::TypeAlias => "type",
-    }
-}
-
-fn display_array_size(size: &Option<u32>) -> String {
-    match size {
-        Some(size) => size.to_string(),
-        None => "?".to_string(),
     }
 }
 

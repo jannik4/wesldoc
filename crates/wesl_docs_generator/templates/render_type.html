@@ -1,25 +1,22 @@
 {% match ty %}
-{%- when Type::Named with { name, def_path } %}
+{%- when TypeExpression::Imported with { name, def_path } %}
 {%- if let Some(def_path) = def_path -%}
-<a class="struct"
-    href="{{ self::def_path_href(def_path, module_path_level) }}struct.{{ name }}.html">
+<a class="struct" href="{{ self::def_path_href(def_path, module_path_level) }}struct.{{ name }}.html">
     {{- name -}}
 </a>
 {%- else %}
 {{- name }}
 {%- endif %}
-{%- when Type::Pointer with (inner) -%}
-ptr&lt;{{ Self::render_rec(self, inner.deref())|safe }}&gt;
-{%- when Type::PointerWithAddressSpace with { base, address_space, maybe_access } -%}
-ptr&lt;{{ address_space }}, {{ Self::render_rec(self, base.deref())|safe }}{% if let Some(maybe_access) = maybe_access %}, {{ maybe_access }}{% endif %}&gt;
-{%- when Type::ArrayConstant with (inner, size) -%}
-array&lt;{{ Self::render_rec(self, inner.deref())|safe }}, {{ self::display_array_size(size) }}&gt;
-{%- when Type::ArrayDynamic with (inner) -%}
-array&lt;{{ Self::render_rec(self, inner.deref())|safe }}&gt;
-{%- when Type::BindingArrayConstant with (inner, size) -%}
-binding_array&lt;{{ Self::render_rec(self, inner.deref())|safe }}, {{ self::display_array_size(size) }}&gt;
-{%- when Type::BindingArrayDynamic with (inner) -%}
-binding_array&lt;{{ Self::render_rec(self, inner.deref())|safe }}&gt;
-{%- when Type::Unnamed -%}
-unknown
+{%- when TypeExpression::TypeIdentifier with { name, template_args } %}
+{{- name }}
+{%- if let Some(template_args) = template_args -%}
+&lt;
+{%- for arg in template_args %}
+{%- if !loop.first %}, {% endif %}
+{{- self::render_expression(arg, module_path_level)|safe }}
+{%- endfor -%}
+&gt;
+{%- endif %}
+{%- when TypeExpression::Unknown -%}
+...
 {%- endmatch -%}

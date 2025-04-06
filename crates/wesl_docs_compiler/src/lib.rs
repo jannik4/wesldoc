@@ -1,4 +1,5 @@
 mod build_conditional;
+mod build_expression;
 mod build_type;
 mod calculate_span;
 mod collect_features;
@@ -8,6 +9,7 @@ mod source_map;
 
 use self::{
     build_conditional::{ConditionalScope, build_conditional},
+    build_expression::build_expression,
     build_type::build_type,
     calculate_span::calculate_span,
     collect_features::collect_features,
@@ -117,14 +119,17 @@ fn compile_module(
                         .instances
                         .push(Constant {
                             name,
-                            ty: match &declaration.ty {
-                                Some(ty) => build_type(ty, &source_map, &path, dependencies),
-                                None => Type::Unnamed,
-                            },
-                            init: match &declaration.initializer {
-                                Some(_expr) => Expression::Unknown, // TODO: ...
-                                None => Expression::Unknown,
-                            },
+                            ty: declaration
+                                .ty
+                                .as_ref()
+                                .map(|ty| build_type(ty, &source_map, &path, dependencies)),
+                            init: declaration
+                                .initializer
+                                .as_ref()
+                                .map(|expr| {
+                                    build_expression(expr, &source_map, &path, dependencies)
+                                })
+                                .unwrap_or(Expression::Unknown),
                             conditional: build_conditional(
                                 &mut conditional_scope,
                                 &declaration.attributes,
@@ -148,13 +153,12 @@ fn compile_module(
                             name,
                             space: map(&address_space),
                             binding: None, // TODO: ...,
-                            ty: match &declaration.ty {
-                                Some(ty) => build_type(ty, &source_map, &path, dependencies),
-                                None => Type::Unnamed,
-                            },
-                            init: declaration.initializer.as_ref().map(|_expr| {
-                                // TODO: ...
-                                Expression::Unknown
+                            ty: declaration
+                                .ty
+                                .as_ref()
+                                .map(|ty| build_type(ty, &source_map, &path, dependencies)),
+                            init: declaration.initializer.as_ref().map(|expr| {
+                                build_expression(expr, &source_map, &path, dependencies)
                             }),
                             conditional: build_conditional(
                                 &mut conditional_scope,
