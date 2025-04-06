@@ -7,7 +7,6 @@ pub use semver::Version;
 pub struct WeslDocs {
     pub version: Version,
     pub root: Module,
-    pub compiled_with: IndexMap<String, ShaderDefValue>,
 }
 
 #[derive(Debug, Clone)]
@@ -35,23 +34,6 @@ impl Module {
             functions: IndexMap::new(),
             type_aliases: IndexMap::new(),
             translate_time_features: IndexSet::new(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum ShaderDefValue {
-    Bool(bool),
-    Int(i32),
-    UInt(u32),
-}
-
-impl fmt::Display for ShaderDefValue {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ShaderDefValue::Bool(value) => write!(f, "{}", value),
-            ShaderDefValue::Int(value) => write!(f, "{}i", value),
-            ShaderDefValue::UInt(value) => write!(f, "{}u", value),
         }
     }
 }

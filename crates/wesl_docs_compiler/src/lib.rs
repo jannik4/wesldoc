@@ -37,7 +37,6 @@ pub fn compile(package: &WeslPackage) -> Result<WeslDocs> {
     let mut docs = WeslDocs {
         version: package.version.clone(),
         root: compile_module(&package.root, &[], &package.dependencies)?,
-        compiled_with: Default::default(),
     };
 
     post_process::post_process(&mut docs);

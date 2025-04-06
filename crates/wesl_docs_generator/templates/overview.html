@@ -93,14 +93,4 @@
 </ul>
 {% endif %}
 
-{% if module_path.level == 0 && !base.doc.compiled_with.is_empty() %}
-<br><br>
-<h5>Compiled With:</h5>
-<ul style="font-size: 0.8rem;">
-    {% for (key, value) in base.doc.compiled_with %}
-    <li>{{ key }}: {{ value }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-
 {% endblock %}

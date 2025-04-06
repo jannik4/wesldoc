@@ -1,9 +1,6 @@
 use wesl_docs::*;
 
 pub fn post_process(docs: &mut WeslDocs) {
-    // Sort compiled_with shader defs
-    docs.compiled_with.sort_keys();
-
     // Post process modules
     post_process_module(&mut docs.root);
 }
