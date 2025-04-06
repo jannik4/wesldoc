@@ -1,5 +1,5 @@
 use serde::Serialize;
-use wesl_docs::{Ident, Module, WeslDocs};
+use wesl_docs::{Module, WeslDocs};
 
 pub fn all_items(doc: &WeslDocs) -> Vec<Item> {
     let mut items = Vec::new();
@@ -25,37 +25,27 @@ fn all_items_module(module: &Module, parent: &[String], items: &mut Vec<Item>) {
     }
 
     for name in module.constants.keys() {
-        if let Ident::Named(name) = name {
-            items.push(Item::new(path.clone(), name.clone(), ItemKind::Constant));
-        }
+        items.push(Item::new(path.clone(), name.0.clone(), ItemKind::Constant));
     }
 
     for name in module.global_variables.keys() {
-        if let Ident::Named(name) = name {
-            items.push(Item::new(
-                path.clone(),
-                name.clone(),
-                ItemKind::GlobalVariable,
-            ));
-        }
+        items.push(Item::new(
+            path.clone(),
+            name.0.clone(),
+            ItemKind::GlobalVariable,
+        ));
     }
 
     for name in module.structs.keys() {
-        if let Ident::Named(name) = name {
-            items.push(Item::new(path.clone(), name.clone(), ItemKind::Struct));
-        }
+        items.push(Item::new(path.clone(), name.0.clone(), ItemKind::Struct));
     }
 
     for name in module.functions.keys() {
-        if let Ident::Named(name) = name {
-            items.push(Item::new(path.clone(), name.clone(), ItemKind::Function));
-        }
+        items.push(Item::new(path.clone(), name.0.clone(), ItemKind::Function));
     }
 
     for name in module.type_aliases.keys() {
-        if let Ident::Named(name) = name {
-            items.push(Item::new(path.clone(), name.clone(), ItemKind::TypeAlias));
-        }
+        items.push(Item::new(path.clone(), name.0.clone(), ItemKind::TypeAlias));
     }
 }
 

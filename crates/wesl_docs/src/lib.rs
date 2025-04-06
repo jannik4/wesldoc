@@ -338,29 +338,11 @@ impl ItemInstance for TypeAlias {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Ident {
-    Named(String),
-    Unnamed,
-}
-
-impl<T> From<Option<T>> for Ident
-where
-    T: Into<String>,
-{
-    fn from(name: Option<T>) -> Self {
-        match name {
-            Some(name) => Ident::Named(name.into()),
-            None => Ident::Unnamed,
-        }
-    }
-}
+pub struct Ident(pub String);
 
 impl fmt::Display for Ident {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Ident::Named(name) => write!(f, "{}", name),
-            Ident::Unnamed => write!(f, "unknown"),
-        }
+        write!(f, "{}", self.0)
     }
 }
 

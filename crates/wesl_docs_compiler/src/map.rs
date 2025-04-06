@@ -11,7 +11,7 @@ pub fn map<T: Map<U>, U>(value: &T) -> U {
 
 impl Map<Ident> for syntax::Ident {
     fn map(&self) -> Ident {
-        Ident::Named(self.name().clone())
+        Ident(self.name().clone())
     }
 }
 
