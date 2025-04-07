@@ -19,6 +19,7 @@
 
     <link rel="stylesheet" href="../../../-/static/css/themes.css">
     <link rel="stylesheet" href="../../../-/static/css/styles.css">
+    <link rel="stylesheet" href="../../../-/static/css/icons.css">
     <script src="../../../-/static/js/theme.js"></script>
 
     
@@ -26,9 +27,7 @@
 
 <body>
     <div class="nav">
-        <span style="margin-right: 12px;">
-            <a href="../../../index.html">&#8962;</a>
-        </span>
+        <a class="icon icon-home" style="margin-right: 12px;" href="../../../index.html"></a>
         <span style="margin-right: 12px;">pbr</span>
         <select class="select" id="selectVersion" onchange="changeVersion()" autocomplete="off">
             <option
@@ -36,10 +35,12 @@
                 latest
             </option>
         </select>
-        <button class="toggle-theme is-light-theme" onclick="toggleTheme()"
-            aria-label="Switch to dark mode">&#9790;</button>
-        <button class="toggle-theme is-dark-theme" onclick="toggleTheme()"
-            aria-label="Switch to light mode">&#127779;</button>
+        <button class="toggle-theme is-light-theme icon icon-moon" onclick="toggleTheme()"
+            aria-label="Switch to dark mode">
+        </button>
+        <button class="toggle-theme is-dark-theme icon icon-sun" onclick="toggleTheme()"
+            aria-label="Switch to light mode">
+        </button>
     </div>
     <div class="content">
         <input type="text" id="search" placeholder="Search" oninput="searchDebounced()" autocomplete="off">

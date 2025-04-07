@@ -1,0 +1,20 @@
+.icon {
+  width: 14px;
+  height: 14px;
+  background-color: var(--color);
+}
+
+.icon-home {
+  -webkit-mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25"><path d="M23 9.99V22a2.006 2.006 0 0 1-2 2h-6v-8h-5v8H4a2.006 2.006 0 0 1-2-2V9.99a1.999 1.999 0 0 1 .79-1.59L12.5 1l9.71 7.4A1.999 1.999 0 0 1 23 9.99z" style="fill:%23ffffff"/></svg>');
+  mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25"><path d="M23 9.99V22a2.006 2.006 0 0 1-2 2h-6v-8h-5v8H4a2.006 2.006 0 0 1-2-2V9.99a1.999 1.999 0 0 1 .79-1.59L12.5 1l9.71 7.4A1.999 1.999 0 0 1 23 9.99z" style="fill:%23ffffff"/></svg>');
+}
+
+.icon-sun {
+  -webkit-mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25"><circle cx="12.5" cy="12.5" r="7.5" style="fill:%23ffffff"/><path style="fill:%23ffffff" d="M12 1h1v3h-1z"/><path transform="rotate(-45 5.429 5.429)" style="fill:%23ffffff" d="M4.929 3.929h1v3h-1z"/><path style="fill:%23ffffff" d="M1 12h3v1H1z"/><path transform="rotate(-45 5.429 19.571)" style="fill:%23ffffff" d="M3.929 19.071h3v1h-3z"/><path style="fill:%23ffffff" d="M12 21h1v3h-1z"/><path transform="rotate(-45 19.571 19.571)" style="fill:%23ffffff" d="M19.071 18.071h1v3h-1z"/><path style="fill:%23ffffff" d="M21 12h3v1h-3z"/><path transform="rotate(-45 19.571 5.429)" style="fill:%23ffffff" d="M18.071 4.929h3v1h-3z"/></svg>');
+  mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25"><circle cx="12.5" cy="12.5" r="7.5" style="fill:%23ffffff"/><path style="fill:%23ffffff" d="M12 1h1v3h-1z"/><path transform="rotate(-45 5.429 5.429)" style="fill:%23ffffff" d="M4.929 3.929h1v3h-1z"/><path style="fill:%23ffffff" d="M1 12h3v1H1z"/><path transform="rotate(-45 5.429 19.571)" style="fill:%23ffffff" d="M3.929 19.071h3v1h-3z"/><path style="fill:%23ffffff" d="M12 21h1v3h-1z"/><path transform="rotate(-45 19.571 19.571)" style="fill:%23ffffff" d="M19.071 18.071h1v3h-1z"/><path style="fill:%23ffffff" d="M21 12h3v1h-3z"/><path transform="rotate(-45 19.571 5.429)" style="fill:%23ffffff" d="M18.071 4.929h3v1h-3z"/></svg>');
+}
+
+.icon-moon {
+  -webkit-mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path style="fill:%23ffffff" d="M11.993,3a9.326,9.326,0,0,0-1.138,4.477,8.8,8.8,0,0,0,8.569,9.015c.2,0,.385-.017.576-.03A8.5,8.5,0,0,1,12.569,21,8.8,8.8,0,0,1,4,11.985,8.83,8.83,0,0,1,11.993,3Z"/></svg>');
+  mask-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path style="fill:%23ffffff" d="M11.993,3a9.326,9.326,0,0,0-1.138,4.477,8.8,8.8,0,0,0,8.569,9.015c.2,0,.385-.017.576-.03A8.5,8.5,0,0,1,12.569,21,8.8,8.8,0,0,1,4,11.985,8.83,8.83,0,0,1,11.993,3Z"/></svg>');
+}
