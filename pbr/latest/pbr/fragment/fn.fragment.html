@@ -13,7 +13,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
         
-        Fog - pbr
+        fragment - pbr
         
     </title>
 
@@ -48,28 +48,18 @@
         <div id="innerContent">
             
             <h2>
-                <a class="path" href="../index.html">pbr</a><span>::</span><wbr><a class="path" href="index.html">fog</a><span>::</span><wbr><a class="struct" href="#">Fog</a>
+                <a class="path" href="../index.html">pbr</a><span>::</span><wbr><a class="path" href="index.html">fragment</a><span>::</span><wbr><a class="fn" href="#">fragment</a>
             </h2>
             
 
             
 
 
-<a class="module" href="../../src/pbr/fog.html#1-3">Source</a>
+<a class="module" href="../../src/pbr/fragment.html#5-7">Source</a>
 
 
-<pre class="code-block">
-<code>struct Fog {
-    base_color: vec4&lt;f32&gt;,
-    <span class="conditional-code">emissive</span>
-    emissive: vec4&lt;f32&gt;,
-    <span class="conditional-code">fog_flags_unsigned</span>
-    flags: u32,
-    <span class="conditional-code">fog_flags_signed &amp;&amp; !fog_flags_unsigned</span>
-    flags: i32,
-    <span class="conditional-code">!fog_flags_unsigned &amp;&amp; !fog_flags_signed</span>
-    flags: bool
-}</code>
+<pre class="code-block"><code>@fragment
+fn fragment(input: <a class="struct" href="../fragment/struct.FragmentInput.html">FragmentInput</a>) -> @location(0) vec4&lt;f32&gt;</code>
 </pre>
 
 

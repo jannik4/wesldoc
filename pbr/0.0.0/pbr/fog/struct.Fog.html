@@ -61,10 +61,14 @@
 <pre class="code-block">
 <code>struct Fog {
     base_color: vec4&lt;f32&gt;,
-    <span class="conditional-code">emissive</span>emissive: vec4&lt;f32&gt;,
-    <span class="conditional-code">fog_flags_unsigned</span>flags: u32,
-    <span class="conditional-code">fog_flags_signed &amp;&amp; !fog_flags_unsigned</span>flags: i32,
-    <span class="conditional-code">!fog_flags_unsigned &amp;&amp; !fog_flags_signed</span>flags: bool
+    <span class="conditional-code">emissive</span>
+    emissive: vec4&lt;f32&gt;,
+    <span class="conditional-code">fog_flags_unsigned</span>
+    flags: u32,
+    <span class="conditional-code">fog_flags_signed &amp;&amp; !fog_flags_unsigned</span>
+    flags: i32,
+    <span class="conditional-code">!fog_flags_unsigned &amp;&amp; !fog_flags_signed</span>
+    flags: bool
 }</code>
 </pre>
 
