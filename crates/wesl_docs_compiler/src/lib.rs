@@ -1,3 +1,4 @@
+mod build_attributes;
 mod build_conditional;
 mod build_expression;
 mod build_type;
@@ -8,6 +9,7 @@ mod post_process;
 mod source_map;
 
 use self::{
+    build_attributes::build_attributes,
     build_conditional::{ConditionalScope, build_conditional},
     build_expression::build_expression,
     build_type::build_type,
@@ -139,6 +141,12 @@ fn compile_module(
                                     build_expression(expr, &source_map, &path, dependencies)
                                 })
                                 .unwrap_or(Expression::Unknown),
+                            attributes: build_attributes(
+                                &declaration.attributes,
+                                &source_map,
+                                &path,
+                                dependencies,
+                            ),
                             conditional: build_conditional(
                                 &mut conditional_scope,
                                 &declaration.attributes,
@@ -161,7 +169,6 @@ fn compile_module(
                         .push(GlobalVariable {
                             name,
                             space: map(&address_space),
-                            binding: None, // TODO: ...,
                             ty: declaration
                                 .ty
                                 .as_ref()
@@ -169,6 +176,12 @@ fn compile_module(
                             init: declaration.initializer.as_ref().map(|expr| {
                                 build_expression(expr, &source_map, &path, dependencies)
                             }),
+                            attributes: build_attributes(
+                                &declaration.attributes,
+                                &source_map,
+                                &path,
+                                dependencies,
+                            ),
                             conditional: build_conditional(
                                 &mut conditional_scope,
                                 &declaration.attributes,
@@ -187,6 +200,12 @@ fn compile_module(
                     .push(TypeAlias {
                         name,
                         ty: build_type(&type_alias.ty, &source_map, &path, dependencies),
+                        attributes: build_attributes(
+                            &type_alias.attributes,
+                            &source_map,
+                            &path,
+                            dependencies,
+                        ),
                         conditional: build_conditional(
                             &mut conditional_scope,
                             &type_alias.attributes,
@@ -208,25 +227,28 @@ fn compile_module(
                             struct_
                                 .members
                                 .iter()
-                                .map(|member| {
-                                    StructMember {
-                                        name: map(&member.ident),
-                                        ty: build_type(
-                                            &member.ty,
-                                            &source_map,
-                                            &path,
-                                            dependencies,
-                                        ),
-                                        // TODO: ...
-                                        binding: None,
-                                        conditional: build_conditional(
-                                            &mut conditional_scope,
-                                            &member.attributes,
-                                        ),
-                                    }
+                                .map(|member| StructMember {
+                                    name: map(&member.ident),
+                                    ty: build_type(&member.ty, &source_map, &path, dependencies),
+                                    attributes: build_attributes(
+                                        &member.attributes,
+                                        &source_map,
+                                        &path,
+                                        dependencies,
+                                    ),
+                                    conditional: build_conditional(
+                                        &mut conditional_scope,
+                                        &member.attributes,
+                                    ),
                                 })
                                 .collect()
                         },
+                        attributes: build_attributes(
+                            &struct_.attributes,
+                            &source_map,
+                            &path,
+                            dependencies,
+                        ),
                         conditional: build_conditional(&mut conditional_scope, &struct_.attributes),
                         span,
                     });
@@ -245,17 +267,19 @@ fn compile_module(
                             function
                                 .parameters
                                 .iter()
-                                .map(|param| {
-                                    FunctionParameter {
-                                        name: map(&param.ident),
-                                        ty: build_type(&param.ty, &source_map, &path, dependencies),
-                                        // TODO: ...
-                                        binding: None,
-                                        conditional: build_conditional(
-                                            &mut conditional_scope,
-                                            &param.attributes,
-                                        ),
-                                    }
+                                .map(|param| FunctionParameter {
+                                    name: map(&param.ident),
+                                    ty: build_type(&param.ty, &source_map, &path, dependencies),
+                                    attributes: build_attributes(
+                                        &param.attributes,
+                                        &source_map,
+                                        &path,
+                                        dependencies,
+                                    ),
+                                    conditional: build_conditional(
+                                        &mut conditional_scope,
+                                        &param.attributes,
+                                    ),
                                 })
                                 .collect()
                         },
@@ -263,6 +287,18 @@ fn compile_module(
                             .return_type
                             .as_ref()
                             .map(|ret| build_type(ret, &source_map, &path, dependencies)),
+                        attributes: build_attributes(
+                            &function.attributes,
+                            &source_map,
+                            &path,
+                            dependencies,
+                        ),
+                        return_attributes: build_attributes(
+                            &function.return_attributes,
+                            &source_map,
+                            &path,
+                            dependencies,
+                        ),
                         conditional: build_conditional(
                             &mut conditional_scope,
                             &function.attributes,

@@ -9,12 +9,15 @@
 <div><span class="conditional">{{ conditional }}</span></div>
 {% endif %}
 <pre class="code-block">
-<code>struct {{ struct_.name }} {
+<code>
+    {{- self::render_attributes(struct_.attributes, module_path.level, Some(0))|safe -}}
+    struct {{ struct_.name }} {
     {%- for member in struct_.members %}
     {% if let Some(conditional) = member.conditional -%}
         <span class="conditional-code">{{ conditional }}</span>
-    {%- endif %}
-    {{- self::display_binding(member.binding.as_ref()) }}{{ member.name }}: {{ self::render_type(member.ty, module_path.level)|safe }}{% if !loop.last %},{% endif %}
+    {% endif %}
+    {{- self::render_attributes(member.attributes, module_path.level, Some(4))|safe }}
+    {{- member.name }}: {{ self::render_type(member.ty, module_path.level)|safe }}{% if !loop.last %},{% endif %}
     {%- endfor %}
 }</code>
 </pre>

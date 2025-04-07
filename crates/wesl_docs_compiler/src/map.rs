@@ -58,3 +58,55 @@ impl Map<Literal> for syntax::LiteralExpression {
         }
     }
 }
+
+impl Map<BuiltinValue> for syntax::BuiltinValue {
+    fn map(&self) -> BuiltinValue {
+        match self {
+            syntax::BuiltinValue::VertexIndex => BuiltinValue::VertexIndex,
+            syntax::BuiltinValue::InstanceIndex => BuiltinValue::InstanceIndex,
+            syntax::BuiltinValue::Position => BuiltinValue::Position,
+            syntax::BuiltinValue::FrontFacing => BuiltinValue::FrontFacing,
+            syntax::BuiltinValue::FragDepth => BuiltinValue::FragDepth,
+            syntax::BuiltinValue::SampleIndex => BuiltinValue::SampleIndex,
+            syntax::BuiltinValue::SampleMask => BuiltinValue::SampleMask,
+            syntax::BuiltinValue::LocalInvocationId => BuiltinValue::LocalInvocationId,
+            syntax::BuiltinValue::LocalInvocationIndex => BuiltinValue::LocalInvocationIndex,
+            syntax::BuiltinValue::GlobalInvocationId => BuiltinValue::GlobalInvocationId,
+            syntax::BuiltinValue::WorkgroupId => BuiltinValue::WorkgroupId,
+            syntax::BuiltinValue::NumWorkgroups => BuiltinValue::NumWorkgroups,
+        }
+    }
+}
+
+impl Map<DiagnosticSeverity> for syntax::DiagnosticSeverity {
+    fn map(&self) -> DiagnosticSeverity {
+        match self {
+            syntax::DiagnosticSeverity::Error => DiagnosticSeverity::Error,
+            syntax::DiagnosticSeverity::Warning => DiagnosticSeverity::Warning,
+            syntax::DiagnosticSeverity::Info => DiagnosticSeverity::Info,
+            syntax::DiagnosticSeverity::Off => DiagnosticSeverity::Off,
+        }
+    }
+}
+
+impl Map<InterpolationType> for syntax::InterpolationType {
+    fn map(&self) -> InterpolationType {
+        match self {
+            syntax::InterpolationType::Perspective => InterpolationType::Perspective,
+            syntax::InterpolationType::Linear => InterpolationType::Linear,
+            syntax::InterpolationType::Flat => InterpolationType::Flat,
+        }
+    }
+}
+
+impl Map<InterpolationSampling> for syntax::InterpolationSampling {
+    fn map(&self) -> InterpolationSampling {
+        match self {
+            syntax::InterpolationSampling::Center => InterpolationSampling::Center,
+            syntax::InterpolationSampling::Centroid => InterpolationSampling::Centroid,
+            syntax::InterpolationSampling::Sample => InterpolationSampling::Sample,
+            syntax::InterpolationSampling::First => InterpolationSampling::First,
+            syntax::InterpolationSampling::Either => InterpolationSampling::Either,
+        }
+    }
+}

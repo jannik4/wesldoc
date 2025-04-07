@@ -1,0 +1,45 @@
+{% match attr %}
+{%- when Attribute::Align with (expr) -%}
+@align({{ self::render_expression(expr, module_path_level)|safe }})
+{%- when Attribute::Binding with (expr) -%}
+@binding({{ self::render_expression(expr, module_path_level)|safe }})
+{%- when Attribute::BlendSrc with (expr) -%}
+@blend_src({{ self::render_expression(expr, module_path_level)|safe }})
+{%- when Attribute::Builtin with (builtin) -%}
+@builtin({{ self::builtin_str(builtin) }})
+{%- when Attribute::Const -%}
+@const
+{%- when Attribute::Diagnostic with { severity, rule } -%}
+@diagnostic({{ self::severity_str(severity) }}, {{ rule }})
+{%- when Attribute::Group with (expr) -%}
+@group({{ self::render_expression(expr, module_path_level)|safe }})
+{%- when Attribute::Id with (expr) -%}
+@id({{ self::render_expression(expr, module_path_level)|safe }})
+{%- when Attribute::Interpolate with { ty, sampling } -%}
+@interpolate({{ self::interpolation_str(ty) }}
+{%- if let Some(sampling) = sampling %}, {{ self::sampling_str(sampling) }}{% endif %})
+{%- when Attribute::Invariant -%}
+@invariant
+{%- when Attribute::Location with (expr) -%}
+@location({{ self::render_expression(expr, module_path_level)|safe }})
+{%- when Attribute::MustUse -%}
+@must_use
+{%- when Attribute::Size with (expr) -%}
+@size({{ self::render_expression(expr, module_path_level)|safe }})
+{%- when Attribute::WorkgroupSize with { x, y, z } -%}
+@workgroup_size({{ self::render_expression(x, module_path_level)|safe }}
+{%- if let Some(y) = y %}, {{ self::render_expression(y, module_path_level)|safe }}{% endif %}
+{%- if let Some(z) = z %}, {{ self::render_expression(z, module_path_level)|safe }}{% endif %})
+{%- when Attribute::Vertex -%}
+@vertex
+{%- when Attribute::Fragment -%}
+@fragment
+{%- when Attribute::Compute -%}
+@compute
+{%- when Attribute::Custom with { name, arguments } -%}
+@{{ name }}{% if let Some(arguments) = arguments -%}
+({% for arg in arguments %}
+{%- if !loop.first %}, {% endif %}{{ self::render_expression(arg, module_path_level)|safe }}
+{%- endfor %})
+{%- endif %}
+{%- endmatch -%}

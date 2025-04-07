@@ -135,6 +135,7 @@ pub struct Constant {
     pub name: Ident,
     pub ty: Option<TypeExpression>,
     pub init: Expression,
+    pub attributes: Vec<Attribute>,
     pub conditional: Option<Conditional>,
     pub span: Option<Span>,
 }
@@ -149,9 +150,9 @@ impl ItemInstance for Constant {
 pub struct GlobalVariable {
     pub name: Ident,
     pub space: AddressSpace,
-    pub binding: Option<ResourceBinding>,
     pub ty: Option<TypeExpression>,
     pub init: Option<Expression>,
+    pub attributes: Vec<Attribute>,
     pub conditional: Option<Conditional>,
     pub span: Option<Span>,
 }
@@ -193,12 +194,6 @@ impl fmt::Display for AddressSpace {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct ResourceBinding {
-    pub group: u32,
-    pub binding: u32,
-}
-
 #[derive(Debug, Clone)]
 pub enum Expression {
     Literal(Literal),
@@ -236,6 +231,7 @@ impl fmt::Display for Literal {
 pub struct Struct {
     pub name: Ident,
     pub members: Vec<StructMember>,
+    pub attributes: Vec<Attribute>,
     pub conditional: Option<Conditional>,
     pub span: Option<Span>,
 }
@@ -250,7 +246,7 @@ impl ItemInstance for Struct {
 pub struct StructMember {
     pub name: Ident,
     pub ty: TypeExpression,
-    pub binding: Option<Binding>,
+    pub attributes: Vec<Attribute>,
     pub conditional: Option<Conditional>,
 }
 
@@ -279,6 +275,8 @@ pub struct Function {
     pub name: Ident,
     pub parameters: Vec<FunctionParameter>,
     pub ret: Option<TypeExpression>,
+    pub attributes: Vec<Attribute>,
+    pub return_attributes: Vec<Attribute>,
     pub conditional: Option<Conditional>,
     pub span: Option<Span>,
 }
@@ -293,7 +291,7 @@ impl ItemInstance for Function {
 pub struct FunctionParameter {
     pub name: Ident,
     pub ty: TypeExpression,
-    pub binding: Option<Binding>,
+    pub attributes: Vec<Attribute>,
     pub conditional: Option<Conditional>,
 }
 
@@ -301,6 +299,7 @@ pub struct FunctionParameter {
 pub struct TypeAlias {
     pub name: Ident,
     pub ty: TypeExpression,
+    pub attributes: Vec<Attribute>,
     pub conditional: Option<Conditional>,
     pub span: Option<Span>,
 }
@@ -321,55 +320,73 @@ impl fmt::Display for Ident {
 }
 
 #[derive(Debug, Clone)]
-pub enum Binding {
-    BuiltIn(BuiltIn),
-    Location {
-        location: u32,
-        second_blend_source: bool,
-        interpolation: Option<Interpolation>,
-        sampling: Option<Sampling>,
+pub enum Attribute {
+    Align(Expression),
+    Binding(Expression),
+    BlendSrc(Expression),
+    Builtin(BuiltinValue),
+    Const,
+    Diagnostic {
+        severity: DiagnosticSeverity,
+        rule: String,
+    },
+    Group(Expression),
+    Id(Expression),
+    Interpolate {
+        ty: InterpolationType,
+        sampling: Option<InterpolationSampling>,
+    },
+    Invariant,
+    Location(Expression),
+    MustUse,
+    Size(Expression),
+    WorkgroupSize {
+        x: Expression,
+        y: Option<Expression>,
+        z: Option<Expression>,
+    },
+    Vertex,
+    Fragment,
+    Compute,
+    Custom {
+        name: String,
+        arguments: Option<Vec<Expression>>,
     },
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum BuiltIn {
-    Position { invariant: bool },
-    ViewIndex,
-    BaseInstance,
-    BaseVertex,
-    ClipDistance,
-    CullDistance,
-    InstanceIndex,
-    PointSize,
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BuiltinValue {
     VertexIndex,
-    FragDepth,
-    PointCoord,
+    InstanceIndex,
+    Position,
     FrontFacing,
-    PrimitiveIndex,
+    FragDepth,
     SampleIndex,
     SampleMask,
-    GlobalInvocationId,
     LocalInvocationId,
     LocalInvocationIndex,
-    WorkGroupId,
-    WorkGroupSize,
-    NumWorkGroups,
-    NumSubgroups,
-    SubgroupId,
-    SubgroupSize,
-    SubgroupInvocationId,
-    DrawID,
+    GlobalInvocationId,
+    WorkgroupId,
+    NumWorkgroups,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Interpolation {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DiagnosticSeverity {
+    Error,
+    Warning,
+    Info,
+    Off,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum InterpolationType {
     Perspective,
     Linear,
     Flat,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Sampling {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum InterpolationSampling {
     Center,
     Centroid,
     Sample,

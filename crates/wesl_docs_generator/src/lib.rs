@@ -12,9 +12,9 @@ use std::{
     path::Path,
 };
 use wesl_docs::{
-    Binding, BuiltIn, Constant, DefinitionPath, Expression, Function, GlobalVariable, Ident,
-    Interpolation, ItemKind, Module, Sampling, Span, Struct, TypeAlias, TypeExpression, Version,
-    WeslDocs,
+    Attribute, BuiltinValue, Constant, DefinitionPath, DiagnosticSeverity, Expression, Function,
+    GlobalVariable, Ident, InterpolationSampling, InterpolationType, ItemKind, Module, Span,
+    Struct, TypeAlias, TypeExpression, Version, WeslDocs,
 };
 
 pub type Error = Box<dyn std::error::Error>;
@@ -452,8 +452,63 @@ fn render_expression(expr: &Expression, module_path_level: &usize) -> String {
     .to_string()
 }
 
+#[derive(Template)]
+#[template(path = "render_attribute.html")]
+struct RenderAttributeTemplate<'a> {
+    attr: &'a Attribute,
+    module_path_level: usize,
+}
+
+fn render_attributes(
+    attributes: &[Attribute],
+    module_path_level: &usize,
+    new_line_indent: Option<usize>,
+) -> String {
+    if attributes.is_empty() {
+        return "".to_string();
+    }
+
+    let sep = match new_line_indent {
+        Some(indent) => {
+            let mut sep = String::new();
+            sep.push('\n');
+            for _ in 0..indent {
+                sep.push(' ');
+            }
+            sep
+        }
+        None => " ".to_string(),
+    };
+
+    let mut result = String::new();
+    for (idx, attr) in attributes.iter().enumerate() {
+        if idx != 0 {
+            if attributes.len() <= 3 {
+                result.push(' ');
+            } else {
+                result.push_str(&sep);
+            }
+        }
+        result.push_str(
+            &RenderAttributeTemplate {
+                attr,
+                module_path_level: *module_path_level,
+            }
+            .to_string(),
+        );
+    }
+
+    result.push_str(&sep);
+
+    result
+}
+
 fn show_function_inline(function: &Function) -> bool {
-    function.parameters.len() <= 3 && function.parameters.iter().all(|p| p.conditional.is_none())
+    function.parameters.len() <= 3
+        && function
+            .parameters
+            .iter()
+            .all(|p| p.attributes.is_empty() && p.conditional.is_none())
 }
 
 fn def_path_href(
@@ -534,95 +589,46 @@ fn module_path_class(kind: &ItemKind, last: &bool) -> &'static str {
     }
 }
 
-// Copy-pasted and adapted from: naga-0.14.1
-
-fn display_binding(binding: Option<&Binding>) -> String {
-    let Some(binding) = binding else {
-        return "".to_string();
-    };
-
-    match binding {
-        Binding::BuiltIn(builtin) => {
-            let builtin = builtin_str(builtin).unwrap();
-            format!("@builtin({}) ", builtin)
-        }
-        Binding::Location {
-            location,
-            second_blend_source,
-            interpolation,
-            sampling,
-        } => {
-            let mut res = String::new();
-
-            res += &format!("@location({}) ", location);
-            if *second_blend_source {
-                res += "@second_blend_source ";
-            }
-
-            if sampling.is_some() && *sampling != Some(Sampling::Center) {
-                res += &format!(
-                    "@interpolate({}, {}) ",
-                    interpolation_str(interpolation.unwrap_or(Interpolation::Perspective)),
-                    sampling_str(sampling.unwrap_or(Sampling::Center))
-                );
-            } else if interpolation.is_some() && *interpolation != Some(Interpolation::Perspective)
-            {
-                res += &format!(
-                    "@interpolate({}) ",
-                    interpolation_str(interpolation.unwrap_or(Interpolation::Perspective))
-                );
-            }
-
-            res
-        }
+fn builtin_str(builtin: &BuiltinValue) -> &'static str {
+    match builtin {
+        BuiltinValue::VertexIndex => "vertex_index",
+        BuiltinValue::InstanceIndex => "instance_index",
+        BuiltinValue::Position => "position",
+        BuiltinValue::FrontFacing => "front_facing",
+        BuiltinValue::FragDepth => "frag_depth",
+        BuiltinValue::SampleIndex => "sample_index",
+        BuiltinValue::SampleMask => "sample_mask",
+        BuiltinValue::LocalInvocationId => "local_invocation_id",
+        BuiltinValue::LocalInvocationIndex => "local_invocation_index",
+        BuiltinValue::GlobalInvocationId => "global_invocation_id",
+        BuiltinValue::WorkgroupId => "workgroup_id",
+        BuiltinValue::NumWorkgroups => "num_workgroups",
     }
 }
 
-fn builtin_str(built_in: &BuiltIn) -> Result<&'static str> {
-    Ok(match built_in {
-        BuiltIn::Position { .. } => "position",
-        BuiltIn::ViewIndex => "view_index",
-        BuiltIn::InstanceIndex => "instance_index",
-        BuiltIn::VertexIndex => "vertex_index",
-        BuiltIn::FragDepth => "frag_depth",
-        BuiltIn::FrontFacing => "front_facing",
-        BuiltIn::PrimitiveIndex => "primitive_index",
-        BuiltIn::SampleIndex => "sample_index",
-        BuiltIn::SampleMask => "sample_mask",
-        BuiltIn::GlobalInvocationId => "global_invocation_id",
-        BuiltIn::LocalInvocationId => "local_invocation_id",
-        BuiltIn::LocalInvocationIndex => "local_invocation_index",
-        BuiltIn::WorkGroupId => "workgroup_id",
-        BuiltIn::NumWorkGroups => "num_workgroups",
-        BuiltIn::NumSubgroups => "num_subgroups",
-        BuiltIn::SubgroupId => "subgroup_id",
-        BuiltIn::SubgroupSize => "subgroup_size",
-        BuiltIn::SubgroupInvocationId => "subgroup_invocation_id",
-        BuiltIn::BaseInstance
-        | BuiltIn::BaseVertex
-        | BuiltIn::ClipDistance
-        | BuiltIn::CullDistance
-        | BuiltIn::PointSize
-        | BuiltIn::PointCoord
-        | BuiltIn::WorkGroupSize
-        | BuiltIn::DrawID => return Err(format!("unsupported built-in: {:?}", built_in).into()),
-    })
+fn severity_str(diagnostic: &DiagnosticSeverity) -> &'static str {
+    match diagnostic {
+        DiagnosticSeverity::Error => "error",
+        DiagnosticSeverity::Warning => "warning",
+        DiagnosticSeverity::Info => "info",
+        DiagnosticSeverity::Off => "off",
+    }
 }
 
-const fn interpolation_str(interpolation: Interpolation) -> &'static str {
+fn interpolation_str(interpolation: &InterpolationType) -> &'static str {
     match interpolation {
-        Interpolation::Perspective => "perspective",
-        Interpolation::Linear => "linear",
-        Interpolation::Flat => "flat",
+        InterpolationType::Perspective => "perspective",
+        InterpolationType::Linear => "linear",
+        InterpolationType::Flat => "flat",
     }
 }
 
-const fn sampling_str(sampling: Sampling) -> &'static str {
+fn sampling_str(sampling: &InterpolationSampling) -> &'static str {
     match sampling {
-        Sampling::Center => "",
-        Sampling::Centroid => "centroid",
-        Sampling::Sample => "sample",
-        Sampling::First => "first",
-        Sampling::Either => "either",
+        InterpolationSampling::Center => "center",
+        InterpolationSampling::Centroid => "centroid",
+        InterpolationSampling::Sample => "sample",
+        InterpolationSampling::First => "first",
+        InterpolationSampling::Either => "either",
     }
 }

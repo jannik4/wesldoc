@@ -20,17 +20,21 @@
 {%- let ws_post = "\n" %}
 {%- endif -%}
 
-<code>fn {{ function.name }}(
+<code>
+    {{- self::render_attributes(function.attributes, module_path.level, Some(0))|safe -}}
+    fn {{ function.name }}(
     {%- for param in function.parameters %}
     {{- ws_pre }}
     {%- if let Some(conditional) = param.conditional -%}
-        <span class="conditional-code">{{ conditional }}</span>
+        <span class="conditional-code">{{ conditional }}</span>{{ ws_pre }}
     {%- endif %}
-    {{- self::display_binding(param.binding.as_ref()) }}{{ param.name }}: {{ self::render_type(param.ty, module_path.level)|safe }}
+    {{- self::render_attributes(param.attributes, module_path.level, Some(4))|safe }}
+    {{- param.name }}: {{ self::render_type(param.ty, module_path.level)|safe }}
     {%- if !loop.last %}, {% endif %}
     {%- endfor %}
     {{- ws_post -}}
-) {% if let Some(ret) = function.ret %}-> {{ self::render_type(ret, module_path.level)|safe }}{% endif %}</code>
+) {% if let Some(ret) = function.ret %}-> {{ self::render_attributes(function.return_attributes, module_path.level, None)|safe }}
+{{- self::render_type(ret, module_path.level)|safe }}{% endif %}</code>
 </pre>
 {% endfor %}
 {% endblock %}
