@@ -19,6 +19,7 @@
 
     <link rel="stylesheet" href="../../../../-/static/css/themes.css">
     <link rel="stylesheet" href="../../../../-/static/css/styles.css">
+    <script src="../../../../-/static/js/theme.js"></script>
 
     
 </head>
@@ -35,7 +36,10 @@
                 0.0.0
             </option>
         </select>
-        <button id="toggleTheme" onclick="toggleTheme()"></button>
+        <button class="toggle-theme is-light-theme" onclick="toggleTheme()"
+            aria-label="Switch to dark mode">&#9790;</button>
+        <button class="toggle-theme is-dark-theme" onclick="toggleTheme()"
+            aria-label="Switch to light mode">&#127779;</button>
     </div>
     <div class="content">
         <input type="text" id="search" placeholder="Search" oninput="searchDebounced()" autocomplete="off">
@@ -102,7 +106,6 @@
     </script>
     <script src="../../../../-/static/js/selectVersion.js"></script>
     <script src="../../../../-/static/js/search.js"></script>
-    <script src="../../../../-/static/js/theme.js"></script>
     <script src="../../../../-/static/js/lineNumbers.js"></script>
 </body>
 

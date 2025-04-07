@@ -5,9 +5,6 @@ function currentTheme() {
 
 function updatePage(theme) {
     document.querySelector("html").setAttribute("data-theme", theme);
-    const button = document.getElementById("toggleTheme");
-    button.textContent = theme === "dark" ? "🌣" : "☾";
-    button.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
 }
 
 function toggleTheme() {
