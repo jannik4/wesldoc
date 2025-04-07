@@ -69,3 +69,11 @@
   --scrollbar-thumb-background-color: #888;
   --scrollbar-thumb-hover-background-color: #777;
 }
+
+:root[data-theme="dark"] .is-light-theme {
+  display: none;
+}
+
+:root[data-theme="light"] .is-dark-theme {
+  display: none;
+}
