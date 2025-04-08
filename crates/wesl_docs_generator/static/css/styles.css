@@ -217,6 +217,7 @@ a:hover {
 
 .item-list > li > :first-child {
   width: 33%;
+  padding-left: 0 !important;
   padding-right: 0.25rem;
 }
 
