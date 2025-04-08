@@ -1,77 +1,91 @@
 use serde::Serialize;
-use wesl_docs::{Module, WeslDocs};
+use wesl_docs::{Attribute, Ident, IndexMap, Item, ItemInstance, ItemKind, Module, WeslDocs};
 
-pub fn all_items(doc: &WeslDocs) -> Vec<Item> {
+pub fn all_items(doc: &WeslDocs) -> impl Serialize {
     let mut items = Vec::new();
     all_items_module(&doc.root, &[], &mut items);
     items.sort();
     items
 }
 
-fn all_items_module(module: &Module, parent: &[String], items: &mut Vec<Item>) {
+fn all_items_module(
+    module: &Module,
+    parent: &[String],
+    serialized_items: &mut Vec<SerializedItem>,
+) {
     let path = parent
         .iter()
         .cloned()
         .chain([module.name.clone()])
         .collect::<Vec<_>>();
     for inner in &module.modules {
-        all_items_module(inner, &path, items);
+        all_items_module(inner, &path, serialized_items);
 
-        items.push(Item::new(
+        serialized_items.push(SerializedItem::new(
             path.clone(),
             inner.name.clone(),
-            ItemKind::Module,
+            [],
+            SerializedItemKind::Module,
         ));
     }
 
-    for name in module.constants.keys() {
-        items.push(Item::new(path.clone(), name.0.clone(), ItemKind::Constant));
-    }
+    add_items(&module.constants, path.clone(), serialized_items);
+    add_items(&module.global_variables, path.clone(), serialized_items);
+    add_items(&module.structs, path.clone(), serialized_items);
+    add_items(&module.functions, path.clone(), serialized_items);
+    add_items(&module.type_aliases, path.clone(), serialized_items);
+}
 
-    for name in module.global_variables.keys() {
-        items.push(Item::new(
+fn add_items<T>(
+    items: &IndexMap<Ident, Item<T>>,
+    path: Vec<String>,
+    serialized_items: &mut Vec<SerializedItem>,
+) where
+    T: ItemInstance,
+{
+    for (name, item) in items {
+        serialized_items.push(SerializedItem::new(
             path.clone(),
             name.0.clone(),
-            ItemKind::GlobalVariable,
+            item.instances.iter().flat_map(|i| i.all_attributes()),
+            T::ITEM_KIND.into(),
         ));
-    }
-
-    for name in module.structs.keys() {
-        items.push(Item::new(path.clone(), name.0.clone(), ItemKind::Struct));
-    }
-
-    for name in module.functions.keys() {
-        items.push(Item::new(path.clone(), name.0.clone(), ItemKind::Function));
-    }
-
-    for name in module.type_aliases.keys() {
-        items.push(Item::new(path.clone(), name.0.clone(), ItemKind::TypeAlias));
     }
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Item {
+struct SerializedItem {
     path: Vec<String>,
     name: String,
-    kind: ItemKind,
+    attributes: Vec<String>,
+    kind: SerializedItemKind,
     url: String,
 }
 
-impl Item {
-    fn new(path: Vec<String>, name: String, kind: ItemKind) -> Self {
+impl SerializedItem {
+    fn new<'a>(
+        path: Vec<String>,
+        name: String,
+        attributes: impl IntoIterator<Item = &'a Attribute>,
+        kind: SerializedItemKind,
+    ) -> Self {
         let mut url = path.join("/");
         match kind {
-            ItemKind::Module => url.push_str(&format!("/{}/index.html", name)),
-            ItemKind::Constant => url.push_str(&format!("/const.{}.html", name)),
-            ItemKind::GlobalVariable => url.push_str(&format!("/var.{}.html", name)),
-            ItemKind::Struct => url.push_str(&format!("/struct.{}.html", name)),
-            ItemKind::Function => url.push_str(&format!("/fn.{}.html", name)),
-            ItemKind::TypeAlias => url.push_str(&format!("/type.{}.html", name)),
+            SerializedItemKind::Module => url.push_str(&format!("/{}/index.html", name)),
+            SerializedItemKind::Constant => url.push_str(&format!("/const.{}.html", name)),
+            SerializedItemKind::GlobalVariable => url.push_str(&format!("/var.{}.html", name)),
+            SerializedItemKind::Struct => url.push_str(&format!("/struct.{}.html", name)),
+            SerializedItemKind::Function => url.push_str(&format!("/fn.{}.html", name)),
+            SerializedItemKind::TypeAlias => url.push_str(&format!("/type.{}.html", name)),
         }
 
         Self {
             path,
             name,
+            attributes: attributes
+                .into_iter()
+                .map(|attr| format!("@{}", attr.name()))
+                .collect(),
             kind,
             url,
         }
@@ -79,11 +93,24 @@ impl Item {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
-enum ItemKind {
+enum SerializedItemKind {
     Module,
     Constant,
     GlobalVariable,
     Struct,
     Function,
     TypeAlias,
+}
+
+impl From<ItemKind> for SerializedItemKind {
+    fn from(kind: ItemKind) -> Self {
+        match kind {
+            ItemKind::Module => SerializedItemKind::Module,
+            ItemKind::Constant => SerializedItemKind::Constant,
+            ItemKind::GlobalVariable => SerializedItemKind::GlobalVariable,
+            ItemKind::Struct => SerializedItemKind::Struct,
+            ItemKind::Function => SerializedItemKind::Function,
+            ItemKind::TypeAlias => SerializedItemKind::TypeAlias,
+        }
+    }
 }

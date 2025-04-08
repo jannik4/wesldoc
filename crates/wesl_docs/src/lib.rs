@@ -127,7 +127,9 @@ impl<T> Default for Item<T> {
 }
 
 pub trait ItemInstance {
+    const ITEM_KIND: ItemKind;
     fn conditional(&self) -> Option<&Conditional>;
+    fn all_attributes(&self) -> impl Iterator<Item = &Attribute>;
 }
 
 #[derive(Debug, Clone)]
@@ -141,8 +143,12 @@ pub struct Constant {
 }
 
 impl ItemInstance for Constant {
+    const ITEM_KIND: ItemKind = ItemKind::Constant;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
+    }
+    fn all_attributes(&self) -> impl Iterator<Item = &Attribute> {
+        self.attributes.iter()
     }
 }
 
@@ -158,8 +164,12 @@ pub struct GlobalVariable {
 }
 
 impl ItemInstance for GlobalVariable {
+    const ITEM_KIND: ItemKind = ItemKind::GlobalVariable;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
+    }
+    fn all_attributes(&self) -> impl Iterator<Item = &Attribute> {
+        self.attributes.iter()
     }
 }
 
@@ -237,8 +247,14 @@ pub struct Struct {
 }
 
 impl ItemInstance for Struct {
+    const ITEM_KIND: ItemKind = ItemKind::Struct;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
+    }
+    fn all_attributes(&self) -> impl Iterator<Item = &Attribute> {
+        self.attributes
+            .iter()
+            .chain(self.members.iter().flat_map(|m| m.attributes.iter()))
     }
 }
 
@@ -282,8 +298,15 @@ pub struct Function {
 }
 
 impl ItemInstance for Function {
+    const ITEM_KIND: ItemKind = ItemKind::Function;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
+    }
+    fn all_attributes(&self) -> impl Iterator<Item = &Attribute> {
+        self.attributes
+            .iter()
+            .chain(self.parameters.iter().flat_map(|p| p.attributes.iter()))
+            .chain(self.return_attributes.iter())
     }
 }
 
@@ -305,8 +328,12 @@ pub struct TypeAlias {
 }
 
 impl ItemInstance for TypeAlias {
+    const ITEM_KIND: ItemKind = ItemKind::TypeAlias;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
+    }
+    fn all_attributes(&self) -> impl Iterator<Item = &Attribute> {
+        self.attributes.iter()
     }
 }
 
@@ -352,6 +379,31 @@ pub enum Attribute {
         name: String,
         arguments: Option<Vec<Expression>>,
     },
+}
+
+impl Attribute {
+    pub fn name(&self) -> &str {
+        match self {
+            Attribute::Align(_) => "align",
+            Attribute::Binding(_) => "binding",
+            Attribute::BlendSrc(_) => "blend_src",
+            Attribute::Builtin(_) => "builtin",
+            Attribute::Const => "const",
+            Attribute::Diagnostic { .. } => "diagnostic",
+            Attribute::Group(_) => "group",
+            Attribute::Id(_) => "id",
+            Attribute::Interpolate { .. } => "interpolate",
+            Attribute::Invariant => "invariant",
+            Attribute::Location(_) => "location",
+            Attribute::MustUse => "must_use",
+            Attribute::Size(_) => "size",
+            Attribute::WorkgroupSize { .. } => "workgroup_size",
+            Attribute::Vertex => "vertex",
+            Attribute::Fragment => "fragment",
+            Attribute::Compute => "compute",
+            Attribute::Custom { name, .. } => name,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
