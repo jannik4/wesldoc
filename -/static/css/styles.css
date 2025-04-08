@@ -207,21 +207,10 @@ a:hover {
   width: calc(9ch + 8px);
 }
 
-.item-list > li {
-  display: table-row;
-}
-
-.item-list > li > div {
-  display: table-cell;
-}
-
-.item-list > li > :first-child {
-  width: 33%;
-  padding-right: 0.25rem;
-}
-
-.item-list > li > :last-child {
-  padding-left: 0.25rem;
+.item-list-title {
+  margin: 32px 0 16px 0;
+  border-bottom: 1px solid var(--item-list-title-border-color);
+  padding-bottom: 8px;
 }
 
 .item-list {
@@ -233,34 +222,68 @@ a:hover {
   width: 100%;
 }
 
-.item-list-title {
-  margin: 32px 0 16px 0;
-  border-bottom: 1px solid var(--item-list-title-border-color);
-  padding-bottom: 8px;
+.item-list > li {
+  display: table-row;
 }
 
-.item-list-bordered > li > div {
-  border-bottom: 1px solid var(--item-list-bordered-border-color);
+.item-list > li > div {
+  display: table-cell;
+}
+
+.item-list > li > :first-child {
+  width: 33%;
+  padding-left: 0 !important;
+  padding-right: 0.25rem;
+}
+
+.item-list > li > :last-child {
+  padding-left: 0.25rem;
+}
+
+.search-list {
+  list-style-type: none;
+  padding: 0;
+
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.search-list > a {
+  display: table-row;
+}
+
+.search-list > a > div {
+  display: table-cell;
+}
+
+.search-list > a > :first-child {
+  width: 50%;
+  padding-right: 0.25rem;
+}
+
+.search-list > a > :last-child {
+  padding-left: 0.25rem;
+}
+
+.search-list > a > div {
+  border-bottom: 1px solid var(--search-list-border-color);
   padding: 3px 0;
 }
 
-.item-list-bordered > li:last-child > div {
+.search-list > a:last-child > div {
   border-bottom: none;
 }
 
-.item-list-bordered > li:hover {
-  background-color: var(--item-list-bordered-border-color);
+.search-list > a:hover {
+  background-color: var(--search-list-border-color);
 }
 
-.item-list-bordered > li a {
+.search-list > a {
   text-decoration: none !important;
 }
 
-.item-list-bordered > li > :first-child {
-  width: 50%;
-}
-
-.item-list-bordered .comment-inline * {
+.search-list .comment-inline * {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;

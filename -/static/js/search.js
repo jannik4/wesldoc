@@ -60,7 +60,7 @@ function search() {
 
     innerContentElement.innerHTML = "";
     var itemList = document.createElement("ul");
-    itemList.className = "item-list item-list-bordered";
+    itemList.className = "search-list";
     for (var i = 0; i < itemsFiltered.length; i++) {
         itemList.appendChild(createItemElement(itemsFiltered[i]));
     }
@@ -91,37 +91,34 @@ function createItemElement(item) {
         default: break;
     }
 
-    var linkElement = document.createElement("a");
-    linkElement.href = window.DOCS_THIS_PACKAGE.root + item.url;
+    var firstDivElement = document.createElement("div");
 
     for (var i = 0; i < item.path.length; i++) {
         var segment = document.createElement("span");
         segment.className = "path";
         segment.innerText = item.path[i];
-        linkElement.appendChild(segment);
+        firstDivElement.appendChild(segment);
 
         var segment = document.createElement("span");
         segment.className = "path";
         segment.innerText = "::";
-        linkElement.appendChild(segment);
+        firstDivElement.appendChild(segment);
 
-        linkElement.appendChild(document.createElement("wbr"));
+        firstDivElement.appendChild(document.createElement("wbr"));
     }
 
     var itemElement = document.createElement("span");
     itemElement.className = className;
     itemElement.innerText = item.name;
-    linkElement.appendChild(itemElement);
-
-    var firstDivElement = document.createElement("div");
-    firstDivElement.appendChild(linkElement);
+    firstDivElement.appendChild(itemElement);
 
     var secondDivElement = document.createElement("div");
     secondDivElement.innerHTML = item.comment;
 
-    var listElement = document.createElement("li");
-    listElement.appendChild(firstDivElement);
-    listElement.appendChild(secondDivElement);
+    var linkElement = document.createElement("a");
+    linkElement.href = window.DOCS_THIS_PACKAGE.root + item.url;
+    linkElement.appendChild(firstDivElement);
+    linkElement.appendChild(secondDivElement);
 
-    return listElement;
+    return linkElement;
 }

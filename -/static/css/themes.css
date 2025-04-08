@@ -27,7 +27,7 @@
   --line-number-highlighted-background-color: #0a042f;
 
   --item-list-title-border-color: #999;
-  --item-list-bordered-border-color: #666;
+  --search-list-border-color: #666;
 
   --scrollbar-track-background-color: #353535;
   --scrollbar-thumb-background-color: #555;
@@ -63,7 +63,7 @@
   --line-number-highlighted-background-color: #fdffd3;
 
   --item-list-title-border-color: #666;
-  --item-list-bordered-border-color: #b8b8b8;
+  --search-list-border-color: #b8b8b8;
 
   --scrollbar-track-background-color: #bbb;
   --scrollbar-thumb-background-color: #888;
