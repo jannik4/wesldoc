@@ -65,9 +65,9 @@
     emissive: vec4&lt;f32&gt;,
     <span class="conditional-code">fog_flags_unsigned</span>
     flags: u32,
-    <span class="conditional-code">fog_flags_signed &amp;&amp; !fog_flags_unsigned</span>
+    <span class="conditional-code">fog_flags_signed &#38;&#38; !fog_flags_unsigned</span>
     flags: i32,
-    <span class="conditional-code">!fog_flags_unsigned &amp;&amp; !fog_flags_signed</span>
+    <span class="conditional-code">!fog_flags_unsigned &#38;&#38; !fog_flags_signed</span>
     flags: bool
 }</code>
 </pre>

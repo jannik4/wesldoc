@@ -68,7 +68,7 @@
             id="3"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >3</a>    position: vec4&lt;f32&gt;,
+        >3</a>    position: vec4&#60;f32&#62;,
 <a
             href="#4"
             id="4"
@@ -80,7 +80,7 @@
             id="5"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >5</a>    uv: vec2&lt;f32&gt;,
+        >5</a>    uv: vec2&#60;f32&#62;,
 <a
             href="#6"
             id="6"
@@ -104,19 +104,19 @@
             id="9"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >9</a>fn fullscreen_vertex_shader(@builtin(vertex_index) vertex_index: u32) -&gt; FullscreenVertexOutput {
+        >9</a>fn fullscreen_vertex_shader(@builtin(vertex_index) vertex_index: u32) -&#62; FullscreenVertexOutput {
 <a
             href="#10"
             id="10"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >10</a>    let uv = vec2&lt;f32&gt;(f32(vertex_index &gt;&gt; 1u), f32(vertex_index &amp; 1u)) * 2.0;
+        >10</a>    let uv = vec2&#60;f32&#62;(f32(vertex_index &#62;&#62; 1u), f32(vertex_index &#38; 1u)) * 2.0;
 <a
             href="#11"
             id="11"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >11</a>    let clip_position = vec4&lt;f32&gt;(uv * vec2&lt;f32&gt;(2.0, -2.0) + vec2&lt;f32&gt;(-1.0, 1.0), 0.0, 1.0);
+        >11</a>    let clip_position = vec4&#60;f32&#62;(uv * vec2&#60;f32&#62;(2.0, -2.0) + vec2&#60;f32&#62;(-1.0, 1.0), 0.0, 1.0);
 <a
             href="#12"
             id="12"
