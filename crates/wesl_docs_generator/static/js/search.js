@@ -53,10 +53,14 @@ function search() {
         return;
     }
 
-    var itemsFiltered = items.filter(function (item) {
-        return item.name.toLowerCase().includes(query.toLowerCase())
-            || item.attributes.some((attr) => attr.toLowerCase().startsWith(query.toLowerCase()));
-    });
+    query = query.trim();
+    var itemsFiltered = [];
+    if (query !== "") {
+        itemsFiltered = items.filter(function (item) {
+            return item.name.toLowerCase().includes(query.toLowerCase())
+                || item.attributes.some((attr) => attr.toLowerCase().startsWith(query.toLowerCase()));
+        });
+    }
 
     innerContentElement.innerHTML = "";
     var itemList = document.createElement("ul");
