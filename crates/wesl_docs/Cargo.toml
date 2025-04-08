@@ -7,3 +7,4 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 semver = "1.0.20"
 indexmap = "2.1.0"
+pulldown-cmark = "0.13.0"

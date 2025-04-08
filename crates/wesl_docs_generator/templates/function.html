@@ -2,6 +2,9 @@
 
 {% block content %}
 {% for function in functions %}
+{% if !loop.first %}
+<br />
+{% endif %}
 {% if module.source.is_some() %}
 <a class="module" href="{{ module_path.source_href(function.span.clone()) }}">Source</a>
 {% endif %}
@@ -36,5 +39,6 @@
 ) {% if let Some(ret) = function.ret %}-> {{ self::render_attributes(function.return_attributes, module_path.level, None)|safe }}
 {{- self::render_type(ret, module_path.level)|safe }}{% endif %}</code>
 </pre>
+{{ self::render_doc_comment(function.comment.as_ref())|safe }}
 {% endfor %}
 {% endblock %}

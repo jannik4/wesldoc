@@ -5,11 +5,18 @@
 <a class="module" href="{{ module_path.source_href(None) }}">Source</a>
 {% endif %}
 
+{{ self::render_doc_comment(module.comment.as_ref())|safe }}
+
 {% if !module.modules.is_empty() %}
 <h3 class="item-list-title">Modules</h3>
 <ul class="item-list">
     {% for module in module.modules %}
-    <li><a class="module" href="{{ module.name }}/index.html">{{ module.name }}</a></li>
+    <li>
+        <div><a class="module" href="{{ module.name }}/index.html">{{ module.name }}</a></div>
+        <div>
+            {{ self::render_doc_comment_short(module.comment.as_ref())|safe }}
+        </div>
+    </li>
     {% endfor %}
 </ul>
 {% endif %}
@@ -19,10 +26,15 @@
 <ul class="item-list">
     {% for (name, item) in module.constants %}
     <li>
-        <a class="const" href="const.{{ name }}.html">{{ name }}</a>
-        {% if let Some(conditional) = item.conditional %}
-        <span class="conditional-inline">{{ conditional }}</span>
-        {% endif %}
+        <div>
+            <a class="const" href="const.{{ name }}.html">{{ name }}</a>
+            {% if let Some(conditional) = item.conditional %}
+            <span class="conditional-inline">{{ conditional }}</span>
+            {% endif %}
+        </div>
+        <div>
+            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
+        </div>
     </li>
     {% endfor %}
 </ul>
@@ -33,10 +45,15 @@
 <ul class="item-list">
     {% for (name, item) in module.global_variables %}
     <li>
-        <a class="var" href="var.{{ name }}.html">{{ name }}</a>
-        {% if let Some(conditional) = item.conditional %}
-        <span class="conditional-inline">{{ conditional }}</span>
-        {% endif %}
+        <div>
+            <a class="var" href="var.{{ name }}.html">{{ name }}</a>
+            {% if let Some(conditional) = item.conditional %}
+            <span class="conditional-inline">{{ conditional }}</span>
+            {% endif %}
+        </div>
+        <div>
+            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
+        </div>
     </li>
     {% endfor %}
 </ul>
@@ -47,10 +64,15 @@
 <ul class="item-list">
     {% for (name, item) in module.structs %}
     <li>
-        <a class="struct" href="struct.{{ name }}.html">{{ name }}</a>
-        {% if let Some(conditional) = item.conditional %}
-        <span class="conditional-inline">{{ conditional }}</span>
-        {% endif %}
+        <div>
+            <a class="struct" href="struct.{{ name }}.html">{{ name }}</a>
+            {% if let Some(conditional) = item.conditional %}
+            <span class="conditional-inline">{{ conditional }}</span>
+            {% endif %}
+        </div>
+        <div>
+            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
+        </div>
     </li>
     {% endfor %}
 </ul>
@@ -61,10 +83,15 @@
 <ul class="item-list">
     {% for (name, item) in module.functions %}
     <li>
-        <a class="fn" href="fn.{{ name }}.html">{{ name }}</a>
-        {% if let Some(conditional) = item.conditional %}
-        <span class="conditional-inline">{{ conditional }}</span>
-        {% endif %}
+        <div>
+            <a class="fn" href="fn.{{ name }}.html">{{ name }}</a>
+            {% if let Some(conditional) = item.conditional %}
+            <span class="conditional-inline">{{ conditional }}</span>
+            {% endif %}
+        </div>
+        <div>
+            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
+        </div>
     </li>
     {% endfor %}
 </ul>
@@ -75,10 +102,15 @@
 <ul class="item-list">
     {% for (name, item) in module.type_aliases %}
     <li>
-        <a class="type" href="type.{{ name }}.html">{{ name }}</a>
-        {% if let Some(conditional) = item.conditional %}
-        <span class="conditional-inline">{{ conditional }}</span>
-        {% endif %}
+        <div>
+            <a class="type" href="type.{{ name }}.html">{{ name }}</a>
+            {% if let Some(conditional) = item.conditional %}
+            <span class="conditional-inline">{{ conditional }}</span>
+            {% endif %}
+        </div>
+        <div>
+            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
+        </div>
     </li>
     {% endfor %}
 </ul>

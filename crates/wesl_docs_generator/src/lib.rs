@@ -12,9 +12,9 @@ use std::{
     path::Path,
 };
 use wesl_docs::{
-    Attribute, BuiltinValue, Constant, DefinitionPath, DiagnosticSeverity, Expression, Function,
-    GlobalVariable, Ident, InterpolationSampling, InterpolationType, ItemKind, Module, Span,
-    Struct, TypeAlias, TypeExpression, Version, WeslDocs,
+    Attribute, BuiltinValue, Constant, DefinitionPath, DiagnosticSeverity, DocComment, Expression,
+    Function, GlobalVariable, Ident, InterpolationSampling, InterpolationType, ItemKind, Module,
+    Span, Struct, TypeAlias, TypeExpression, Version, WeslDocs,
 };
 
 pub type Error = Box<dyn std::error::Error>;
@@ -556,6 +556,36 @@ fn def_path_href(
     }
 
     href
+}
+
+fn render_doc_comment(comment: Option<&DocComment>) -> String {
+    let mut output = String::new();
+    if let Some(comment) = comment {
+        output.push_str(r#"<div class="comment">"#);
+        let md = {
+            let mut md = String::new();
+            wesl_docs::md::html::push_html(&mut md, comment.unsafe_full.iter().cloned());
+            ammonia::clean(&md)
+        };
+        output.push_str(&md);
+        output.push_str(r#"</div>"#);
+    }
+    output
+}
+
+fn render_doc_comment_short(comment: Option<&DocComment>) -> String {
+    let mut output = String::new();
+    if let Some(comment) = comment {
+        output.push_str(r#"<div class="comment-inline">"#);
+        let md = {
+            let mut md = String::new();
+            wesl_docs::md::html::push_html(&mut md, comment.unsafe_short.iter().cloned());
+            ammonia::clean(&md)
+        };
+        output.push_str(&md);
+        output.push_str(r#"</div>"#);
+    }
+    output
 }
 
 struct Base<'a> {

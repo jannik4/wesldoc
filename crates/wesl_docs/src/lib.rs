@@ -1,6 +1,7 @@
 use std::fmt;
 
 pub use indexmap::{IndexMap, IndexSet};
+pub use pulldown_cmark as md;
 pub use semver::Version;
 
 #[derive(Debug, Clone)]
@@ -13,6 +14,7 @@ pub struct WeslDocs {
 pub struct Module {
     pub name: String,
     pub source: Option<String>,
+    pub comment: Option<DocComment>,
     pub modules: Vec<Module>,
     pub constants: IndexMap<Ident, Item<Constant>>,
     pub global_variables: IndexMap<Ident, Item<GlobalVariable>>,
@@ -27,6 +29,7 @@ impl Module {
         Self {
             name,
             source: None,
+            comment: None,
             modules: Vec::new(),
             constants: IndexMap::new(),
             global_variables: IndexMap::new(),
@@ -129,6 +132,7 @@ impl<T> Default for Item<T> {
 pub trait ItemInstance {
     const ITEM_KIND: ItemKind;
     fn conditional(&self) -> Option<&Conditional>;
+    fn comment(&self) -> Option<&DocComment>;
     fn all_attributes(&self) -> impl Iterator<Item = &Attribute>;
 }
 
@@ -139,6 +143,7 @@ pub struct Constant {
     pub init: Expression,
     pub attributes: Vec<Attribute>,
     pub conditional: Option<Conditional>,
+    pub comment: Option<DocComment>,
     pub span: Option<Span>,
 }
 
@@ -146,6 +151,9 @@ impl ItemInstance for Constant {
     const ITEM_KIND: ItemKind = ItemKind::Constant;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
+    }
+    fn comment(&self) -> Option<&DocComment> {
+        self.comment.as_ref()
     }
     fn all_attributes(&self) -> impl Iterator<Item = &Attribute> {
         self.attributes.iter()
@@ -160,6 +168,7 @@ pub struct GlobalVariable {
     pub init: Option<Expression>,
     pub attributes: Vec<Attribute>,
     pub conditional: Option<Conditional>,
+    pub comment: Option<DocComment>,
     pub span: Option<Span>,
 }
 
@@ -167,6 +176,9 @@ impl ItemInstance for GlobalVariable {
     const ITEM_KIND: ItemKind = ItemKind::GlobalVariable;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
+    }
+    fn comment(&self) -> Option<&DocComment> {
+        self.comment.as_ref()
     }
     fn all_attributes(&self) -> impl Iterator<Item = &Attribute> {
         self.attributes.iter()
@@ -243,6 +255,7 @@ pub struct Struct {
     pub members: Vec<StructMember>,
     pub attributes: Vec<Attribute>,
     pub conditional: Option<Conditional>,
+    pub comment: Option<DocComment>,
     pub span: Option<Span>,
 }
 
@@ -250,6 +263,9 @@ impl ItemInstance for Struct {
     const ITEM_KIND: ItemKind = ItemKind::Struct;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
+    }
+    fn comment(&self) -> Option<&DocComment> {
+        self.comment.as_ref()
     }
     fn all_attributes(&self) -> impl Iterator<Item = &Attribute> {
         self.attributes
@@ -264,6 +280,7 @@ pub struct StructMember {
     pub ty: TypeExpression,
     pub attributes: Vec<Attribute>,
     pub conditional: Option<Conditional>,
+    pub comment: Option<DocComment>,
 }
 
 #[derive(Debug, Clone)]
@@ -294,6 +311,7 @@ pub struct Function {
     pub attributes: Vec<Attribute>,
     pub return_attributes: Vec<Attribute>,
     pub conditional: Option<Conditional>,
+    pub comment: Option<DocComment>,
     pub span: Option<Span>,
 }
 
@@ -301,6 +319,9 @@ impl ItemInstance for Function {
     const ITEM_KIND: ItemKind = ItemKind::Function;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
+    }
+    fn comment(&self) -> Option<&DocComment> {
+        self.comment.as_ref()
     }
     fn all_attributes(&self) -> impl Iterator<Item = &Attribute> {
         self.attributes
@@ -324,6 +345,7 @@ pub struct TypeAlias {
     pub ty: TypeExpression,
     pub attributes: Vec<Attribute>,
     pub conditional: Option<Conditional>,
+    pub comment: Option<DocComment>,
     pub span: Option<Span>,
 }
 
@@ -331,6 +353,9 @@ impl ItemInstance for TypeAlias {
     const ITEM_KIND: ItemKind = ItemKind::TypeAlias;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
+    }
+    fn comment(&self) -> Option<&DocComment> {
+        self.comment.as_ref()
     }
     fn all_attributes(&self) -> impl Iterator<Item = &Attribute> {
         self.attributes.iter()
@@ -344,6 +369,14 @@ impl fmt::Display for Ident {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct DocComment {
+    /// This is not escaped, e.g. it can contain `<script>` tags.
+    pub unsafe_short: Vec<md::Event<'static>>,
+    /// This is not escaped, e.g. it can contain `<script>` tags.
+    pub unsafe_full: Vec<md::Event<'static>>,
 }
 
 #[derive(Debug, Clone)]

@@ -2,6 +2,9 @@
 
 {% block content %}
 {% for var in variables %}
+{% if !loop.first %}
+<br />
+{% endif %}
 {% if module.source.is_some() %}
 <a class="module" href="{{ module_path.source_href(var.span.clone()) }}">Source</a>
 {% endif %}
@@ -14,5 +17,6 @@
     var{{ var.space }} {{ var.name }}{% if let Some(ty) = var.ty %}: {{ self::render_type(ty, module_path.level)|safe }}{% endif %}
     {%- if let Some(init) = var.init %} = {{ self::render_expression(init, module_path.level)|safe }}{% endif -%};</code>
 </pre>
+{{ self::render_doc_comment(var.comment.as_ref())|safe }}
 {% endfor %}
 {% endblock %}

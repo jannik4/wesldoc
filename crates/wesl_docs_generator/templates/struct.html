@@ -2,6 +2,9 @@
 
 {% block content %}
 {% for struct_ in structs %}
+{% if !loop.first %}
+<br />
+{% endif %}
 {% if module.source.is_some() %}
 <a class="module" href="{{ module_path.source_href(struct_.span.clone()) }}">Source</a>
 {% endif %}
@@ -21,5 +24,12 @@
     {%- endfor %}
 }</code>
 </pre>
+{{ self::render_doc_comment(struct_.comment.as_ref())|safe }}
+<h2 class="item-list-title">Fields</h2>
+{% for member in struct_.members %}
+<code>{{ self::render_attributes(member.attributes, module_path.level, None)|safe }}
+{{- member.name }}: {{ self::render_type(member.ty, module_path.level)|safe }}</code>
+{{ self::render_doc_comment(member.comment.as_ref())|safe }}
+{% endfor %}
 {% endfor %}
 {% endblock %}

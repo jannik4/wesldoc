@@ -113,7 +113,15 @@ function createItemElement(item) {
     itemElement.innerText = item.name;
     linkElement.appendChild(itemElement);
 
+    var firstDivElement = document.createElement("div");
+    firstDivElement.appendChild(linkElement);
+
+    var secondDivElement = document.createElement("div");
+    secondDivElement.innerHTML = item.comment;
+
     var listElement = document.createElement("li");
-    listElement.appendChild(linkElement);
+    listElement.appendChild(firstDivElement);
+    listElement.appendChild(secondDivElement);
+
     return listElement;
 }

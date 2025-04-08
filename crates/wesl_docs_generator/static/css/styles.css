@@ -130,7 +130,34 @@ a:hover {
   margin-right: 3px;
 }
 
+.comment {
+  margin-left: 24px;
+}
+
+.comment p {
+  margin: 8px 0;
+}
+
+.comment h2 {
+  margin: 32px 0 16px 0;
+  border-bottom: 1px solid var(--item-list-title-border-color);
+  padding-bottom: 8px;
+}
+
+.comment-inline * {
+  margin: 0;
+  padding: 0;
+}
+
+.comment code,
+.comment-inline code {
+  padding: 0 2px;
+  border-radius: 4px;
+  background-color: var(--code-block-background-color);
+}
+
 .code-block {
+  border-radius: 4px;
   background-color: var(--code-block-background-color);
   padding: 16px 12px;
   overflow-x: auto;
@@ -180,9 +207,30 @@ a:hover {
   width: calc(9ch + 8px);
 }
 
+.item-list > li {
+  display: table-row;
+}
+
+.item-list > li > div {
+  display: table-cell;
+}
+
+.item-list > li > :first-child {
+  width: 33%;
+  padding-right: 0.25rem;
+}
+
+.item-list > li > :last-child {
+  padding-left: 0.25rem;
+}
+
 .item-list {
   list-style-type: none;
   padding: 0;
+
+  display: table;
+  table-layout: fixed;
+  width: 100%;
 }
 
 .item-list-title {
@@ -191,12 +239,12 @@ a:hover {
   padding-bottom: 8px;
 }
 
-.item-list-bordered > li {
+.item-list-bordered > li > div {
   border-bottom: 1px solid var(--item-list-bordered-border-color);
   padding: 3px 0;
 }
 
-.item-list-bordered > li:last-child {
+.item-list-bordered > li:last-child > div {
   border-bottom: none;
 }
 
@@ -204,8 +252,18 @@ a:hover {
   background-color: var(--item-list-bordered-border-color);
 }
 
-.item-list-bordered > li > a {
+.item-list-bordered > li a {
   text-decoration: none !important;
+}
+
+.item-list-bordered > li > :first-child {
+  width: 50%;
+}
+
+.item-list-bordered .comment-inline * {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 ::-webkit-scrollbar {

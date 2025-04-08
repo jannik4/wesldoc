@@ -1,5 +1,7 @@
 use serde::Serialize;
-use wesl_docs::{Attribute, Ident, IndexMap, Item, ItemInstance, ItemKind, Module, WeslDocs};
+use wesl_docs::{
+    Attribute, DocComment, Ident, IndexMap, Item, ItemInstance, ItemKind, Module, WeslDocs,
+};
 
 pub fn all_items(doc: &WeslDocs) -> impl Serialize {
     let mut items = Vec::new();
@@ -25,6 +27,7 @@ fn all_items_module(
             path.clone(),
             inner.name.clone(),
             [],
+            inner.comment.as_ref(),
             SerializedItemKind::Module,
         ));
     }
@@ -48,6 +51,7 @@ fn add_items<T>(
             path.clone(),
             name.0.clone(),
             item.instances.iter().flat_map(|i| i.all_attributes()),
+            item.instances[0].comment(),
             T::ITEM_KIND.into(),
         ));
     }
@@ -58,6 +62,7 @@ struct SerializedItem {
     path: Vec<String>,
     name: String,
     attributes: Vec<String>,
+    comment: String,
     kind: SerializedItemKind,
     url: String,
 }
@@ -67,6 +72,7 @@ impl SerializedItem {
         path: Vec<String>,
         name: String,
         attributes: impl IntoIterator<Item = &'a Attribute>,
+        comment: Option<&DocComment>,
         kind: SerializedItemKind,
     ) -> Self {
         let mut url = path.join("/");
@@ -86,6 +92,7 @@ impl SerializedItem {
                 .into_iter()
                 .map(|attr| format!("@{}", attr.name()))
                 .collect(),
+            comment: crate::render_doc_comment_short(comment),
             kind,
             url,
         }
