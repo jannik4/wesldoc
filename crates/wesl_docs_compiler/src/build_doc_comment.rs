@@ -44,9 +44,16 @@ fn build_doc_comment(
         });
 
     // Parse
-    let mut full = md::Parser::new(&comment)
-        .map(|event| event.into_static())
-        .collect::<Vec<_>>();
+    let mut full = md::Parser::new_with_broken_link_callback(
+        &comment,
+        md::Options::empty(),
+        Some(|link: md::BrokenLink<'_>| {
+            let trimmed = link.reference.trim_matches('`').to_string();
+            Some((md::CowStr::from(trimmed.clone()), md::CowStr::from(trimmed)))
+        }),
+    )
+    .map(|event| event.into_static())
+    .collect::<Vec<_>>();
     if full.is_empty() {
         return None;
     }
