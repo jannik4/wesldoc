@@ -32,7 +32,7 @@ fn build_doc_comment(
         .lines()
         .filter_map(|line| {
             let line = line.trim_start();
-            line.starts_with(comment_prefix).then(|| line[3..].trim())
+            line.starts_with(comment_prefix).then(|| &line[3..])
         })
         .enumerate()
         .fold(String::new(), |mut acc, (idx, line)| {

@@ -4,7 +4,7 @@ pub fn extract_comments_inner(source: &str) -> String {
     let mut comments = String::new();
 
     for line in source.lines() {
-        let line = line.trim();
+        let line = line.trim_start();
         if line.starts_with("//!") {
             comments.push_str(line);
             comments.push('\n');
@@ -27,7 +27,7 @@ pub fn extract_comments_outer(item_span: Span, source: &str) -> String {
             continue;
         }
 
-        let line = line.trim();
+        let line = line.trim_start();
         if line.starts_with("///") {
             comments = format!("{}\n{}", line, comments);
         } else if !line.is_empty() {
