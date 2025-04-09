@@ -9,4 +9,4 @@ wesl_docs = { path = "../wesl_docs" }
 wesl_docs_compiler = { path = "../wesl_docs_compiler" }
 wesl_docs_generator = { path = "../wesl_docs_generator" }
 
-wesl = { git = "https://github.com/jannik4/wesl-rs", rev = "ebeb8b4da7ace3f74bfa9c54e968b7ab5d05ee7a" }
+wesl = { git = "https://github.com/wgsl-tooling-wg/wesl-rs", rev = "2cf9b6e7b34c45097a24e17e3d41d2062fbc6b9e" }
