@@ -5,6 +5,7 @@ mod build_expression;
 mod build_type;
 mod calculate_span;
 mod collect_features;
+mod extract_comments;
 mod map;
 mod post_process;
 mod source_map;
@@ -17,6 +18,7 @@ use self::{
     build_type::build_type,
     calculate_span::calculate_span,
     collect_features::collect_features,
+    extract_comments::{extract_comments_inner, extract_comments_outer},
     map::map,
     source_map::SourceMap,
 };
@@ -82,12 +84,14 @@ fn compile_module(
     }
 
     // Set comment
-    module.comment = build_inner_doc_comment(
-        "", // TODO: get doc comment from wesl-rs
-        &source_map,
-        &path,
-        dependencies,
-    );
+    module.comment = module.source.as_ref().and_then(|source| {
+        build_inner_doc_comment(
+            &extract_comments_inner(source),
+            &source_map,
+            &path,
+            dependencies,
+        )
+    });
 
     // Collect translate time features
     module.translate_time_features = collect_features(compiled);
@@ -127,7 +131,19 @@ fn compile_module(
         if !source_map.is_local(decl) {
             continue;
         }
+
         let span = calculate_span(decl.span().range(), &source_map);
+        let comment = span
+            .and_then(|span| Some((span, module.source.as_ref()?)))
+            .and_then(|(span, source)| {
+                build_outer_doc_comment(
+                    &extract_comments_outer(span, source),
+                    &source_map,
+                    &path,
+                    dependencies,
+                )
+            });
+
         match decl.node() {
             syntax::GlobalDeclaration::Void => (),
             syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
@@ -161,12 +177,7 @@ fn compile_module(
                                 &mut conditional_scope,
                                 &declaration.attributes,
                             ),
-                            comment: build_outer_doc_comment(
-                                "", // TODO: get doc comment from wesl-rs
-                                &source_map,
-                                &path,
-                                dependencies,
-                            ),
+                            comment,
                             span,
                         });
                 }
@@ -202,12 +213,7 @@ fn compile_module(
                                 &mut conditional_scope,
                                 &declaration.attributes,
                             ),
-                            comment: build_outer_doc_comment(
-                                "", // TODO: get doc comment from wesl-rs
-                                &source_map,
-                                &path,
-                                dependencies,
-                            ),
+                            comment,
                             span,
                         });
                 }
@@ -232,12 +238,7 @@ fn compile_module(
                             &mut conditional_scope,
                             &type_alias.attributes,
                         ),
-                        comment: build_outer_doc_comment(
-                            "", // TODO: get doc comment from wesl-rs
-                            &source_map,
-                            &path,
-                            dependencies,
-                        ),
+                        comment,
                         span,
                     });
             }
@@ -268,12 +269,7 @@ fn compile_module(
                                         &mut conditional_scope,
                                         &member.attributes,
                                     ),
-                                    comment: build_outer_doc_comment(
-                                        "", // TODO: get doc comment from wesl-rs
-                                        &source_map,
-                                        &path,
-                                        dependencies,
-                                    ),
+                                    comment: None, // TODO: Needs struct member span or comments from wesl-rs
                                 })
                                 .collect()
                         },
@@ -284,12 +280,7 @@ fn compile_module(
                             dependencies,
                         ),
                         conditional: build_conditional(&mut conditional_scope, &struct_.attributes),
-                        comment: build_outer_doc_comment(
-                            "", // TODO: get doc comment from wesl-rs
-                            &source_map,
-                            &path,
-                            dependencies,
-                        ),
+                        comment,
                         span,
                     });
             }
@@ -343,12 +334,7 @@ fn compile_module(
                             &mut conditional_scope,
                             &function.attributes,
                         ),
-                        comment: build_outer_doc_comment(
-                            "", // TODO: get doc comment from wesl-rs
-                            &source_map,
-                            &path,
-                            dependencies,
-                        ),
+                        comment,
                         span,
                     });
             }
