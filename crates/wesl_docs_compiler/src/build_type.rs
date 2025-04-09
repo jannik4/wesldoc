@@ -12,7 +12,7 @@ pub fn build_type(
     let name = ty.ident.name().clone();
 
     match source_map.get_decl(&name) {
-        Some((name, kind, path)) => TypeExpression::ReferencedType {
+        Some((name, kind, path)) => TypeExpression::Referenced {
             name: Ident(name.to_string()),
             kind,
             def_path: match path.origin {

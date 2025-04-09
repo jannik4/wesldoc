@@ -289,7 +289,7 @@ pub enum TypeExpression {
         name: Ident,
         template_args: Option<Vec<Expression>>,
     },
-    ReferencedType {
+    Referenced {
         name: Ident,
         kind: ItemKind,
         def_path: Option<DefinitionPath>,

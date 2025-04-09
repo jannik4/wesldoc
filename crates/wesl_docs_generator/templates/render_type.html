@@ -1,5 +1,5 @@
 {% match ty %}
-{%- when TypeExpression::ReferencedType with { name, kind, def_path } %}
+{%- when TypeExpression::Referenced with { name, kind, def_path } %}
 {%- if let Some(def_path) = def_path -%}
 <a class="struct" href="{{ self::def_path_href(name, kind, def_path, module_path_level) }}">
     {{- name -}}
