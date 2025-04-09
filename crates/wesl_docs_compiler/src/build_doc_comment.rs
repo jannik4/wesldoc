@@ -63,6 +63,10 @@ fn build_doc_comment(
         .iter()
         .filter_map(|event| match event {
             md::Event::Start(tag) => {
+                if complete {
+                    return None;
+                }
+
                 balance += 1;
                 Some(md::Event::Start(match tag {
                     md::Tag::Heading { .. } => md::Tag::Paragraph,
@@ -70,6 +74,10 @@ fn build_doc_comment(
                 }))
             }
             md::Event::End(tag_end) => {
+                if complete {
+                    return None;
+                }
+
                 balance -= 1;
                 complete |= balance == 0;
                 Some(md::Event::End(match tag_end {
@@ -84,7 +92,7 @@ fn build_doc_comment(
             e @ md::Event::Html(_) => (!complete).then(|| e.clone()),
             e @ md::Event::InlineHtml(_) => (!complete).then(|| e.clone()),
             e @ md::Event::FootnoteReference(_) => Some(e.clone()),
-            md::Event::SoftBreak => None,
+            e @ md::Event::SoftBreak => (!complete).then(|| e.clone()),
             md::Event::HardBreak | md::Event::Rule | md::Event::TaskListMarker(_) => {
                 complete |= balance == 0;
                 None
