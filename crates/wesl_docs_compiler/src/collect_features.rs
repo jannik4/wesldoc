@@ -1,12 +1,16 @@
+use crate::source_map::SourceMap;
 use wesl::{CompileResult, syntax::*};
 use wesl_docs::IndexSet;
 
 // TODO: Collect all features, this is not complete
 
-pub fn collect_features(compiled: &CompileResult) -> IndexSet<String> {
+pub fn collect_features(compiled: &CompileResult, source_map: &SourceMap) -> IndexSet<String> {
     let mut features = IndexSet::new();
 
     for decl in &compiled.syntax.global_declarations {
+        if !source_map.is_local(decl) {
+            continue;
+        }
         collect_from_global_declaration(decl, &mut features);
     }
 

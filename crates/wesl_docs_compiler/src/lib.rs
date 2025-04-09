@@ -93,9 +93,6 @@ fn compile_module(
         )
     });
 
-    // Collect translate time features
-    module.translate_time_features = collect_features(compiled);
-
     // Insert global declarations from this module as locals
     for decl in &compiled.syntax.global_declarations {
         match decl.node() {
@@ -124,6 +121,9 @@ fn compile_module(
             syntax::GlobalDeclaration::ConstAssert(_const_assert) => (),
         }
     }
+
+    // Collect translate time features
+    module.translate_time_features = collect_features(compiled, &source_map);
 
     // Compile local global declarations
     let mut conditional_scope = ConditionalScope::new();
