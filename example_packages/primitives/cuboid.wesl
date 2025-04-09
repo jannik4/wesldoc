@@ -1,4 +1,22 @@
-// Cuboid primitive
+//! Module documentation for the Cuboid primitive.
+//!
+//! This module provides a cuboid primitive with various constructors.
+//! It includes constructors for creating a Cuboid from its size, corners, and length.
+//!
+//! # Examples
+//!
+//! ```
+//! import primitives::cuboid;
+//!
+//! fn main() {
+//!    // Create a cuboid from its size
+//!    let cuboid1 = cuboid::new(2.0, 3.0, 4.0);    
+//! }
+//! ```
+
+/// Cuboid primitive
+///
+/// This is a cuboid primitive that can be used in various applications.
 struct Cuboid {
     half_size: vec3<f32>,
 }
