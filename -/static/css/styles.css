@@ -156,6 +156,7 @@ a:hover {
   background-color: var(--code-block-background-color);
 }
 
+.comment pre,
 .code-block {
   border-radius: 4px;
   background-color: var(--code-block-background-color);
@@ -163,6 +164,7 @@ a:hover {
   overflow-x: auto;
 }
 
+.comment pre::-webkit-scrollbar,
 .code-block::-webkit-scrollbar {
   width: 8px;
 }
