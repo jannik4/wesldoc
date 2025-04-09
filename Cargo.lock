@@ -1251,8 +1251,7 @@ dependencies = [
 [[package]]
 name = "wesl"
 version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35a997b82782eb6019bb7c4de169a4e1eb0b96b59495f64fabc724587ff58378"
+source = "git+https://github.com/jannik4/wesl-rs?rev=ebeb8b4da7ace3f74bfa9c54e968b7ab5d05ee7a#ebeb8b4da7ace3f74bfa9c54e968b7ab5d05ee7a"
 dependencies = [
  "annotate-snippets",
  "bytes",
@@ -1268,8 +1267,7 @@ dependencies = [
 [[package]]
 name = "wesl-macros"
 version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e26e545df8611385f6b9fa32d0d840e5bd3e86b4a968ffe31adfcc4743d5811a"
+source = "git+https://github.com/jannik4/wesl-rs?rev=ebeb8b4da7ace3f74bfa9c54e968b7ab5d05ee7a#ebeb8b4da7ace3f74bfa9c54e968b7ab5d05ee7a"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -1309,8 +1307,7 @@ dependencies = [
 [[package]]
 name = "wgsl-parse"
 version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93d2e96b673c61dd68961f7ed0bdec3f1486ba0d6dbd63b52b7429bc82e790b4"
+source = "git+https://github.com/jannik4/wesl-rs?rev=ebeb8b4da7ace3f74bfa9c54e968b7ab5d05ee7a#ebeb8b4da7ace3f74bfa9c54e968b7ab5d05ee7a"
 dependencies = [
  "annotate-snippets",
  "derive_more",

@@ -1,28 +1,30 @@
 use crate::source_map::SourceMap;
-use wesl::syntax;
+use std::ops::Range;
 use wesl_docs::*;
 
-// TODO: Naive approximation/guess, use span from wesl when available: https://github.com/wgsl-tooling-wg/wesl-rs/issues/60
-pub fn calculate_span(decl: &syntax::GlobalDeclaration, source_map: &SourceMap) -> Option<Span> {
+pub fn calculate_span(range: Range<usize>, source_map: &SourceMap) -> Option<Span> {
     let source = source_map.default_source()?;
-    let name = match decl {
-        syntax::GlobalDeclaration::Void => return None,
-        syntax::GlobalDeclaration::Declaration(declaration) => &declaration.ident,
-        syntax::GlobalDeclaration::TypeAlias(type_alias) => &type_alias.ident,
-        syntax::GlobalDeclaration::Struct(struct_) => &struct_.ident,
-        syntax::GlobalDeclaration::Function(function) => &function.ident,
-        syntax::GlobalDeclaration::ConstAssert(_const_assert) => return None,
-    }
-    .to_string();
 
-    for (idx, line) in source.lines().enumerate() {
-        if line.contains(&name) {
-            return Some(Span {
-                line_start: idx + 1,
-                line_end: idx + 3, // just assume 3 lines for now
-            });
+    let mut span_line_start = None;
+    let mut span_line_end = None;
+    let mut position = 0;
+    for (idx, line) in source.split_inclusive('\n').enumerate() {
+        let line_end = position + line.len();
+
+        if span_line_start.is_none() && line_end > range.start {
+            span_line_start = Some(idx + 1);
         }
+
+        if line_end >= range.end {
+            span_line_end = Some(idx + 1);
+            break;
+        }
+
+        position += line.len();
     }
 
-    None
+    Some(Span {
+        line_start: span_line_start.unwrap_or(1),
+        line_end: span_line_end.or(span_line_start).unwrap_or(1),
+    })
 }

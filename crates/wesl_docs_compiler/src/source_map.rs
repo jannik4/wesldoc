@@ -66,7 +66,7 @@ fn item_kind_from_name(compiled: &CompileResult, name: &str) -> Option<ItemKind>
             .ident()
             .is_some_and(|decl| decl.name().as_str() == name)
         {
-            return match decl {
+            return match decl.node() {
                 syntax::GlobalDeclaration::Void => None,
                 syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
                     syntax::DeclarationKind::Const => Some(ItemKind::Constant),

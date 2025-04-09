@@ -94,7 +94,7 @@ fn compile_module(
 
     // Insert global declarations from this module as locals
     for decl in &compiled.syntax.global_declarations {
-        match decl {
+        match decl.node() {
             syntax::GlobalDeclaration::Void => (),
             syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
                 syntax::DeclarationKind::Const => {
@@ -127,8 +127,8 @@ fn compile_module(
         if !source_map.is_local(decl) {
             continue;
         }
-        let span = calculate_span(decl, &source_map);
-        match decl {
+        let span = calculate_span(decl.span().range(), &source_map);
+        match decl.node() {
             syntax::GlobalDeclaration::Void => (),
             syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
                 syntax::DeclarationKind::Const => {
