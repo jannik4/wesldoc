@@ -1,5 +1,7 @@
 struct Cylinder {
+    /// The radius of the cylinder.
     radius: f32,
+    /// The half height of the cylinder.
     half_height: f32,
 }
 

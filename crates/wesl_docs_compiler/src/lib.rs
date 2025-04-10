@@ -269,7 +269,18 @@ fn compile_module(
                                         &mut conditional_scope,
                                         &member.attributes,
                                     ),
-                                    comment: None, // TODO: Needs struct member span or comments from wesl-rs
+                                    comment: {
+                                        calculate_span(member.span().range(), &source_map)
+                                            .and_then(|span| Some((span, module.source.as_ref()?)))
+                                            .and_then(|(span, source)| {
+                                                build_outer_doc_comment(
+                                                    &extract_comments_outer(span, source),
+                                                    &source_map,
+                                                    &path,
+                                                    dependencies,
+                                                )
+                                            })
+                                    },
                                 })
                                 .collect()
                         },

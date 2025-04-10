@@ -7,4 +7,4 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 wesl_docs = { path = "../wesl_docs" }
 
-wesl = { git = "https://github.com/wgsl-tooling-wg/wesl-rs", rev = "2cf9b6e7b34c45097a24e17e3d41d2062fbc6b9e" }
+wesl = { git = "https://github.com/jannik4/wesl-rs", rev = "49d5d80d134ca26a2eb58ec779f064cdab23d519" }
