@@ -39,6 +39,6 @@
 ) {% if let Some(ret) = function.ret %}-> {{ self::render_attributes(function.return_attributes, module_path.level, None)|safe }}
 {{- self::render_type(ret, module_path.level)|safe }}{% endif %}</code>
 </pre>
-{{ self::render_doc_comment(function.comment.as_ref())|safe }}
+{{ self::render_doc_comment(function.comment.as_ref(), module_path.level)|safe }}
 {% endfor %}
 {% endblock %}

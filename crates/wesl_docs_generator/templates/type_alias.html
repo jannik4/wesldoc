@@ -15,6 +15,6 @@
 <code>{{ self::render_attributes(type_alias.attributes, module_path.level, Some(0))|safe -}}
 alias {{ type_alias.name }} = {{ self::render_type(type_alias.ty, module_path.level)|safe }};</code>
 </pre>
-{{ self::render_doc_comment(type_alias.comment.as_ref())|safe }}
+{{ self::render_doc_comment(type_alias.comment.as_ref(), module_path.level)|safe }}
 {% endfor %}
 {% endblock %}

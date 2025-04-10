@@ -1,4 +1,7 @@
-use crate::{build_expression, source_map::SourceMap};
+use crate::{
+    build_expression,
+    source_map::{ResolveTarget, SourceMap},
+};
 use std::collections::HashMap;
 use wesl::syntax;
 use wesl_docs::*;
@@ -11,7 +14,11 @@ pub fn build_type(
 ) -> TypeExpression {
     let name = ty.ident.name().clone();
 
-    match source_map.resolve_reference(&name, module_path, dependencies) {
+    match source_map.resolve_reference(
+        ResolveTarget::MaybeMangled(&name),
+        module_path,
+        dependencies,
+    ) {
         Some((name, kind, def_path)) => TypeExpression::Referenced {
             name,
             kind,

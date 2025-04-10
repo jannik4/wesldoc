@@ -1,4 +1,4 @@
-use crate::source_map::SourceMap;
+use crate::source_map::{ResolveTarget, SourceMap};
 use std::collections::HashMap;
 use wesl_docs::*;
 
@@ -23,9 +23,9 @@ pub fn build_outer_doc_comment(
 fn build_doc_comment(
     raw_comment: &str,
     comment_prefix: &str,
-    _source_map: &SourceMap,
-    _module_path: &[String],
-    _dependencies: &HashMap<String, Version>,
+    source_map: &SourceMap,
+    module_path: &[String],
+    dependencies: &HashMap<String, Version>,
 ) -> Option<DocComment> {
     // Strip the comment prefix
     let comment = raw_comment
@@ -61,7 +61,8 @@ fn build_doc_comment(
     // Raise heading levels
     raise_heading_levels(&mut full);
 
-    // TODO: Support intra-doc links
+    // Intra-doc links
+    resolve_intra_doc_links(&mut full, source_map, module_path, dependencies);
 
     // Create the short variant
     let mut complete = false;
@@ -135,5 +136,33 @@ fn raise_heading_level(level: md::HeadingLevel) -> md::HeadingLevel {
         md::HeadingLevel::H4 => md::HeadingLevel::H5,
         md::HeadingLevel::H5 => md::HeadingLevel::H6,
         md::HeadingLevel::H6 => md::HeadingLevel::H6,
+    }
+}
+
+// TODO: Only works for items in scope as this just looks up the name in the source map
+fn resolve_intra_doc_links(
+    events: &mut [md::Event],
+    source_map: &SourceMap,
+    module_path: &[String],
+    dependencies: &HashMap<String, Version>,
+) {
+    for event in events {
+        if let md::Event::Start(md::Tag::Link { dest_url, .. }) = event {
+            if let Some((name, kind, def_path)) = source_map.resolve_reference(
+                ResolveTarget::Name(dest_url.as_ref()),
+                module_path,
+                dependencies,
+            ) {
+                *dest_url = IntraDocLink {
+                    def_path,
+                    kind,
+                    name,
+                }
+                .to_string()
+                .into();
+            } else {
+                dbg!("Failed to resolve intra-doc link: {}", dest_url);
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, str::FromStr};
 
 pub use indexmap::{IndexMap, IndexSet};
 pub use pulldown_cmark as md;
@@ -477,4 +477,91 @@ pub enum InterpolationSampling {
     Sample,
     First,
     Either,
+}
+
+#[derive(Debug, Clone)]
+pub struct IntraDocLink {
+    pub def_path: DefinitionPath,
+    pub kind: ItemKind,
+    pub name: Ident,
+}
+
+impl fmt::Display for IntraDocLink {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "INTRA_DOC_LINK:")?;
+        match &self.def_path {
+            DefinitionPath::Absolute(components) => {
+                write!(f, "absolute {}", components.join("::"))?;
+            }
+            DefinitionPath::Package(name, version, components) => {
+                write!(f, "package {} {} {}", name, version, components.join("::"))?;
+            }
+        }
+        write!(f, " ")?;
+        match self.kind {
+            ItemKind::Module => write!(f, "module")?,
+            ItemKind::Constant => write!(f, "constant")?,
+            ItemKind::GlobalVariable => write!(f, "global_variable")?,
+            ItemKind::Struct => write!(f, "struct")?,
+            ItemKind::Function => write!(f, "function")?,
+            ItemKind::TypeAlias => write!(f, "type_alias")?,
+        }
+        write!(f, " {}", self.name)?;
+        Ok(())
+    }
+}
+
+impl FromStr for IntraDocLink {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if !s.starts_with("INTRA_DOC_LINK:") {
+            return Err(());
+        }
+        let s = s.trim_start_matches("INTRA_DOC_LINK:");
+
+        let mut parts = s.split(' ');
+
+        let def_path = match parts.next().ok_or(())? {
+            "absolute" => {
+                let components = parts
+                    .next()
+                    .ok_or(())?
+                    .split("::")
+                    .map(|s| s.to_string())
+                    .collect();
+                DefinitionPath::Absolute(components)
+            }
+            "package" => {
+                let name = parts.next().ok_or(())?.to_string();
+                let version = parts.next().ok_or(())?.parse().map_err(|_| ())?;
+                let components = parts
+                    .next()
+                    .ok_or(())?
+                    .split("::")
+                    .map(|s| s.to_string())
+                    .collect();
+                DefinitionPath::Package(name, version, components)
+            }
+            _ => return Err(()),
+        };
+
+        let kind = match parts.next().ok_or(())? {
+            "module" => ItemKind::Module,
+            "constant" => ItemKind::Constant,
+            "global_variable" => ItemKind::GlobalVariable,
+            "struct" => ItemKind::Struct,
+            "function" => ItemKind::Function,
+            "type_alias" => ItemKind::TypeAlias,
+            _ => return Err(()),
+        };
+
+        let name = Ident(parts.next().ok_or(())?.to_string());
+
+        Ok(IntraDocLink {
+            def_path,
+            kind,
+            name,
+        })
+    }
 }

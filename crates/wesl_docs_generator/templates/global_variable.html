@@ -17,6 +17,6 @@
     var{{ var.space }} {{ var.name }}{% if let Some(ty) = var.ty %}: {{ self::render_type(ty, module_path.level)|safe }}{% endif %}
     {%- if let Some(init) = var.init %} = {{ self::render_expression(init, module_path.level)|safe }}{% endif -%};</code>
 </pre>
-{{ self::render_doc_comment(var.comment.as_ref())|safe }}
+{{ self::render_doc_comment(var.comment.as_ref(), module_path.level)|safe }}
 {% endfor %}
 {% endblock %}

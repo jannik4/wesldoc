@@ -24,12 +24,12 @@
     {%- endfor %}
 }</code>
 </pre>
-{{ self::render_doc_comment(struct_.comment.as_ref())|safe }}
+{{ self::render_doc_comment(struct_.comment.as_ref(), module_path.level)|safe }}
 <h2 class="item-list-title">Fields</h2>
 {% for member in struct_.members %}
 <code>{{ self::render_attributes(member.attributes, module_path.level, None)|safe }}
 {{- member.name }}: {{ self::render_type(member.ty, module_path.level)|safe }}</code>
-{{ self::render_doc_comment(member.comment.as_ref())|safe }}
+{{ self::render_doc_comment(member.comment.as_ref(), module_path.level)|safe }}
 {% endfor %}
 {% endfor %}
 {% endblock %}

@@ -83,16 +83,6 @@ fn compile_module(
         module.source = Some(source.to_string());
     }
 
-    // Set comment
-    module.comment = module.source.as_ref().and_then(|source| {
-        build_inner_doc_comment(
-            &extract_comments_inner(source),
-            &source_map,
-            &path,
-            dependencies,
-        )
-    });
-
     // Insert global declarations from this module as locals
     for decl in &compiled.syntax.global_declarations {
         match decl.node() {
@@ -121,6 +111,16 @@ fn compile_module(
             syntax::GlobalDeclaration::ConstAssert(_const_assert) => (),
         }
     }
+
+    // Set comment
+    module.comment = module.source.as_ref().and_then(|source| {
+        build_inner_doc_comment(
+            &extract_comments_inner(source),
+            &source_map,
+            &path,
+            dependencies,
+        )
+    });
 
     // Collect translate time features
     module.translate_time_features = collect_features(compiled, &source_map);

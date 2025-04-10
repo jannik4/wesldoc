@@ -10,11 +10,12 @@ use std::{
     fs::{self, File},
     ops::Deref,
     path::Path,
+    str::FromStr,
 };
 use wesl_docs::{
     Attribute, BuiltinValue, Constant, DefinitionPath, DiagnosticSeverity, DocComment, Expression,
-    Function, GlobalVariable, Ident, InterpolationSampling, InterpolationType, ItemKind, Module,
-    Span, Struct, TypeAlias, TypeExpression, Version, WeslDocs,
+    Function, GlobalVariable, Ident, InterpolationSampling, InterpolationType, IntraDocLink,
+    ItemKind, Module, Span, Struct, TypeAlias, TypeExpression, Version, WeslDocs, md,
 };
 
 pub type Error = Box<dyn std::error::Error>;
@@ -558,13 +559,20 @@ fn def_path_href(
     href
 }
 
-fn render_doc_comment(comment: Option<&DocComment>) -> String {
+fn render_doc_comment(comment: Option<&DocComment>, module_path_level: &usize) -> String {
     let mut output = String::new();
     if let Some(comment) = comment {
         output.push_str(r#"<div class="comment">"#);
         let md = {
             let mut md = String::new();
-            wesl_docs::md::html::push_html(&mut md, comment.unsafe_full.iter().cloned());
+            md::html::push_html(
+                &mut md,
+                comment
+                    .unsafe_full
+                    .iter()
+                    .cloned()
+                    .map(|e| process_intra_doc_links(e, *module_path_level)),
+            );
             ammonia::clean(&md)
         };
         output.push_str(&md);
@@ -573,19 +581,36 @@ fn render_doc_comment(comment: Option<&DocComment>) -> String {
     output
 }
 
-fn render_doc_comment_short(comment: Option<&DocComment>) -> String {
+fn render_doc_comment_short(comment: Option<&DocComment>, module_path_level: &usize) -> String {
     let mut output = String::new();
     if let Some(comment) = comment {
         output.push_str(r#"<div class="comment-inline">"#);
         let md = {
             let mut md = String::new();
-            wesl_docs::md::html::push_html(&mut md, comment.unsafe_short.iter().cloned());
+            md::html::push_html(
+                &mut md,
+                comment
+                    .unsafe_short
+                    .iter()
+                    .cloned()
+                    .map(|e| process_intra_doc_links(e, *module_path_level)),
+            );
             ammonia::clean(&md)
         };
         output.push_str(&md);
         output.push_str(r#"</div>"#);
     }
     output
+}
+
+fn process_intra_doc_links(mut event: md::Event, module_path_level: usize) -> md::Event {
+    if let md::Event::Start(md::Tag::Link { dest_url, .. }) = &mut event {
+        if let Ok(link) = IntraDocLink::from_str(dest_url) {
+            *dest_url =
+                def_path_href(&link.name, &link.kind, &link.def_path, &module_path_level).into();
+        }
+    }
+    event
 }
 
 struct Base<'a> {

@@ -5,7 +5,7 @@
 <a class="module" href="{{ module_path.source_href(None) }}">Source</a>
 {% endif %}
 
-{{ self::render_doc_comment(module.comment.as_ref())|safe }}
+{{ self::render_doc_comment(module.comment.as_ref(), module_path.level)|safe }}
 
 {% if !module.modules.is_empty() %}
 <h3 class="item-list-title">Modules</h3>
@@ -14,7 +14,7 @@
     <li>
         <div><a class="module" href="{{ module.name }}/index.html">{{ module.name }}</a></div>
         <div>
-            {{ self::render_doc_comment_short(module.comment.as_ref())|safe }}
+            {{ self::render_doc_comment_short(module.comment.as_ref(), module_path.level)|safe }}
         </div>
     </li>
     {% endfor %}
@@ -33,7 +33,7 @@
             {% endif %}
         </div>
         <div>
-            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
+            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref(), module_path.level)|safe }}
         </div>
     </li>
     {% endfor %}
@@ -52,7 +52,7 @@
             {% endif %}
         </div>
         <div>
-            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
+            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref(), module_path.level)|safe }}
         </div>
     </li>
     {% endfor %}
@@ -71,7 +71,7 @@
             {% endif %}
         </div>
         <div>
-            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
+            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref(), module_path.level)|safe }}
         </div>
     </li>
     {% endfor %}
@@ -90,7 +90,7 @@
             {% endif %}
         </div>
         <div>
-            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
+            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref(), module_path.level)|safe }}
         </div>
     </li>
     {% endfor %}
@@ -109,7 +109,7 @@
             {% endif %}
         </div>
         <div>
-            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
+            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref(), module_path.level)|safe }}
         </div>
     </li>
     {% endfor %}

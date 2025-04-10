@@ -1,7 +1,7 @@
-//! Module documentation for the Cuboid primitive.
+//! Module documentation for the [`Cuboid`] primitive.
 //!
 //! This module provides a cuboid primitive with various constructors.
-//! It includes constructors for creating a Cuboid from its size, corners, and length.
+//! It includes constructors for creating a [`Cuboid`](Cuboid) from its size, corners, and length.
 //!
 //! # Examples
 //!

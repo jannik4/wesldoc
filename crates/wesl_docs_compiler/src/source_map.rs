@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use wesl::{CompileResult, ModulePath, SourceMap as _, syntax};
+use wesl::{CompileResult, Mangler, ModulePath, SourceMap as _, syntax};
 use wesl_docs::{DefinitionPath, Ident, ItemKind, Version};
 
 pub struct SourceMap<'a> {
@@ -21,7 +21,13 @@ impl SourceMap<'_> {
     }
 
     pub fn insert_local(&mut self, decl: &str, kind: ItemKind) {
-        if self.get_decl(decl).is_none() {
+        if self
+            .compiled
+            .sourcemap
+            .as_ref()
+            .and_then(|inner| inner.get_decl(decl))
+            .is_none()
+        {
             self.local.insert(decl.to_string(), kind);
         }
     }
@@ -47,11 +53,11 @@ impl SourceMap<'_> {
 
     pub fn resolve_reference(
         &self,
-        name: &str,
+        target: ResolveTarget,
         module_path: &[String],
         dependencies: &HashMap<String, Version>,
     ) -> Option<(Ident, ItemKind, DefinitionPath)> {
-        let (name, kind, path) = self.get_decl(name)?;
+        let (name, kind, path) = self.get_decl(target)?;
         let def_path = match path.origin {
             syntax::PathOrigin::Absolute => DefinitionPath::Absolute(path.components.clone()),
             syntax::PathOrigin::Relative(n) => {
@@ -91,27 +97,63 @@ impl SourceMap<'_> {
         Some((Ident(name.to_string()), kind, def_path))
     }
 
-    fn get_decl(&self, decl: &str) -> Option<(&str, ItemKind, &ModulePath)> {
-        if let Some((decl, kind)) = self.local.get_key_value(decl) {
+    fn get_decl(&self, target: ResolveTarget) -> Option<(&str, ItemKind, &ModulePath)> {
+        if let Some((decl, kind)) = self.local.get_key_value(target.as_str()) {
             return Some((decl, *kind, &self.local_path));
         }
 
         if let Some(inner) = self.compiled.sourcemap.as_ref() {
-            let kind = item_kind_from_name(self.compiled, decl)?;
-            let (path, name) = inner.get_decl(decl)?;
-            return Some((name, kind, path));
+            match target {
+                ResolveTarget::Name(name) => {
+                    // TODO: This assumes the escape mangler was used.
+                    // TODO: This does not work if multiple items with the same name existed before mangling.
+                    let mangler = wesl::EscapeMangler;
+                    let (mangled, kind) = mangled_item(self.compiled, |ident| {
+                        mangler
+                            .unmangle(ident)
+                            .is_some_and(|(_, unmangled)| unmangled == name)
+                    })?;
+
+                    let (path, name) = inner.get_decl(&mangled)?;
+                    return Some((name, kind, path));
+                }
+                ResolveTarget::MaybeMangled(name) => {
+                    let (_, kind) = mangled_item(self.compiled, |ident| ident == name)?;
+                    let (path, name) = inner.get_decl(name)?;
+                    return Some((name, kind, path));
+                }
+            }
         }
 
         None
     }
 }
 
-fn item_kind_from_name(compiled: &CompileResult, name: &str) -> Option<ItemKind> {
+pub enum ResolveTarget<'a> {
+    /// Raw name, e.g. from doc comments.
+    Name(&'a str),
+    /// Identifier from the source code.
+    MaybeMangled(&'a str),
+}
+
+impl ResolveTarget<'_> {
+    pub fn as_str(&self) -> &str {
+        match self {
+            ResolveTarget::Name(name) => name,
+            ResolveTarget::MaybeMangled(name) => name,
+        }
+    }
+}
+
+fn mangled_item(
+    compiled: &CompileResult,
+    mut f: impl FnMut(&str) -> bool,
+) -> Option<(String, ItemKind)> {
     for decl in &compiled.syntax.global_declarations {
-        if decl
-            .ident()
-            .is_some_and(|decl| decl.name().as_str() == name)
-        {
+        let Some(ident) = decl.ident() else {
+            continue;
+        };
+        if f(ident.name().as_str()) {
             return match decl.node() {
                 syntax::GlobalDeclaration::Void => None,
                 syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
@@ -124,7 +166,8 @@ fn item_kind_from_name(compiled: &CompileResult, name: &str) -> Option<ItemKind>
                 syntax::GlobalDeclaration::Struct(_) => Some(ItemKind::Struct),
                 syntax::GlobalDeclaration::Function(_) => Some(ItemKind::Function),
                 syntax::GlobalDeclaration::ConstAssert(_const_assert) => None,
-            };
+            }
+            .map(|kind| (ident.name().to_string(), kind));
         }
     }
 

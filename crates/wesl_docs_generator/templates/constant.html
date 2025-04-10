@@ -17,6 +17,6 @@ const {{ constant.name }}
 {%- if let Some(ty) = constant.ty %}: {{ self::render_type(ty, module_path.level)|safe }} = {% else %} = {% endif %}
 {{- self::render_expression(constant.init, module_path.level)|safe }};</code>
 </pre>
-{{ self::render_doc_comment(constant.comment.as_ref())|safe }}
+{{ self::render_doc_comment(constant.comment.as_ref(), module_path.level)|safe }}
 {% endfor %}
 {% endblock %}
