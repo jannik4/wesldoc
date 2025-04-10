@@ -9,7 +9,7 @@ Generate documentation for WESL projects.
 - Generate HTML documentation for WESL projects.
 - Search for items or attributes in the documentation.
 - Go to source code from the documentation.
-- Documentation comments (`///` and `//!`) with Markdown formatting and [currently limited](https://github.com/jannik4/wesl_docs/issues/3) support for intra-doc links.
+- Documentation comments (`///` and `//!`) with Markdown formatting and [(currently limited)](https://github.com/jannik4/wesl_docs/issues/3) support for intra-doc links.
 - Show translate-time features in the documentation.
 - Choose between a dark and a light theme.
 
