@@ -4,6 +4,17 @@ Generate documentation for WESL projects.
 
 **Warning**: This is a work in progress and not stable in any way yet.
 
+## Features
+
+- Generate HTML documentation for WESL projects.
+- Search for items or attributes in the documentation.
+- Go to source code from the documentation.
+- Documentation comments (`///` and `//!`) with Markdown formatting and [currently limited](https://github.com/jannik4/wesl_docs/issues/3) support for intra-doc links.
+- Show translate-time features in the documentation.
+- Choose between a dark and a light theme.
+
+For a live example, check out the [GitHub Pages site](https://jannik4.github.io/wesl_docs/) of this repository.
+
 ## How it works
 
 - [`wesl_docs`](crates/wesl_docs/): This crate provides the AST for the WESL documentation. It is fully standalone and does not depend on `wesl-rs`.
