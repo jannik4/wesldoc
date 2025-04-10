@@ -603,6 +603,21 @@ fn render_doc_comment_short(comment: Option<&DocComment>, module_path_level: &us
     output
 }
 
+fn render_doc_comment_short_no_links(comment: Option<&DocComment>) -> String {
+    let mut output = String::new();
+    if let Some(comment) = comment {
+        output.push_str(r#"<div class="comment-inline">"#);
+        let md = {
+            let mut md = String::new();
+            md::html::push_html(&mut md, comment.unsafe_short_no_links.iter().cloned());
+            ammonia::clean(&md)
+        };
+        output.push_str(&md);
+        output.push_str(r#"</div>"#);
+    }
+    output
+}
+
 fn process_intra_doc_links(mut event: md::Event, module_path_level: usize) -> md::Event {
     if let md::Event::Start(md::Tag::Link { dest_url, .. }) = &mut event {
         if let Ok(link) = IntraDocLink::from_str(dest_url) {

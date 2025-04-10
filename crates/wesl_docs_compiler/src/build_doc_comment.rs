@@ -108,9 +108,20 @@ fn build_doc_comment(
         })
         .collect::<Vec<_>>();
 
+    // Create the short no links variant
+    let short_no_links = short
+        .iter()
+        .filter_map(|event| match event {
+            md::Event::Start(md::Tag::Link { .. }) => None,
+            md::Event::End(md::TagEnd::Link) => None,
+            _ => Some(event.clone()),
+        })
+        .collect::<Vec<_>>();
+
     Some(DocComment {
-        unsafe_short: short,
         unsafe_full: full,
+        unsafe_short: short,
+        unsafe_short_no_links: short_no_links,
     })
 }
 

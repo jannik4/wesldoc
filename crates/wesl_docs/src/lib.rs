@@ -374,9 +374,11 @@ impl fmt::Display for Ident {
 #[derive(Debug, Clone)]
 pub struct DocComment {
     /// This is not escaped, e.g. it can contain `<script>` tags.
+    pub unsafe_full: Vec<md::Event<'static>>,
+    /// This is not escaped, e.g. it can contain `<script>` tags.
     pub unsafe_short: Vec<md::Event<'static>>,
     /// This is not escaped, e.g. it can contain `<script>` tags.
-    pub unsafe_full: Vec<md::Event<'static>>,
+    pub unsafe_short_no_links: Vec<md::Event<'static>>,
 }
 
 #[derive(Debug, Clone)]
