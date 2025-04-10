@@ -74,49 +74,61 @@
             id="4"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >4</a>fn cuboid_volume(cuboid: Cuboid) -&#62; f32 {
+        >4</a>/// Calculates the volume of a [`Cuboid`].
 <a
             href="#5"
             id="5"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >5</a>    return cuboid.half_size.x * cuboid.half_size.y * cuboid.half_size.z * 8.0;
+        >5</a>fn cuboid_volume(cuboid: Cuboid) -&#62; f32 {
 <a
             href="#6"
             id="6"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >6</a>}
+        >6</a>    return cuboid.half_size.x * cuboid.half_size.y * cuboid.half_size.z * 8.0;
 <a
             href="#7"
             id="7"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >7</a>
+        >7</a>}
 <a
             href="#8"
             id="8"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >8</a>fn cylinder_volume(cylinder: Cylinder) -&#62; f32 {
+        >8</a>
 <a
             href="#9"
             id="9"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >9</a>    let base_area = PI * cylinder.radius * cylinder.radius;
+        >9</a>/// Calculates the volume of a [`Cylinder`].
 <a
             href="#10"
             id="10"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >10</a>    return base_area * cylinder.half_height * 2.0;
+        >10</a>fn cylinder_volume(cylinder: Cylinder) -&#62; f32 {
 <a
             href="#11"
             id="11"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >11</a>}</code>
+        >11</a>    let base_area = PI * cylinder.radius * cylinder.radius;
+<a
+            href="#12"
+            id="12"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >12</a>    return base_area * cylinder.half_height * 2.0;
+<a
+            href="#13"
+            id="13"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >13</a>}</code>
 </pre>
 
         </div>
