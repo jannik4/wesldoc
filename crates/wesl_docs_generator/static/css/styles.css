@@ -156,6 +156,11 @@ a:hover {
   background-color: var(--code-block-background-color);
 }
 
+.comment a,
+.comment-inline a {
+  color: var(--c-module-color);
+}
+
 .comment pre,
 .code-block {
   border-radius: 4px;
