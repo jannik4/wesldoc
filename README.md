@@ -15,6 +15,8 @@ Generate documentation for WESL projects.
 
 If you want to generate documentation for you own WESL projects, you can use the `wesl_docs_compiler` and `wesl_docs_generator` crates, which are meant to be used as libraries. Look at the `make` crate for an example on how to use them.
 
+The workflow is currently still quite ad hoc, as there is not yet a standardized method for packaging WESL projects. As soon as this is the case, the API for creating the documentation will become more stable/straightforward.
+
 ## License
 
 Licensed under either of
