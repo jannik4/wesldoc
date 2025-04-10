@@ -1,12 +1,8 @@
 {% match ty %}
-{%- when TypeExpression::Referenced with { name, kind, def_path } %}
-{%- if let Some(def_path) = def_path -%}
+{%- when TypeExpression::Referenced with { name, kind, def_path } -%}
 <a class="struct" href="{{ self::def_path_href(name, kind, def_path, module_path_level) }}">
     {{- name -}}
 </a>
-{%- else %}
-{{- name }}
-{%- endif %}
 {%- when TypeExpression::TypeIdentifier with { name, template_args } %}
 {{- name }}
 {%- if let Some(template_args) = template_args -%}

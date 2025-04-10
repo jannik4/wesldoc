@@ -292,7 +292,7 @@ pub enum TypeExpression {
     Referenced {
         name: Ident,
         kind: ItemKind,
-        def_path: Option<DefinitionPath>,
+        def_path: DefinitionPath,
     },
     Unknown,
 }

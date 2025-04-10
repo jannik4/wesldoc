@@ -11,50 +11,11 @@ pub fn build_type(
 ) -> TypeExpression {
     let name = ty.ident.name().clone();
 
-    match source_map.get_decl(&name) {
-        Some((name, kind, path)) => TypeExpression::Referenced {
-            name: Ident(name.to_string()),
+    match source_map.resolve_reference(&name, module_path, dependencies) {
+        Some((name, kind, def_path)) => TypeExpression::Referenced {
+            name,
             kind,
-            def_path: match path.origin {
-                syntax::PathOrigin::Absolute => {
-                    Some(DefinitionPath::Absolute(path.components.clone()))
-                }
-                syntax::PathOrigin::Relative(n) => {
-                    if module_path.len() < n + 1 {
-                        println!(
-                            "Warning: Invalid relative path for type {} in module {}",
-                            name,
-                            module_path.join("/")
-                        );
-                        None
-                    } else {
-                        let mut combined = module_path[1..module_path.len() - n].to_vec();
-                        combined.extend_from_slice(&path.components);
-                        Some(DefinitionPath::Absolute(combined))
-                    }
-                }
-                syntax::PathOrigin::Package => match path.components.split_first() {
-                    Some((dep, rest)) => match dependencies.get(dep) {
-                        Some(version) => Some(DefinitionPath::Package(
-                            dep.clone(),
-                            version.clone(),
-                            rest.to_vec(),
-                        )),
-                        None => {
-                            println!("Warning: Dependency {} not found", dep,);
-                            None
-                        }
-                    },
-                    None => {
-                        println!(
-                            "Warning: Invalid package path for type {} in module {}",
-                            name,
-                            module_path.join("/")
-                        );
-                        None
-                    }
-                },
-            },
+            def_path,
         },
         None => TypeExpression::TypeIdentifier {
             name: Ident(name),

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use wesl::{CompileResult, ModulePath, SourceMap as _, syntax};
-use wesl_docs::ItemKind;
+use wesl_docs::{DefinitionPath, Ident, ItemKind, Version};
 
 pub struct SourceMap<'a> {
     compiled: &'a CompileResult,
@@ -38,7 +38,60 @@ impl SourceMap<'_> {
         self.local.contains_key(decl.name().as_str())
     }
 
-    pub fn get_decl(&self, decl: &str) -> Option<(&str, ItemKind, &ModulePath)> {
+    pub fn default_source(&self) -> Option<&str> {
+        self.compiled
+            .sourcemap
+            .as_ref()
+            .and_then(|s| s.get_default_source())
+    }
+
+    pub fn resolve_reference(
+        &self,
+        name: &str,
+        module_path: &[String],
+        dependencies: &HashMap<String, Version>,
+    ) -> Option<(Ident, ItemKind, DefinitionPath)> {
+        let (name, kind, path) = self.get_decl(name)?;
+        let def_path = match path.origin {
+            syntax::PathOrigin::Absolute => DefinitionPath::Absolute(path.components.clone()),
+            syntax::PathOrigin::Relative(n) => {
+                if module_path.len() < n + 1 {
+                    println!(
+                        "Warning: Invalid relative path for type {} in module {}",
+                        name,
+                        module_path.join("/")
+                    );
+                    return None;
+                } else {
+                    let mut combined = module_path[1..module_path.len() - n].to_vec();
+                    combined.extend_from_slice(&path.components);
+                    DefinitionPath::Absolute(combined)
+                }
+            }
+            syntax::PathOrigin::Package => match path.components.split_first() {
+                Some((dep, rest)) => match dependencies.get(dep) {
+                    Some(version) => {
+                        DefinitionPath::Package(dep.clone(), version.clone(), rest.to_vec())
+                    }
+                    None => {
+                        println!("Warning: Dependency {} not found", dep,);
+                        return None;
+                    }
+                },
+                None => {
+                    println!(
+                        "Warning: Invalid package path for type {} in module {}",
+                        name,
+                        module_path.join("/")
+                    );
+                    return None;
+                }
+            },
+        };
+        Some((Ident(name.to_string()), kind, def_path))
+    }
+
+    fn get_decl(&self, decl: &str) -> Option<(&str, ItemKind, &ModulePath)> {
         if let Some((decl, kind)) = self.local.get_key_value(decl) {
             return Some((decl, *kind, &self.local_path));
         }
@@ -50,13 +103,6 @@ impl SourceMap<'_> {
         }
 
         None
-    }
-
-    pub fn default_source(&self) -> Option<&str> {
-        self.compiled
-            .sourcemap
-            .as_ref()
-            .and_then(|s| s.get_default_source())
     }
 }
 
