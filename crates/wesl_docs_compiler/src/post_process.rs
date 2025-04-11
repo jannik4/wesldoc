@@ -17,6 +17,7 @@ fn post_process_module(module: &mut Module) -> IndexSet<String> {
 
     // Post process items
     post_process_items(&mut module.constants);
+    post_process_items(&mut module.overrides);
     post_process_items(&mut module.global_variables);
     post_process_items(&mut module.structs);
     post_process_items(&mut module.functions);

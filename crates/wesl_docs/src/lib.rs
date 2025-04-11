@@ -17,6 +17,7 @@ pub struct Module {
     pub comment: Option<DocComment>,
     pub modules: Vec<Module>,
     pub constants: IndexMap<Ident, Item<Constant>>,
+    pub overrides: IndexMap<Ident, Item<Override>>,
     pub global_variables: IndexMap<Ident, Item<GlobalVariable>>,
     pub structs: IndexMap<Ident, Item<Struct>>,
     pub functions: IndexMap<Ident, Item<Function>>,
@@ -32,6 +33,7 @@ impl Module {
             comment: None,
             modules: Vec::new(),
             constants: IndexMap::new(),
+            overrides: IndexMap::new(),
             global_variables: IndexMap::new(),
             structs: IndexMap::new(),
             functions: IndexMap::new(),
@@ -100,6 +102,7 @@ impl fmt::Display for Conditional {
 pub enum ItemKind {
     Module,
     Constant,
+    Override,
     GlobalVariable,
     Struct,
     Function,
@@ -149,6 +152,30 @@ pub struct Constant {
 
 impl ItemInstance for Constant {
     const ITEM_KIND: ItemKind = ItemKind::Constant;
+    fn conditional(&self) -> Option<&Conditional> {
+        self.conditional.as_ref()
+    }
+    fn comment(&self) -> Option<&DocComment> {
+        self.comment.as_ref()
+    }
+    fn all_attributes(&self) -> impl Iterator<Item = &Attribute> {
+        self.attributes.iter()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Override {
+    pub name: Ident,
+    pub ty: Option<TypeExpression>,
+    pub init: Option<Expression>,
+    pub attributes: Vec<Attribute>,
+    pub conditional: Option<Conditional>,
+    pub comment: Option<DocComment>,
+    pub span: Option<Span>,
+}
+
+impl ItemInstance for Override {
+    const ITEM_KIND: ItemKind = ItemKind::Override;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
     }
@@ -503,6 +530,7 @@ impl fmt::Display for IntraDocLink {
         match self.kind {
             ItemKind::Module => write!(f, "module")?,
             ItemKind::Constant => write!(f, "constant")?,
+            ItemKind::Override => write!(f, "override")?,
             ItemKind::GlobalVariable => write!(f, "global_variable")?,
             ItemKind::Struct => write!(f, "struct")?,
             ItemKind::Function => write!(f, "function")?,
@@ -551,6 +579,7 @@ impl FromStr for IntraDocLink {
         let kind = match parts.next().ok_or(())? {
             "module" => ItemKind::Module,
             "constant" => ItemKind::Constant,
+            "override" => ItemKind::Override,
             "global_variable" => ItemKind::GlobalVariable,
             "struct" => ItemKind::Struct,
             "function" => ItemKind::Function,

@@ -128,7 +128,27 @@ fn compile_module(
                         });
                 }
                 syntax::DeclarationKind::Override => {
-                    // TODO: ...
+                    let name = map(&declaration.ident);
+                    module
+                        .overrides
+                        .entry(name.clone())
+                        .or_default()
+                        .instances
+                        .push(Override {
+                            name,
+                            ty: declaration.ty.as_ref().map(|ty| build_type(ty, &ctx)),
+                            init: declaration
+                                .initializer
+                                .as_ref()
+                                .map(|expr| build_expression(expr, &ctx)),
+                            attributes: build_attributes(&declaration.attributes, &ctx),
+                            conditional: build_conditional(
+                                &mut conditional_scope,
+                                &declaration.attributes,
+                            ),
+                            comment,
+                            span,
+                        });
                 }
                 syntax::DeclarationKind::Let => (), // should be unreachable?
                 syntax::DeclarationKind::Var(address_space) => {

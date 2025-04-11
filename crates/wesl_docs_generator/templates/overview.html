@@ -40,6 +40,25 @@
 </ul>
 {% endif %}
 
+{% if !module.overrides.is_empty() %}
+<h3 class="item-list-title">Overrides</h3>
+<ul class="item-list">
+    {% for (name, item) in module.overrides %}
+    <li>
+        <div>
+            <a class="override" href="override.{{ name }}.html">{{ name }}</a>
+            {% if let Some(conditional) = item.conditional %}
+            <span class="conditional-inline">{{ conditional }}</span>
+            {% endif %}
+        </div>
+        <div>
+            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref(), module_path.level)|safe }}
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+
 {% if !module.global_variables.is_empty() %}
 <h3 class="item-list-title">Global Variables</h3>
 <ul class="item-list">

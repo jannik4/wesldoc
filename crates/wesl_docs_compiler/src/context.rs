@@ -34,8 +34,7 @@ impl Context<'_> {
                     syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
                         syntax::DeclarationKind::Const => (&declaration.ident, ItemKind::Constant),
                         syntax::DeclarationKind::Override => {
-                            // TODO: ...
-                            return None;
+                            (&declaration.ident, ItemKind::Override)
                         }
                         syntax::DeclarationKind::Let => return None, // should be unreachable?
                         syntax::DeclarationKind::Var(_) => {

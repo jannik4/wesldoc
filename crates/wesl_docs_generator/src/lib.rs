@@ -15,7 +15,7 @@ use std::{
 use wesl_docs::{
     Attribute, BuiltinValue, Constant, DefinitionPath, DiagnosticSeverity, DocComment, Expression,
     Function, GlobalVariable, Ident, InterpolationSampling, InterpolationType, IntraDocLink,
-    ItemKind, Module, Span, Struct, TypeAlias, TypeExpression, Version, WeslDocs, md,
+    ItemKind, Module, Override, Span, Struct, TypeAlias, TypeExpression, Version, WeslDocs, md,
 };
 
 pub type Error = Box<dyn std::error::Error>;
@@ -212,6 +212,20 @@ fn gen_module(
         )?)?;
     }
 
+    for (name, item) in &module.overrides {
+        let module_path = module_path.extend(name.to_string(), "#", ItemKind::Override, false);
+        let template = OverrideTemplate {
+            base,
+            title: &name.to_string(),
+            module_path: &module_path,
+            module,
+            overrides: &item.instances,
+        };
+        template.write_into(&mut File::create(
+            base_path_docs.join(format!("override.{}.html", name)),
+        )?)?;
+    }
+
     for (name, item) in &module.global_variables {
         let module_path =
             module_path.extend(name.to_string(), "#", ItemKind::GlobalVariable, false);
@@ -371,6 +385,16 @@ struct ConstantTemplate<'a> {
     module_path: &'a ModulePath,
     module: &'a Module,
     constants: &'a [Constant],
+}
+
+#[derive(Template)]
+#[template(path = "override.html")]
+struct OverrideTemplate<'a> {
+    base: &'a Base<'a>,
+    title: &'a str,
+    module_path: &'a ModulePath,
+    module: &'a Module,
+    overrides: &'a [Override],
 }
 
 #[derive(Template)]
@@ -550,6 +574,7 @@ fn def_path_href(
     match *kind {
         ItemKind::Module => href.push_str("index.html"),
         ItemKind::Constant => href.push_str(&format!("const.{}.html", name.0)),
+        ItemKind::Override => href.push_str(&format!("override.{}.html", name.0)),
         ItemKind::GlobalVariable => href.push_str(&format!("var.{}.html", name.0)),
         ItemKind::Struct => href.push_str(&format!("struct.{}.html", name.0)),
         ItemKind::Function => href.push_str(&format!("fn.{}.html", name.0)),
@@ -652,6 +677,7 @@ fn module_path_class(kind: &ItemKind, last: &bool) -> &'static str {
     match kind {
         ItemKind::Module => "module",
         ItemKind::Constant => "const",
+        ItemKind::Override => "override",
         ItemKind::GlobalVariable => "var",
         ItemKind::Struct => "struct",
         ItemKind::Function => "fn",

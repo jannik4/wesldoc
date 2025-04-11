@@ -33,6 +33,7 @@ fn all_items_module(
     }
 
     add_items(&module.constants, path.clone(), serialized_items);
+    add_items(&module.overrides, path.clone(), serialized_items);
     add_items(&module.global_variables, path.clone(), serialized_items);
     add_items(&module.structs, path.clone(), serialized_items);
     add_items(&module.functions, path.clone(), serialized_items);
@@ -79,6 +80,7 @@ impl SerializedItem {
         match kind {
             SerializedItemKind::Module => url.push_str(&format!("/{}/index.html", name)),
             SerializedItemKind::Constant => url.push_str(&format!("/const.{}.html", name)),
+            SerializedItemKind::Override => url.push_str(&format!("/override.{}.html", name)),
             SerializedItemKind::GlobalVariable => url.push_str(&format!("/var.{}.html", name)),
             SerializedItemKind::Struct => url.push_str(&format!("/struct.{}.html", name)),
             SerializedItemKind::Function => url.push_str(&format!("/fn.{}.html", name)),
@@ -103,6 +105,7 @@ impl SerializedItem {
 enum SerializedItemKind {
     Module,
     Constant,
+    Override,
     GlobalVariable,
     Struct,
     Function,
@@ -114,6 +117,7 @@ impl From<ItemKind> for SerializedItemKind {
         match kind {
             ItemKind::Module => SerializedItemKind::Module,
             ItemKind::Constant => SerializedItemKind::Constant,
+            ItemKind::Override => SerializedItemKind::Override,
             ItemKind::GlobalVariable => SerializedItemKind::GlobalVariable,
             ItemKind::Struct => SerializedItemKind::Struct,
             ItemKind::Function => SerializedItemKind::Function,

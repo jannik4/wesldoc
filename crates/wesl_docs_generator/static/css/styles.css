@@ -85,6 +85,10 @@ a:hover {
   color: var(--c-const-color);
 }
 
+.override {
+  color: var(--c-override-color);
+}
+
 .var {
   color: var(--c-var-color);
 }

@@ -13,6 +13,7 @@
   --c-path-color: #dcdcdc;
   --c-module-color: #d2991d;
   --c-const-color: #d2991d;
+  --c-override-color: #d2991d;
   --c-var-color: #d2991d;
   --c-struct-color: #2dbfb8;
   --c-fn-color: #2bab09;
@@ -49,6 +50,7 @@
   --c-path-color: #2f2f2f;
   --c-module-color: #3873ad;
   --c-const-color: #3873ad;
+  --c-override-color: #3873ad;
   --c-var-color: #3873ad;
   --c-struct-color: #ad378a;
   --c-fn-color: #ad7c37;

@@ -80,6 +80,9 @@ function createItemElement(item) {
         case "Constant":
             className = "const";
             break;
+        case "Override":
+            className = "override";
+            break;
         case "GlobalVariable":
             className = "var";
             break;
