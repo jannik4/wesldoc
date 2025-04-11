@@ -3,6 +3,7 @@
 [![Build Status](https://github.com/jannik4/wesl_docs/workflows/CI/badge.svg)](https://github.com/jannik4/wesl_docs/actions)
 [![Pages Status](https://github.com/jannik4/wesl_docs/workflows/pages/badge.svg)](https://github.com/jannik4/wesl_docs/actions)
 [![dependency status](https://deps.rs/repo/github/jannik4/wesl_docs/status.svg?path=crates%2Fmake)](https://deps.rs/repo/github/jannik4/wesl_docs?path=crates%2Fmake) <!-- TODO: deps.rs does not support glob members in workspaces, so point to the "top" crate (https://github.com/deps-rs/deps.rs/issues/15) -->
+[![Lines of Code](https://tokei.rs/b1/github/jannik4/wesl_docs)](https://github.com/jannik4/wesl_docs).
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
