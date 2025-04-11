@@ -441,13 +441,15 @@ struct TypeAliasTemplate<'a> {
 #[template(path = "render_type.html")]
 struct RenderTypeTemplate<'a> {
     ty: &'a TypeExpression,
-    module_path_level: usize,
+    module_path: &'a ModulePath,
+    module: &'a Module,
 }
 
-fn render_type(ty: &TypeExpression, module_path_level: &usize) -> String {
+fn render_type(ty: &TypeExpression, module_path: &ModulePath, module: &Module) -> String {
     RenderTypeTemplate {
         ty,
-        module_path_level: *module_path_level,
+        module_path,
+        module,
     }
     .to_string()
 }
@@ -456,23 +458,26 @@ fn render_type(ty: &TypeExpression, module_path_level: &usize) -> String {
 #[template(path = "render_expression.html")]
 struct RenderExpressionTemplate<'a> {
     expr: &'a Expression,
-    module_path_level: usize,
+    module_path: &'a ModulePath,
+    module: &'a Module,
 }
 
 impl RenderExpressionTemplate<'_> {
     fn render_rec(&self, expr: &Expression) -> String {
         RenderExpressionTemplate {
             expr,
-            module_path_level: self.module_path_level,
+            module_path: self.module_path,
+            module: self.module,
         }
         .to_string()
     }
 }
 
-fn render_expression(expr: &Expression, module_path_level: &usize) -> String {
+fn render_expression(expr: &Expression, module_path: &ModulePath, module: &Module) -> String {
     RenderExpressionTemplate {
         expr,
-        module_path_level: *module_path_level,
+        module_path,
+        module,
     }
     .to_string()
 }
@@ -481,12 +486,14 @@ fn render_expression(expr: &Expression, module_path_level: &usize) -> String {
 #[template(path = "render_attribute.html")]
 struct RenderAttributeTemplate<'a> {
     attr: &'a Attribute,
-    module_path_level: usize,
+    module_path: &'a ModulePath,
+    module: &'a Module,
 }
 
 fn render_attributes(
     attributes: &[Attribute],
-    module_path_level: &usize,
+    module_path: &ModulePath,
+    module: &Module,
     new_line_indent: Option<usize>,
 ) -> String {
     if attributes.is_empty() {
@@ -517,7 +524,8 @@ fn render_attributes(
         result.push_str(
             &RenderAttributeTemplate {
                 attr,
-                module_path_level: *module_path_level,
+                module_path,
+                module,
             }
             .to_string(),
         );

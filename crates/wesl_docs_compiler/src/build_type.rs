@@ -15,7 +15,7 @@ pub fn build_type(ty: &syntax::TypeExpression, ctx: &Context) -> TypeExpression 
             name: Ident(name),
             template_args: ty.template_args.as_ref().map(|args| {
                 args.iter()
-                    .map(|arg| build_expression(arg.expression.node(), ctx))
+                    .map(|arg| build_expression(&arg.expression, ctx))
                     .collect()
             }),
         },

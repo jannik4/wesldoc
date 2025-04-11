@@ -12,10 +12,10 @@
 <div><span class="conditional">{{ conditional }}</span></div>
 {% endif %}
 <pre class="code-block">
-<code>{{ self::render_attributes(constant.attributes, module_path.level, Some(0))|safe -}}
+<code>{{ self::render_attributes(constant.attributes, module_path, module, Some(0))|safe -}}
 const {{ constant.name }}
-{%- if let Some(ty) = constant.ty %}: {{ self::render_type(ty, module_path.level)|safe }} = {% else %} = {% endif %}
-{{- self::render_expression(constant.init, module_path.level)|safe }};</code>
+{%- if let Some(ty) = constant.ty %}: {{ self::render_type(ty, module_path, module)|safe }} = {% else %} = {% endif %}
+{{- self::render_expression(constant.init, module_path, module)|safe }};</code>
 </pre>
 {{ self::render_doc_comment(constant.comment.as_ref(), module_path.level)|safe }}
 {% endfor %}

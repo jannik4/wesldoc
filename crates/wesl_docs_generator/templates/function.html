@@ -24,20 +24,20 @@
 {%- endif -%}
 
 <code>
-    {{- self::render_attributes(function.attributes, module_path.level, Some(0))|safe -}}
+    {{- self::render_attributes(function.attributes, module_path, module, Some(0))|safe -}}
     fn {{ function.name }}(
     {%- for param in function.parameters %}
     {{- ws_pre }}
     {%- if let Some(conditional) = param.conditional -%}
         <span class="conditional-code">{{ conditional }}</span>{{ ws_pre }}
     {%- endif %}
-    {{- self::render_attributes(param.attributes, module_path.level, Some(4))|safe }}
-    {{- param.name }}: {{ self::render_type(param.ty, module_path.level)|safe }}
+    {{- self::render_attributes(param.attributes, module_path, module, Some(4))|safe }}
+    {{- param.name }}: {{ self::render_type(param.ty, module_path, module)|safe }}
     {%- if !loop.last %}, {% endif %}
     {%- endfor %}
     {{- ws_post -}}
-) {% if let Some(ret) = function.ret %}-> {{ self::render_attributes(function.return_attributes, module_path.level, None)|safe }}
-{{- self::render_type(ret, module_path.level)|safe }}{% endif %}</code>
+) {% if let Some(ret) = function.ret %}-> {{ self::render_attributes(function.return_attributes, module_path, module, None)|safe }}
+{{- self::render_type(ret, module_path, module)|safe }}{% endif %}</code>
 </pre>
 {{ self::render_doc_comment(function.comment.as_ref(), module_path.level)|safe }}
 {% endfor %}

@@ -248,7 +248,7 @@ pub enum Expression {
     Literal(Literal),
     Parenthesized(Box<Expression>),
     TypeOrIdentifier(TypeExpression),
-    Unknown,
+    NotExpanded(Option<Span>),
 }
 
 #[derive(Debug, Clone)]

@@ -1,6 +1,6 @@
 {% match ty %}
 {%- when TypeExpression::Referenced with { name, kind, def_path } -%}
-<a class="struct" href="{{ self::def_path_href(name, kind, def_path, module_path_level) }}">
+<a class="struct" href="{{ self::def_path_href(name, kind, def_path, module_path.level) }}">
     {{- name -}}
 </a>
 {%- when TypeExpression::TypeIdentifier with { name, template_args } %}
@@ -9,7 +9,7 @@
 &lt;
 {%- for arg in template_args %}
 {%- if !loop.first %}, {% endif %}
-{{- self::render_expression(arg, module_path_level)|safe }}
+{{- self::render_expression(arg, module_path, module)|safe }}
 {%- endfor -%}
 &gt;
 {%- endif %}

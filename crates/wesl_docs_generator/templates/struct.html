@@ -13,22 +13,22 @@
 {% endif %}
 <pre class="code-block">
 <code>
-    {{- self::render_attributes(struct_.attributes, module_path.level, Some(0))|safe -}}
+    {{- self::render_attributes(struct_.attributes, module_path, module, Some(0))|safe -}}
     struct {{ struct_.name }} {
     {%- for member in struct_.members %}
     {% if let Some(conditional) = member.conditional -%}
         <span class="conditional-code">{{ conditional }}</span>
     {% endif %}
-    {{- self::render_attributes(member.attributes, module_path.level, Some(4))|safe }}
-    {{- member.name }}: {{ self::render_type(member.ty, module_path.level)|safe }}{% if !loop.last %},{% endif %}
+    {{- self::render_attributes(member.attributes, module_path, module, Some(4))|safe }}
+    {{- member.name }}: {{ self::render_type(member.ty, module_path, module)|safe }}{% if !loop.last %},{% endif %}
     {%- endfor %}
 }</code>
 </pre>
 {{ self::render_doc_comment(struct_.comment.as_ref(), module_path.level)|safe }}
 <h2 class="item-list-title">Fields</h2>
 {% for member in struct_.members %}
-<div style="margin: 8px 0;"><code>{{ self::render_attributes(member.attributes, module_path.level, None)|safe }}
-{{- member.name }}: {{ self::render_type(member.ty, module_path.level)|safe }}</code></div>
+<div style="margin: 8px 0;"><code>{{ self::render_attributes(member.attributes, module_path, module, None)|safe }}
+{{- member.name }}: {{ self::render_type(member.ty, module_path, module)|safe }}</code></div>
 {{ self::render_doc_comment(member.comment.as_ref(), module_path.level)|safe }}
 {% endfor %}
 {% endfor %}

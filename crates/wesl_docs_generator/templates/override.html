@@ -13,9 +13,9 @@
 {% endif %}
 <pre class="code-block">
 <code>
-    {{- self::render_attributes(override_.attributes, module_path.level, Some(0))|safe -}}
-    override {{ override_.name }}{% if let Some(ty) = override_.ty %}: {{ self::render_type(ty, module_path.level)|safe }}{% endif %}
-    {%- if let Some(init) = override_.init %} = {{ self::render_expression(init, module_path.level)|safe }}{% endif -%};</code>
+    {{- self::render_attributes(override_.attributes, module_path, module, Some(0))|safe -}}
+    override {{ override_.name }}{% if let Some(ty) = override_.ty %}: {{ self::render_type(ty, module_path, module)|safe }}{% endif %}
+    {%- if let Some(init) = override_.init %} = {{ self::render_expression(init, module_path, module)|safe }}{% endif -%};</code>
 </pre>
 {{ self::render_doc_comment(override_.comment.as_ref(), module_path.level)|safe }}
 {% endfor %}

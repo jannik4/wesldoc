@@ -117,7 +117,7 @@ fn compile_module(
                                 .initializer
                                 .as_ref()
                                 .map(|expr| build_expression(expr, &ctx))
-                                .unwrap_or(Expression::Unknown),
+                                .unwrap_or(Expression::NotExpanded(None)),
                             attributes: build_attributes(&declaration.attributes, &ctx),
                             conditional: build_conditional(
                                 &mut conditional_scope,

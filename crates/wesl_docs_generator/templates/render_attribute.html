@@ -1,10 +1,10 @@
 {% match attr %}
 {%- when Attribute::Align with (expr) -%}
-@{{ attr.name() }}({{ self::render_expression(expr, module_path_level)|safe }})
+@{{ attr.name() }}({{ self::render_expression(expr, module_path, module)|safe }})
 {%- when Attribute::Binding with (expr) -%}
-@{{ attr.name() }}({{ self::render_expression(expr, module_path_level)|safe }})
+@{{ attr.name() }}({{ self::render_expression(expr, module_path, module)|safe }})
 {%- when Attribute::BlendSrc with (expr) -%}
-@{{ attr.name() }}({{ self::render_expression(expr, module_path_level)|safe }})
+@{{ attr.name() }}({{ self::render_expression(expr, module_path, module)|safe }})
 {%- when Attribute::Builtin with (builtin) -%}
 @{{ attr.name() }}({{ self::builtin_str(builtin) }})
 {%- when Attribute::Const -%}
@@ -12,24 +12,24 @@
 {%- when Attribute::Diagnostic with { severity, rule } -%}
 @{{ attr.name() }}({{ self::severity_str(severity) }}, {{ rule }})
 {%- when Attribute::Group with (expr) -%}
-@{{ attr.name() }}({{ self::render_expression(expr, module_path_level)|safe }})
+@{{ attr.name() }}({{ self::render_expression(expr, module_path, module)|safe }})
 {%- when Attribute::Id with (expr) -%}
-@{{ attr.name() }}({{ self::render_expression(expr, module_path_level)|safe }})
+@{{ attr.name() }}({{ self::render_expression(expr, module_path, module)|safe }})
 {%- when Attribute::Interpolate with { ty, sampling } -%}
 @{{ attr.name() }}({{ self::interpolation_str(ty) }}
 {%- if let Some(sampling) = sampling %}, {{ self::sampling_str(sampling) }}{% endif %})
 {%- when Attribute::Invariant -%}
 @{{ attr.name() }}
 {%- when Attribute::Location with (expr) -%}
-@{{ attr.name() }}({{ self::render_expression(expr, module_path_level)|safe }})
+@{{ attr.name() }}({{ self::render_expression(expr, module_path, module)|safe }})
 {%- when Attribute::MustUse -%}
 @{{ attr.name() }}
 {%- when Attribute::Size with (expr) -%}
-@{{ attr.name() }}({{ self::render_expression(expr, module_path_level)|safe }})
+@{{ attr.name() }}({{ self::render_expression(expr, module_path, module)|safe }})
 {%- when Attribute::WorkgroupSize with { x, y, z } -%}
-@{{ attr.name() }}({{ self::render_expression(x, module_path_level)|safe }}
-{%- if let Some(y) = y %}, {{ self::render_expression(y, module_path_level)|safe }}{% endif %}
-{%- if let Some(z) = z %}, {{ self::render_expression(z, module_path_level)|safe }}{% endif %})
+@{{ attr.name() }}({{ self::render_expression(x, module_path, module)|safe }}
+{%- if let Some(y) = y %}, {{ self::render_expression(y, module_path, module)|safe }}{% endif %}
+{%- if let Some(z) = z %}, {{ self::render_expression(z, module_path, module)|safe }}{% endif %})
 {%- when Attribute::Vertex -%}
 @{{ attr.name() }}
 {%- when Attribute::Fragment -%}
@@ -39,7 +39,7 @@
 {%- when Attribute::Custom with { name: _, arguments } -%}
 @{{ attr.name() }}{% if let Some(arguments) = arguments -%}
 ({% for arg in arguments %}
-{%- if !loop.first %}, {% endif %}{{ self::render_expression(arg, module_path_level)|safe }}
+{%- if !loop.first %}, {% endif %}{{ self::render_expression(arg, module_path, module)|safe }}
 {%- endfor %})
 {%- endif %}
 {%- endmatch -%}
