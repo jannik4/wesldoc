@@ -20,7 +20,7 @@ impl Context<'_> {
     ) -> Context<'a> {
         // Warn if the source map is not found
         if compiled.sourcemap.is_none() {
-            println!("Warning: No source map found for module {:?}", module_path);
+            log::warn!("no source map found for module {:?}", module_path);
         }
 
         // Build local items
@@ -112,8 +112,8 @@ impl Context<'_> {
             syntax::PathOrigin::Absolute => DefinitionPath::Absolute(path.components.clone()),
             syntax::PathOrigin::Relative(n) => {
                 if self.module_path.len() < n + 1 {
-                    println!(
-                        "Warning: Invalid relative path for type {} in module {}",
+                    log::warn!(
+                        "invalid relative path for type {} in module {}",
                         name,
                         self.module_path.join("/")
                     );
@@ -130,13 +130,13 @@ impl Context<'_> {
                         DefinitionPath::Package(dep.clone(), version.clone(), rest.to_vec())
                     }
                     None => {
-                        println!("Warning: Dependency {} not found", dep,);
+                        log::warn!("dependency {} not found", dep,);
                         return None;
                     }
                 },
                 None => {
-                    println!(
-                        "Warning: Invalid package path for type {} in module {}",
+                    log::warn!(
+                        "invalid package path for type {} in module {}",
                         name,
                         self.module_path.join("/")
                     );

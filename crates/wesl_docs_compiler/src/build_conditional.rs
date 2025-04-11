@@ -56,10 +56,7 @@ fn conditional_from_expr(expr: &syntax::Expression) -> Option<Conditional> {
             syntax::LiteralExpression::Bool(true) => Some(Conditional::True),
             syntax::LiteralExpression::Bool(false) => Some(Conditional::False),
             _ => {
-                println!(
-                    "Warning: Unsupported literal type for conditional: {:?}",
-                    lit
-                );
+                log::warn!("unsupported literal type for conditional: {:?}", lit);
                 None
             }
         },
@@ -69,8 +66,8 @@ fn conditional_from_expr(expr: &syntax::Expression) -> Option<Conditional> {
                 conditional_from_expr(unary.operand.node())?,
             ))),
             _ => {
-                println!(
-                    "Warning: Unsupported unary operator for conditional: {:?}",
+                log::warn!(
+                    "unsupported unary operator for conditional: {:?}",
                     unary.operator
                 );
                 None
@@ -86,8 +83,8 @@ fn conditional_from_expr(expr: &syntax::Expression) -> Option<Conditional> {
                 Box::new(conditional_from_expr(binary.right.node())?),
             )),
             _ => {
-                println!(
-                    "Warning: Unsupported binary operator for conditional: {:?}",
+                log::warn!(
+                    "unsupported binary operator for conditional: {:?}",
                     binary.operator
                 );
                 None
@@ -95,8 +92,8 @@ fn conditional_from_expr(expr: &syntax::Expression) -> Option<Conditional> {
         },
         syntax::Expression::TypeOrIdentifier(type_or_ident) => {
             if type_or_ident.template_args.is_some() {
-                println!(
-                    "Warning: Template arguments are not supported in conditionals: {:?}",
+                log::warn!(
+                    "template arguments are not supported in conditionals: {:?}",
                     type_or_ident
                 );
                 None
@@ -105,10 +102,7 @@ fn conditional_from_expr(expr: &syntax::Expression) -> Option<Conditional> {
             }
         }
         _ => {
-            println!(
-                "Warning: Unsupported expression type for conditional: {:?}",
-                expr
-            );
+            log::warn!("unsupported expression type for conditional: {:?}", expr);
             None
         }
     }

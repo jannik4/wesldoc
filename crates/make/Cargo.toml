@@ -10,3 +10,4 @@ wesl_docs_compiler = { path = "../wesl_docs_compiler" }
 wesl_docs_generator = { path = "../wesl_docs_generator" }
 
 wesl = { git = "https://github.com/wgsl-tooling-wg/wesl-rs", rev = "ff538850b5e589784ee4fb9c69938ce67d3707d4" }
+env_logger = "0.11.8"
