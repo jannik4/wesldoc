@@ -1,9 +1,9 @@
-use crate::source_map::SourceMap;
+use crate::Context;
 use std::ops::Range;
 use wesl_docs::*;
 
-pub fn calculate_span(range: Range<usize>, source_map: &SourceMap) -> Option<Span> {
-    let source = source_map.default_source()?;
+pub fn calculate_span(range: Range<usize>, ctx: &Context) -> Option<Span> {
+    let source = ctx.default_source()?;
 
     let mut span_line_start = None;
     let mut span_line_end = None;

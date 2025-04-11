@@ -2,17 +2,78 @@ use std::collections::HashMap;
 use wesl::{CompileResult, Mangler, ModulePath, SourceMap as _, syntax};
 use wesl_docs::{DefinitionPath, Ident, ItemKind, Version};
 
-pub struct SourceMap<'a> {
+pub struct Context<'a> {
     compiled: &'a CompileResult,
+
+    module_path: &'a [String],
+    dependencies: &'a HashMap<String, Version>,
+
     local: HashMap<String, ItemKind>,
     local_path: ModulePath,
 }
 
-impl SourceMap<'_> {
-    pub fn new(compiled: &CompileResult) -> SourceMap<'_> {
-        SourceMap {
+impl Context<'_> {
+    pub fn init<'a>(
+        compiled: &'a CompileResult,
+        module_path: &'a [String],
+        dependencies: &'a HashMap<String, Version>,
+    ) -> Context<'a> {
+        // Warn if the source map is not found
+        if compiled.sourcemap.is_none() {
+            println!("Warning: No source map found for module {:?}", module_path);
+        }
+
+        // Build local items
+        let local = compiled
+            .syntax
+            .global_declarations
+            .iter()
+            .filter_map(|decl| {
+                let (ident, kind) = match decl.node() {
+                    syntax::GlobalDeclaration::Void => return None,
+                    syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
+                        syntax::DeclarationKind::Const => (&declaration.ident, ItemKind::Constant),
+                        syntax::DeclarationKind::Override => {
+                            // TODO: ...
+                            return None;
+                        }
+                        syntax::DeclarationKind::Let => return None, // should be unreachable?
+                        syntax::DeclarationKind::Var(_) => {
+                            (&declaration.ident, ItemKind::GlobalVariable)
+                        }
+                    },
+                    syntax::GlobalDeclaration::TypeAlias(type_alias) => {
+                        (&type_alias.ident, ItemKind::TypeAlias)
+                    }
+                    syntax::GlobalDeclaration::Struct(struct_) => {
+                        (&struct_.ident, ItemKind::Struct)
+                    }
+                    syntax::GlobalDeclaration::Function(function) => {
+                        (&function.ident, ItemKind::Function)
+                    }
+                    syntax::GlobalDeclaration::ConstAssert(_const_assert) => return None,
+                };
+
+                if compiled
+                    .sourcemap
+                    .as_ref()
+                    .and_then(|s| s.get_decl(ident.name().as_str()))
+                    .is_none()
+                {
+                    Some((ident.name().to_string(), kind))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        Context {
             compiled,
-            local: HashMap::new(),
+
+            module_path,
+            dependencies,
+
+            local,
             local_path: ModulePath {
                 origin: syntax::PathOrigin::Relative(0),
                 components: Vec::new(),
@@ -20,16 +81,8 @@ impl SourceMap<'_> {
         }
     }
 
-    pub fn insert_local(&mut self, decl: &str, kind: ItemKind) {
-        if self
-            .compiled
-            .sourcemap
-            .as_ref()
-            .and_then(|inner| inner.get_decl(decl))
-            .is_none()
-        {
-            self.local.insert(decl.to_string(), kind);
-        }
+    pub fn compiled(&self) -> &CompileResult {
+        self.compiled
     }
 
     pub fn is_local(&self, decl: &syntax::GlobalDeclaration) -> bool {
@@ -54,28 +107,26 @@ impl SourceMap<'_> {
     pub fn resolve_reference(
         &self,
         target: ResolveTarget,
-        module_path: &[String],
-        dependencies: &HashMap<String, Version>,
     ) -> Option<(Ident, ItemKind, DefinitionPath)> {
         let (name, kind, path) = self.get_decl(target)?;
         let def_path = match path.origin {
             syntax::PathOrigin::Absolute => DefinitionPath::Absolute(path.components.clone()),
             syntax::PathOrigin::Relative(n) => {
-                if module_path.len() < n + 1 {
+                if self.module_path.len() < n + 1 {
                     println!(
                         "Warning: Invalid relative path for type {} in module {}",
                         name,
-                        module_path.join("/")
+                        self.module_path.join("/")
                     );
                     return None;
                 } else {
-                    let mut combined = module_path[1..module_path.len() - n].to_vec();
+                    let mut combined = self.module_path[1..self.module_path.len() - n].to_vec();
                     combined.extend_from_slice(&path.components);
                     DefinitionPath::Absolute(combined)
                 }
             }
             syntax::PathOrigin::Package => match path.components.split_first() {
-                Some((dep, rest)) => match dependencies.get(dep) {
+                Some((dep, rest)) => match self.dependencies.get(dep) {
                     Some(version) => {
                         DefinitionPath::Package(dep.clone(), version.clone(), rest.to_vec())
                     }
@@ -88,7 +139,7 @@ impl SourceMap<'_> {
                     println!(
                         "Warning: Invalid package path for type {} in module {}",
                         name,
-                        module_path.join("/")
+                        self.module_path.join("/")
                     );
                     return None;
                 }
@@ -102,7 +153,7 @@ impl SourceMap<'_> {
             return Some((decl, *kind, &self.local_path));
         }
 
-        if let Some(inner) = self.compiled.sourcemap.as_ref() {
+        if let Some(sourcemap) = self.compiled.sourcemap.as_ref() {
             match target {
                 ResolveTarget::Name(name) => {
                     // TODO: This assumes the escape mangler was used.
@@ -114,12 +165,12 @@ impl SourceMap<'_> {
                             .is_some_and(|(_, unmangled)| unmangled == name)
                     })?;
 
-                    let (path, name) = inner.get_decl(&mangled)?;
+                    let (path, name) = sourcemap.get_decl(&mangled)?;
                     return Some((name, kind, path));
                 }
                 ResolveTarget::MaybeMangled(name) => {
                     let (_, kind) = mangled_item(self.compiled, |ident| ident == name)?;
-                    let (path, name) = inner.get_decl(name)?;
+                    let (path, name) = sourcemap.get_decl(name)?;
                     return Some((name, kind, path));
                 }
             }

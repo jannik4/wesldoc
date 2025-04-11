@@ -1,32 +1,15 @@
-use crate::source_map::{ResolveTarget, SourceMap};
-use std::collections::HashMap;
+use crate::{Context, ResolveTarget};
 use wesl_docs::*;
 
-pub fn build_inner_doc_comment(
-    raw_comment: &str,
-    source_map: &SourceMap,
-    module_path: &[String],
-    dependencies: &HashMap<String, Version>,
-) -> Option<DocComment> {
-    build_doc_comment(raw_comment, "//!", source_map, module_path, dependencies)
+pub fn build_inner_doc_comment(raw_comment: &str, ctx: &Context) -> Option<DocComment> {
+    build_doc_comment(raw_comment, "//!", ctx)
 }
 
-pub fn build_outer_doc_comment(
-    raw_comment: &str,
-    source_map: &SourceMap,
-    module_path: &[String],
-    dependencies: &HashMap<String, Version>,
-) -> Option<DocComment> {
-    build_doc_comment(raw_comment, "///", source_map, module_path, dependencies)
+pub fn build_outer_doc_comment(raw_comment: &str, ctx: &Context) -> Option<DocComment> {
+    build_doc_comment(raw_comment, "///", ctx)
 }
 
-fn build_doc_comment(
-    raw_comment: &str,
-    comment_prefix: &str,
-    source_map: &SourceMap,
-    module_path: &[String],
-    dependencies: &HashMap<String, Version>,
-) -> Option<DocComment> {
+fn build_doc_comment(raw_comment: &str, comment_prefix: &str, ctx: &Context) -> Option<DocComment> {
     // Strip the comment prefix
     let comment = raw_comment
         .lines()
@@ -62,7 +45,7 @@ fn build_doc_comment(
     raise_heading_levels(&mut full);
 
     // Intra-doc links
-    resolve_intra_doc_links(&mut full, source_map, module_path, dependencies);
+    resolve_intra_doc_links(&mut full, ctx);
 
     // Create the short variant
     let mut complete = false;
@@ -151,19 +134,12 @@ fn raise_heading_level(level: md::HeadingLevel) -> md::HeadingLevel {
 }
 
 // TODO: Only works for items in scope as this just looks up the name in the source map
-fn resolve_intra_doc_links(
-    events: &mut [md::Event],
-    source_map: &SourceMap,
-    module_path: &[String],
-    dependencies: &HashMap<String, Version>,
-) {
+fn resolve_intra_doc_links(events: &mut [md::Event], ctx: &Context) {
     for event in events {
         if let md::Event::Start(md::Tag::Link { dest_url, .. }) = event {
-            if let Some((name, kind, def_path)) = source_map.resolve_reference(
-                ResolveTarget::Name(dest_url.as_ref()),
-                module_path,
-                dependencies,
-            ) {
+            if let Some((name, kind, def_path)) =
+                ctx.resolve_reference(ResolveTarget::Name(dest_url.as_ref()))
+            {
                 *dest_url = IntraDocLink {
                     def_path,
                     kind,

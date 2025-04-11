@@ -5,10 +5,10 @@ mod build_expression;
 mod build_type;
 mod calculate_span;
 mod collect_features;
+mod context;
 mod extract_comments;
 mod map;
 mod post_process;
-mod source_map;
 
 use self::{
     build_attributes::build_attributes,
@@ -18,9 +18,9 @@ use self::{
     build_type::build_type,
     calculate_span::calculate_span,
     collect_features::collect_features,
+    context::{Context, ResolveTarget},
     extract_comments::{extract_comments_inner, extract_comments_outer},
     map::map,
-    source_map::SourceMap,
 };
 use std::collections::HashMap;
 use wesl::{CompileResult, syntax};
@@ -70,78 +70,34 @@ fn compile_module(
     let Some(compiled) = &wesl_module.compiled else {
         return Ok(module);
     };
-    if compiled.sourcemap.is_none() {
-        println!(
-            "Warning: No source map found for module {}",
-            wesl_module.name
-        );
-    }
-    let mut source_map = SourceMap::new(compiled);
+    let ctx = Context::init(compiled, &path, dependencies);
 
     // Set source
-    if let Some(source) = source_map.default_source() {
+    if let Some(source) = ctx.default_source() {
         module.source = Some(source.to_string());
     }
 
-    // Insert global declarations from this module as locals
-    for decl in &compiled.syntax.global_declarations {
-        match decl.node() {
-            syntax::GlobalDeclaration::Void => (),
-            syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
-                syntax::DeclarationKind::Const => {
-                    source_map.insert_local(&declaration.ident.name(), ItemKind::Constant);
-                }
-                syntax::DeclarationKind::Override => {
-                    // TODO: ...
-                }
-                syntax::DeclarationKind::Let => (), // should be unreachable?
-                syntax::DeclarationKind::Var(_) => {
-                    source_map.insert_local(&declaration.ident.name(), ItemKind::GlobalVariable);
-                }
-            },
-            syntax::GlobalDeclaration::TypeAlias(type_alias) => {
-                source_map.insert_local(&type_alias.ident.name(), ItemKind::TypeAlias);
-            }
-            syntax::GlobalDeclaration::Struct(struct_) => {
-                source_map.insert_local(&struct_.ident.name(), ItemKind::Struct);
-            }
-            syntax::GlobalDeclaration::Function(function) => {
-                source_map.insert_local(&function.ident.name(), ItemKind::Function);
-            }
-            syntax::GlobalDeclaration::ConstAssert(_const_assert) => (),
-        }
-    }
-
     // Set comment
-    module.comment = module.source.as_ref().and_then(|source| {
-        build_inner_doc_comment(
-            &extract_comments_inner(source),
-            &source_map,
-            &path,
-            dependencies,
-        )
-    });
+    module.comment = module
+        .source
+        .as_ref()
+        .and_then(|source| build_inner_doc_comment(&extract_comments_inner(source), &ctx));
 
     // Collect translate time features
-    module.translate_time_features = collect_features(compiled, &source_map);
+    module.translate_time_features = collect_features(&ctx);
 
     // Compile local global declarations
     let mut conditional_scope = ConditionalScope::new();
     for decl in &compiled.syntax.global_declarations {
-        if !source_map.is_local(decl) {
+        if !ctx.is_local(decl) {
             continue;
         }
 
-        let span = calculate_span(decl.span().range(), &source_map);
+        let span = calculate_span(decl.span().range(), &ctx);
         let comment = span
             .and_then(|span| Some((span, module.source.as_ref()?)))
             .and_then(|(span, source)| {
-                build_outer_doc_comment(
-                    &extract_comments_outer(span, source),
-                    &source_map,
-                    &path,
-                    dependencies,
-                )
+                build_outer_doc_comment(&extract_comments_outer(span, source), &ctx)
             });
 
         match decl.node() {
@@ -156,23 +112,13 @@ fn compile_module(
                         .instances
                         .push(Constant {
                             name,
-                            ty: declaration
-                                .ty
-                                .as_ref()
-                                .map(|ty| build_type(ty, &source_map, &path, dependencies)),
+                            ty: declaration.ty.as_ref().map(|ty| build_type(ty, &ctx)),
                             init: declaration
                                 .initializer
                                 .as_ref()
-                                .map(|expr| {
-                                    build_expression(expr, &source_map, &path, dependencies)
-                                })
+                                .map(|expr| build_expression(expr, &ctx))
                                 .unwrap_or(Expression::Unknown),
-                            attributes: build_attributes(
-                                &declaration.attributes,
-                                &source_map,
-                                &path,
-                                dependencies,
-                            ),
+                            attributes: build_attributes(&declaration.attributes, &ctx),
                             conditional: build_conditional(
                                 &mut conditional_scope,
                                 &declaration.attributes,
@@ -196,19 +142,12 @@ fn compile_module(
                         .push(GlobalVariable {
                             name,
                             space: map(&address_space),
-                            ty: declaration
-                                .ty
+                            ty: declaration.ty.as_ref().map(|ty| build_type(ty, &ctx)),
+                            init: declaration
+                                .initializer
                                 .as_ref()
-                                .map(|ty| build_type(ty, &source_map, &path, dependencies)),
-                            init: declaration.initializer.as_ref().map(|expr| {
-                                build_expression(expr, &source_map, &path, dependencies)
-                            }),
-                            attributes: build_attributes(
-                                &declaration.attributes,
-                                &source_map,
-                                &path,
-                                dependencies,
-                            ),
+                                .map(|expr| build_expression(expr, &ctx)),
+                            attributes: build_attributes(&declaration.attributes, &ctx),
                             conditional: build_conditional(
                                 &mut conditional_scope,
                                 &declaration.attributes,
@@ -227,13 +166,8 @@ fn compile_module(
                     .instances
                     .push(TypeAlias {
                         name,
-                        ty: build_type(&type_alias.ty, &source_map, &path, dependencies),
-                        attributes: build_attributes(
-                            &type_alias.attributes,
-                            &source_map,
-                            &path,
-                            dependencies,
-                        ),
+                        ty: build_type(&type_alias.ty, &ctx),
+                        attributes: build_attributes(&type_alias.attributes, &ctx),
                         conditional: build_conditional(
                             &mut conditional_scope,
                             &type_alias.attributes,
@@ -258,38 +192,26 @@ fn compile_module(
                                 .iter()
                                 .map(|member| StructMember {
                                     name: map(&member.ident),
-                                    ty: build_type(&member.ty, &source_map, &path, dependencies),
-                                    attributes: build_attributes(
-                                        &member.attributes,
-                                        &source_map,
-                                        &path,
-                                        dependencies,
-                                    ),
+                                    ty: build_type(&member.ty, &ctx),
+                                    attributes: build_attributes(&member.attributes, &ctx),
                                     conditional: build_conditional(
                                         &mut conditional_scope,
                                         &member.attributes,
                                     ),
                                     comment: {
-                                        calculate_span(member.span().range(), &source_map)
+                                        calculate_span(member.span().range(), &ctx)
                                             .and_then(|span| Some((span, module.source.as_ref()?)))
                                             .and_then(|(span, source)| {
                                                 build_outer_doc_comment(
                                                     &extract_comments_outer(span, source),
-                                                    &source_map,
-                                                    &path,
-                                                    dependencies,
+                                                    &ctx,
                                                 )
                                             })
                                     },
                                 })
                                 .collect()
                         },
-                        attributes: build_attributes(
-                            &struct_.attributes,
-                            &source_map,
-                            &path,
-                            dependencies,
-                        ),
+                        attributes: build_attributes(&struct_.attributes, &ctx),
                         conditional: build_conditional(&mut conditional_scope, &struct_.attributes),
                         comment,
                         span,
@@ -311,13 +233,8 @@ fn compile_module(
                                 .iter()
                                 .map(|param| FunctionParameter {
                                     name: map(&param.ident),
-                                    ty: build_type(&param.ty, &source_map, &path, dependencies),
-                                    attributes: build_attributes(
-                                        &param.attributes,
-                                        &source_map,
-                                        &path,
-                                        dependencies,
-                                    ),
+                                    ty: build_type(&param.ty, &ctx),
+                                    attributes: build_attributes(&param.attributes, &ctx),
                                     conditional: build_conditional(
                                         &mut conditional_scope,
                                         &param.attributes,
@@ -328,19 +245,9 @@ fn compile_module(
                         ret: function
                             .return_type
                             .as_ref()
-                            .map(|ret| build_type(ret, &source_map, &path, dependencies)),
-                        attributes: build_attributes(
-                            &function.attributes,
-                            &source_map,
-                            &path,
-                            dependencies,
-                        ),
-                        return_attributes: build_attributes(
-                            &function.return_attributes,
-                            &source_map,
-                            &path,
-                            dependencies,
-                        ),
+                            .map(|ret| build_type(ret, &ctx)),
+                        attributes: build_attributes(&function.attributes, &ctx),
+                        return_attributes: build_attributes(&function.return_attributes, &ctx),
                         conditional: build_conditional(
                             &mut conditional_scope,
                             &function.attributes,
