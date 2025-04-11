@@ -122,7 +122,7 @@
     {% for (name, item) in module.type_aliases %}
     <li>
         <div>
-            <a class="type" href="type.{{ name }}.html">{{ name }}</a>
+            <a class="type" href="alias.{{ name }}.html">{{ name }}</a>
             {% if let Some(conditional) = item.conditional %}
             <span class="conditional-inline">{{ conditional }}</span>
             {% endif %}

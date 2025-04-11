@@ -279,7 +279,7 @@ fn gen_module(
             type_aliases: &item.instances,
         };
         template.write_into(&mut File::create(
-            base_path_docs.join(format!("type.{}.html", name)),
+            base_path_docs.join(format!("alias.{}.html", name)),
         )?)?;
     }
 
@@ -578,7 +578,7 @@ fn def_path_href(
         ItemKind::GlobalVariable => href.push_str(&format!("var.{}.html", name.0)),
         ItemKind::Struct => href.push_str(&format!("struct.{}.html", name.0)),
         ItemKind::Function => href.push_str(&format!("fn.{}.html", name.0)),
-        ItemKind::TypeAlias => href.push_str(&format!("type.{}.html", name.0)),
+        ItemKind::TypeAlias => href.push_str(&format!("alias.{}.html", name.0)),
     }
 
     href

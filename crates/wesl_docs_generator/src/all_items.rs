@@ -84,7 +84,7 @@ impl SerializedItem {
             SerializedItemKind::GlobalVariable => url.push_str(&format!("/var.{}.html", name)),
             SerializedItemKind::Struct => url.push_str(&format!("/struct.{}.html", name)),
             SerializedItemKind::Function => url.push_str(&format!("/fn.{}.html", name)),
-            SerializedItemKind::TypeAlias => url.push_str(&format!("/type.{}.html", name)),
+            SerializedItemKind::TypeAlias => url.push_str(&format!("/alias.{}.html", name)),
         }
 
         Self {
