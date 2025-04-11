@@ -1,0 +1,125 @@
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 200;
+  font-display: swap;
+  font-style: normal;
+  font-stretch: normal;
+  src: url("SourceCodePro-ExtraLight.otf.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 200;
+  font-display: swap;
+  font-style: italic;
+  font-stretch: normal;
+  src: url("SourceCodePro-ExtraLightIt.otf.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 300;
+  font-display: swap;
+  font-style: normal;
+  font-stretch: normal;
+  src: url("SourceCodePro-Light.otf.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 300;
+  font-display: swap;
+  font-style: italic;
+  font-stretch: normal;
+  src: url("SourceCodePro-LightIt.otf.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 400;
+  font-display: swap;
+  font-style: normal;
+  font-stretch: normal;
+  src: url("SourceCodePro-Regular.otf.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 400;
+  font-display: swap;
+  font-style: italic;
+  font-stretch: normal;
+  src: url("SourceCodePro-It.otf.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 500;
+  font-display: swap;
+  font-style: normal;
+  font-stretch: normal;
+  src: url("SourceCodePro-Medium.otf.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 500;
+  font-display: swap;
+  font-style: italic;
+  font-stretch: normal;
+  src: url("SourceCodePro-MediumIt.otf.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 600;
+  font-display: swap;
+  font-style: normal;
+  font-stretch: normal;
+  src: url("SourceCodePro-Semibold.otf.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 600;
+  font-display: swap;
+  font-style: italic;
+  font-stretch: normal;
+  src: url("SourceCodePro-SemiboldIt.otf.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 700;
+  font-display: swap;
+  font-style: normal;
+  font-stretch: normal;
+  src: url("SourceCodePro-Bold.otf.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 700;
+  font-display: swap;
+  font-style: italic;
+  font-stretch: normal;
+  src: url("SourceCodePro-BoldIt.otf.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 900;
+  font-display: swap;
+  font-style: normal;
+  font-stretch: normal;
+  src: url("SourceCodePro-Black.otf.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Source Code Pro";
+  font-weight: 900;
+  font-display: swap;
+  font-style: italic;
+  font-stretch: normal;
+  src: url("SourceCodePro-BlackIt.otf.woff2") format("woff2");
+}
