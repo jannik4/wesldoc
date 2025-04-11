@@ -44,7 +44,7 @@ fn collect_from_global_declaration(decl: &GlobalDeclaration, features: &mut Inde
 
 fn collect_from_attributes(attributes: &Attributes, features: &mut IndexSet<String>) {
     for attr in attributes {
-        match attr {
+        match attr.node() {
             Attribute::If(spanned) => collect_from_expr(spanned.node(), features),
             Attribute::Elif(spanned) => collect_from_expr(spanned.node(), features),
             _ => (),

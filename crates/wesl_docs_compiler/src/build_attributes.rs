@@ -5,7 +5,7 @@ use wesl::syntax;
 use wesl_docs::*;
 
 pub fn build_attributes(
-    attributes: &[syntax::Attribute],
+    attributes: &[syntax::AttributeNode],
     source_map: &SourceMap,
     module_path: &[String],
     dependencies: &HashMap<String, Version>,

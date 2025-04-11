@@ -6,7 +6,7 @@ use self::{
     resolver::DocsResolver,
 };
 use std::{collections::HashMap, path::Path};
-use wesl::{CompileOptions, ManglerKind, Wesl};
+use wesl::{CompileOptions, Feature, Features, ManglerKind, Wesl};
 use wesl_docs::Version;
 use wesl_docs_compiler::{WeslModule, WeslPackage};
 
@@ -74,7 +74,10 @@ fn compile_package(
                 validate: false,
                 lazy: true,
                 keep: None,
-                features: HashMap::default(),
+                features: Features {
+                    default: Feature::Keep,
+                    flags: HashMap::default(),
+                },
             });
         wesl
     };

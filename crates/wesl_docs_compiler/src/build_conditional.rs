@@ -14,10 +14,10 @@ impl ConditionalScope {
 
 pub fn build_conditional(
     scope: &mut ConditionalScope,
-    attributes: &[syntax::Attribute],
+    attributes: &[syntax::AttributeNode],
 ) -> Option<Conditional> {
     for attr in attributes {
-        match attr {
+        match attr.node() {
             syntax::Attribute::If(spanned) => {
                 let this = conditional_from_expr(spanned.node())?;
                 scope.prev.clear();
