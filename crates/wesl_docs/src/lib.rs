@@ -321,7 +321,6 @@ pub enum TypeExpression {
         kind: ItemKind,
         def_path: DefinitionPath,
     },
-    Unknown,
 }
 
 #[derive(Debug, Clone)]
