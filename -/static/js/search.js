@@ -18,11 +18,31 @@ function onUrlChange() {
     }
 }
 
+window.addEventListener("keydown", function (event) {
+    if (event.key === "s" && (event.target === document.body || event.target === null)) {
+        event.preventDefault();
+        var searchInput = document.getElementById("search");
+        if (document.activeElement !== searchInput) {
+            searchInput.focus();
+        }
+    }
+
+    if (event.key === "Escape") {
+        var searchInput = document.getElementById("search");
+        if (event.target == searchInput) {
+            event.preventDefault();
+            searchInput.blur();
+            searchInput.value = "";
+            search();
+        }
+    }
+});
+
 function searchDebounced() {
     if (window.DOCS_SEARCH_DEBOUNCE) {
         clearTimeout(window.DOCS_SEARCH_DEBOUNCE);
     }
-    window.DOCS_SEARCH_DEBOUNCE = setTimeout(search, 400);
+    window.DOCS_SEARCH_DEBOUNCE = setTimeout(search, 200);
 }
 
 function search() {
