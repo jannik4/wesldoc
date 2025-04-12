@@ -24,7 +24,7 @@ use self::{
 };
 use std::collections::HashMap;
 use wesl::{CompileResult, syntax};
-use wesl_docs::*;
+use wesldoc_ast::*;
 
 pub type Error = Box<dyn std::error::Error>;
 pub type Result<T, E = Error> = std::result::Result<T, E>;

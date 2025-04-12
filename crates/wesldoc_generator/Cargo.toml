@@ -1,11 +1,11 @@
 [package]
-name = "wesl_docs_generator"
+name = "wesldoc_generator"
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-wesl_docs = { path = "../wesl_docs" }
+wesldoc_ast = { path = "../wesldoc_ast" }
 askama = "0.13.0"
 include_dir = "0.7.4"
 serde = { version = "1.0.193", features = ["derive"] }

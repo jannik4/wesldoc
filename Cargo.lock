@@ -827,9 +827,9 @@ version = "0.1.0"
 dependencies = [
  "env_logger",
  "wesl",
- "wesl_docs",
- "wesl_docs_compiler",
- "wesl_docs_generator",
+ "wesldoc_ast",
+ "wesldoc_compiler",
+ "wesldoc_generator",
 ]
 
 [[package]]
@@ -1401,7 +1401,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "wesl_docs"
+name = "wesldoc_ast"
 version = "0.1.0"
 dependencies = [
  "indexmap",
@@ -1410,16 +1410,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "wesl_docs_compiler"
+name = "wesldoc_compiler"
 version = "0.1.0"
 dependencies = [
  "log",
  "wesl",
- "wesl_docs",
+ "wesldoc_ast",
 ]
 
 [[package]]
-name = "wesl_docs_generator"
+name = "wesldoc_generator"
 version = "0.1.0"
 dependencies = [
  "ammonia",
@@ -1427,7 +1427,7 @@ dependencies = [
  "include_dir",
  "serde",
  "serde_json",
- "wesl_docs",
+ "wesldoc_ast",
 ]
 
 [[package]]

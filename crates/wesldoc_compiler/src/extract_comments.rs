@@ -1,4 +1,4 @@
-use wesl_docs::*;
+use wesldoc_ast::*;
 
 pub fn extract_comments_inner(source: &str) -> String {
     let mut comments = String::new();

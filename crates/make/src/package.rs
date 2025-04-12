@@ -4,7 +4,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
-use wesl_docs::Version;
+use wesldoc_ast::Version;
 
 #[derive(Debug, Clone)]
 pub struct Package {

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use wesl::{CompileResult, Mangler, ModulePath, SourceMap as _, syntax};
-use wesl_docs::{DefinitionPath, Ident, ItemKind, Version};
+use wesldoc_ast::{DefinitionPath, Ident, ItemKind, Version};
 
 pub struct Context<'a> {
     compiled: &'a CompileResult,

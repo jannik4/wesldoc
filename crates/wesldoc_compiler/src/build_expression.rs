@@ -1,6 +1,6 @@
 use crate::{Context, build_type, calculate_span, map};
 use wesl::syntax;
-use wesl_docs::*;
+use wesldoc_ast::*;
 
 pub fn build_expression(expr: &syntax::ExpressionNode, ctx: &Context) -> Expression {
     match expr.node() {

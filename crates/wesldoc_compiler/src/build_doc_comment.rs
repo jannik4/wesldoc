@@ -1,5 +1,5 @@
 use crate::{Context, ResolveTarget};
-use wesl_docs::*;
+use wesldoc_ast::*;
 
 pub fn build_inner_doc_comment(raw_comment: &str, ctx: &Context) -> Option<DocComment> {
     build_doc_comment(raw_comment, "//!", ctx)

@@ -1,5 +1,5 @@
 use serde::Serialize;
-use wesl_docs::{
+use wesldoc_ast::{
     Attribute, DocComment, Ident, IndexMap, Item, ItemInstance, ItemKind, Module, WeslDocs,
 };
 

@@ -1,6 +1,6 @@
 use crate::map;
 use wesl::syntax;
-use wesl_docs::*;
+use wesldoc_ast::*;
 
 pub struct ConditionalScope {
     prev: Vec<Conditional>,

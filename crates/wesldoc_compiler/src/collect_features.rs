@@ -1,6 +1,6 @@
 use crate::Context;
 use wesl::syntax::*;
-use wesl_docs::IndexSet;
+use wesldoc_ast::IndexSet;
 
 pub fn collect_features(ctx: &Context) -> IndexSet<String> {
     let mut features = IndexSet::new();

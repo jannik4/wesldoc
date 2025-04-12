@@ -1,4 +1,4 @@
-use wesl_docs::*;
+use wesldoc_ast::*;
 
 pub fn post_process(docs: &mut WeslDocs) {
     // Post process modules

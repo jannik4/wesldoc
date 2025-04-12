@@ -7,8 +7,8 @@ use self::{
 };
 use std::{collections::HashMap, path::Path};
 use wesl::{CompileOptions, Feature, Features, ManglerKind, Wesl};
-use wesl_docs::Version;
-use wesl_docs_compiler::{WeslModule, WeslPackage};
+use wesldoc_ast::Version;
+use wesldoc_compiler::{WeslModule, WeslPackage};
 
 pub type Error = Box<dyn std::error::Error>;
 pub type Result<T, E = Error> = std::result::Result<T, E>;
@@ -40,10 +40,10 @@ pub fn make(name: &str, dependencies: &[&str]) -> Result<()> {
     let wesl_package = compile_package(Version::new(0, 0, 0), name, &package, dependencies)?;
 
     // Compile to docs
-    let docs = wesl_docs_compiler::compile(&wesl_package)?;
+    let docs = wesldoc_compiler::compile(&wesl_package)?;
 
     // Generate docs
-    wesl_docs_generator::generate(&docs, Path::new("target/wesl_docs"))?;
+    wesldoc_generator::generate(&docs, Path::new("target/wesldoc"))?;
 
     Ok(())
 }

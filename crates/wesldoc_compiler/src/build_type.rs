@@ -1,6 +1,6 @@
 use crate::{Context, ResolveTarget, build_expression};
 use wesl::syntax;
-use wesl_docs::*;
+use wesldoc_ast::*;
 
 pub fn build_type(ty: &syntax::TypeExpression, ctx: &Context) -> TypeExpression {
     let name = ty.ident.name().clone();

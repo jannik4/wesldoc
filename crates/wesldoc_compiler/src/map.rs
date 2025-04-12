@@ -1,5 +1,5 @@
 use wesl::syntax;
-use wesl_docs::*;
+use wesldoc_ast::*;
 
 pub trait Map<T>: Sized {
     fn map(&self) -> T;

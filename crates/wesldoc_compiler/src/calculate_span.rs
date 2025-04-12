@@ -1,6 +1,6 @@
 use crate::Context;
 use std::ops::Range;
-use wesl_docs::*;
+use wesldoc_ast::*;
 
 pub fn calculate_span(range: Range<usize>, ctx: &Context) -> Option<Span> {
     let source = ctx.default_source()?;

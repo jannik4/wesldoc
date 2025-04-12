@@ -12,7 +12,7 @@ use std::{
     path::Path,
     str::FromStr,
 };
-use wesl_docs::{
+use wesldoc_ast::{
     Attribute, BuiltinValue, Constant, DefinitionPath, DiagnosticSeverity, DocComment, Expression,
     Function, GlobalVariable, Ident, InterpolationSampling, InterpolationType, IntraDocLink,
     ItemKind, Module, Override, Span, Struct, TypeAlias, TypeExpression, Version, WeslDocs, md,

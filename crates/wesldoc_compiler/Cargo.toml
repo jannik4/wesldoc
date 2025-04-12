@@ -1,11 +1,11 @@
 [package]
-name = "wesl_docs_compiler"
+name = "wesldoc_compiler"
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-wesl_docs = { path = "../wesl_docs" }
+wesldoc_ast = { path = "../wesldoc_ast" }
 
 wesl = { git = "https://github.com/wgsl-tooling-wg/wesl-rs", rev = "ff538850b5e589784ee4fb9c69938ce67d3707d4" }
 log = "0.4.27"

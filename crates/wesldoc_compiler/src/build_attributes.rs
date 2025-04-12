@@ -1,6 +1,6 @@
 use crate::{Context, build_expression, map};
 use wesl::syntax;
-use wesl_docs::*;
+use wesldoc_ast::*;
 
 pub fn build_attributes(attributes: &[syntax::AttributeNode], ctx: &Context) -> Vec<Attribute> {
     attributes
