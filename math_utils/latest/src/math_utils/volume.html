@@ -1,0 +1,155 @@
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        
+        volume - math_utils
+        
+    </title>
+
+    <link rel="stylesheet" href="../../../../-/static/css/inter/inter.css">
+    <link rel="stylesheet" href="../../../../-/static/css/source_code_pro/source_code_pro.css">
+
+    <link rel="stylesheet" href="../../../../-/static/css/themes.css">
+    <link rel="stylesheet" href="../../../../-/static/css/styles.css">
+    <link rel="stylesheet" href="../../../../-/static/css/icons.css">
+    <script src="../../../../-/static/js/theme.js"></script>
+
+    
+</head>
+
+<body>
+    <div class="nav">
+        <a class="icon icon-home" style="margin-right: 12px;" href="../../../../index.html"></a>
+        <span style="margin-right: 12px;">math_utils</span>
+        <select class="select" id="selectVersion" onchange="changeVersion()" autocomplete="off">
+            <option
+                value="../../../latest/math_utils/index.html">
+                latest
+            </option>
+        </select>
+        <button class="toggle-theme is-light-theme icon icon-moon" onclick="toggleTheme()"
+            aria-label="Switch to dark mode">
+        </button>
+        <button class="toggle-theme is-dark-theme icon icon-sun" onclick="toggleTheme()"
+            aria-label="Switch to light mode">
+        </button>
+    </div>
+    <div class="content">
+        <input type="text" id="search" placeholder="Search" oninput="searchDebounced()" autocomplete="off">
+
+        <div id="innerContent">
+            
+
+            
+
+<pre class="code-block">
+<code><a
+            href="#1"
+            id="1"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >1</a>import package::constants::PI;
+<a
+            href="#2"
+            id="2"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >2</a>import primitives::{cuboid::Cuboid, cylinder::Cylinder};
+<a
+            href="#3"
+            id="3"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >3</a>
+<a
+            href="#4"
+            id="4"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >4</a>/// Calculates the volume of a [`Cuboid`].
+<a
+            href="#5"
+            id="5"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >5</a>fn cuboid_volume(cuboid: Cuboid) -&#62; f32 {
+<a
+            href="#6"
+            id="6"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >6</a>    return cuboid.half_size.x * cuboid.half_size.y * cuboid.half_size.z * 8.0;
+<a
+            href="#7"
+            id="7"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >7</a>}
+<a
+            href="#8"
+            id="8"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >8</a>
+<a
+            href="#9"
+            id="9"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >9</a>/// Calculates the volume of a [`Cylinder`].
+<a
+            href="#10"
+            id="10"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >10</a>fn cylinder_volume(cylinder: Cylinder) -&#62; f32 {
+<a
+            href="#11"
+            id="11"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >11</a>    let base_area = PI * cylinder.radius * cylinder.radius;
+<a
+            href="#12"
+            id="12"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >12</a>    return base_area * cylinder.half_height * 2.0;
+<a
+            href="#13"
+            id="13"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >13</a>}</code>
+</pre>
+
+        </div>
+    </div>
+
+    <script src="../../../common.js"></script>
+    <script src="../../items.js"></script>
+
+    <script>
+        window.DOCS_THIS_PACKAGE = {
+            version: "latest",
+            name: "math_utils",
+            root: "../../",
+        };
+    </script>
+    <script src="../../../../-/static/js/selectVersion.js"></script>
+    <script src="../../../../-/static/js/search.js"></script>
+    <script src="../../../../-/static/js/lineNumbers.js"></script>
+</body>
+
+</html>
