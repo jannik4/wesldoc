@@ -1,11 +1,11 @@
 {% let this_version %}
-{% if base.build_as_latest %}
+{% if ctx.build_as_latest %}
 {% let this_version = "latest".to_string() %}
 {% else %}
-{% let this_version = base.doc.version.to_string() %}
+{% let this_version = ctx.doc.version.to_string() %}
 {% endif %}
 
-{% let root_path = module_path.root_path() %}
+{% let root_url = ctx.root_url() %}
 
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
@@ -14,31 +14,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
-        {% if title != base.doc.root.name %}
-        {{ title }} - {{ base.doc.root.name }}
+        {% if title != ctx.doc.root.name %}
+        {{ title }} - {{ ctx.doc.root.name }}
         {% else %}
         {{ title }}
         {% endif %}
     </title>
 
-    <link rel="stylesheet" href="{{ root_path }}-/static/css/inter/inter.css">
-    <link rel="stylesheet" href="{{ root_path }}-/static/css/source_code_pro/source_code_pro.css">
+    <link rel="stylesheet" href="{{ root_url }}-/static/css/inter/inter.css">
+    <link rel="stylesheet" href="{{ root_url }}-/static/css/source_code_pro/source_code_pro.css">
 
-    <link rel="stylesheet" href="{{ root_path }}-/static/css/themes.css">
-    <link rel="stylesheet" href="{{ root_path }}-/static/css/styles.css">
-    <link rel="stylesheet" href="{{ root_path }}-/static/css/icons.css">
-    <script src="{{ root_path }}-/static/js/theme.js"></script>
+    <link rel="stylesheet" href="{{ root_url }}-/static/css/themes.css">
+    <link rel="stylesheet" href="{{ root_url }}-/static/css/styles.css">
+    <link rel="stylesheet" href="{{ root_url }}-/static/css/icons.css">
+    <script src="{{ root_url }}-/static/js/theme.js"></script>
 
     {% block head %}{% endblock %}
 </head>
 
 <body>
     <div class="nav">
-        <a class="icon icon-home" style="margin-right: 12px;" href="{{ root_path }}index.html"></a>
-        <span style="margin-right: 12px;">{{ base.doc.root.name }}</span>
+        <a class="icon icon-home" style="margin-right: 12px;" href="{{ root_url }}index.html"></a>
+        <span style="margin-right: 12px;">{{ ctx.doc.root.name }}</span>
         <select class="select" id="selectVersion" onchange="changeVersion()" autocomplete="off">
             <option
-                value="{% for _ in 0..module_path.level %}../{% endfor %}../../{{ this_version }}/{{ base.doc.root.name }}/index.html">
+                value="{% for _ in 0..ctx.level() %}../{% endfor %}../../{{ this_version }}/{{ ctx.doc.root.name }}/index.html">
                 {{ this_version }}
             </option>
         </select>
@@ -53,9 +53,9 @@
         <input type="text" id="search" placeholder="Search" oninput="searchDebounced()" autocomplete="off">
 
         <div id="innerContent">
-            {% if !base.is_source_view %}
+            {% if is_source_view is not defined %}
             <h2>
-                {% for (name, path, kind) in module_path.segments -%}
+                {% for (name, path, kind) in ctx.segments() -%}
                 {% if !loop.first %}<span>::</span><wbr>{% endif -%}
                 <a class="{{ self::module_path_class(kind, loop.last) }}" href="{{ path }}">{{ name }}</a>
                 {%- endfor %}
@@ -66,19 +66,19 @@
         </div>
     </div>
 
-    <script src="{% for _ in 0..module_path.level %}../{% endfor %}../../common.js"></script>
-    <script src="{% for _ in 0..module_path.level %}../{% endfor %}../items.js"></script>
+    <script src="{% for _ in 0..ctx.level() %}../{% endfor %}../../common.js"></script>
+    <script src="{% for _ in 0..ctx.level() %}../{% endfor %}../items.js"></script>
 
     <script>
         window.DOCS_THIS_PACKAGE = {
             version: "{{ this_version }}",
-            name: "{{ base.doc.root.name }}",
-            root: "{% for _ in 0..module_path.level %}../{% endfor %}../",
+            name: "{{ ctx.doc.root.name }}",
+            root: "{% for _ in 0..ctx.level() %}../{% endfor %}../",
         };
     </script>
-    <script src="{{ root_path }}-/static/js/selectVersion.js"></script>
-    <script src="{{ root_path }}-/static/js/search.js"></script>
-    <script src="{{ root_path }}-/static/js/lineNumbers.js"></script>
+    <script src="{{ root_url }}-/static/js/selectVersion.js"></script>
+    <script src="{{ root_url }}-/static/js/search.js"></script>
+    <script src="{{ root_url }}-/static/js/lineNumbers.js"></script>
 </body>
 
 </html>

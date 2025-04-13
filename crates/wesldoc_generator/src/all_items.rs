@@ -94,7 +94,7 @@ impl SerializedItem {
                 .into_iter()
                 .map(|attr| format!("@{}", attr.name()))
                 .collect(),
-            comment: crate::render_doc_comment_short_no_links(comment),
+            comment: crate::Context::render_doc_comment_short_no_links(comment),
             kind,
             url,
         }

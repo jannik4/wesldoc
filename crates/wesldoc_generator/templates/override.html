@@ -5,18 +5,18 @@
 {% if !loop.first %}
 <br />
 {% endif %}
-{% if module.source.is_some() %}
-<a class="module" href="{{ module_path.source_href(override_.span.clone()) }}">Source</a>
+{% if ctx.module.source.is_some() %}
+<a class="module" href="{{ ctx.source_url(override_.span.clone()) }}">Source</a>
 {% endif %}
 {% if let Some(conditional) = override_.conditional %}
 <div><span class="conditional">{{ conditional }}</span></div>
 {% endif %}
 <pre class="code-block">
 <code>
-    {{- self::render_attributes(override_.attributes, module_path, module, Some(0))|safe -}}
-    override {{ override_.name }}{% if let Some(ty) = override_.ty %}: {{ self::render_type(ty, module_path, module)|safe }}{% endif %}
-    {%- if let Some(init) = override_.init %} = {{ self::render_expression(init, module_path, module)|safe }}{% endif -%};</code>
+    {{- ctx.render_attributes(override_.attributes, Some(0))|safe -}}
+    override {{ override_.name }}{% if let Some(ty) = override_.ty %}: {{ ctx.render_type(ty)|safe }}{% endif %}
+    {%- if let Some(init) = override_.init %} = {{ ctx.render_expression(init)|safe }}{% endif -%};</code>
 </pre>
-{{ self::render_doc_comment(override_.comment.as_ref(), module_path.level)|safe }}
+{{ ctx.render_doc_comment(override_.comment.as_ref())|safe }}
 {% endfor %}
 {% endblock %}

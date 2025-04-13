@@ -2,13 +2,13 @@
 {%- when Expression::Literal with (lit) -%}
 {{ lit }}
 {%- when Expression::Parenthesized with (inner) -%}
-({{ Self::render_rec(self, inner.deref())|safe }})
+({{ ctx.render_expression(inner)|safe }})
 {%- when Expression::TypeOrIdentifier with (type_expr) -%}
-{{ self::render_type(type_expr, module_path, module)|safe }}
+{{ ctx.render_type(type_expr)|safe }}
 {%- when Expression::NotExpanded with (span) %}
-{%- if module.source.is_some() %}
+{%- if ctx.module.source.is_some() %}
 {%- if let Some(span) = span -%}
-<a class="module" href="{{ module_path.source_href(Some(span.clone())) }}">...</a>
+<a class="module" href="{{ ctx.source_url(Some(span.clone())) }}">...</a>
 {%- else -%}
 ...
 {%- endif %}

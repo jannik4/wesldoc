@@ -1,30 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% if module.source.is_some() %}
-<a class="module" href="{{ module_path.source_href(None) }}">Source</a>
+{% if ctx.module.source.is_some() %}
+<a class="module" href="{{ ctx.source_url(None) }}">Source</a>
 {% endif %}
 
-{{ self::render_doc_comment(module.comment.as_ref(), module_path.level)|safe }}
+{{ ctx.render_doc_comment(ctx.module.comment.as_ref())|safe }}
 
-{% if !module.modules.is_empty() %}
+{% if !ctx.module.modules.is_empty() %}
 <h3 class="item-list-title">Modules</h3>
 <ul class="item-list">
-    {% for module in module.modules %}
+    {% for module in ctx.module.modules %}
     <li>
         <div><a class="module" href="{{ module.name }}/index.html">{{ module.name }}</a></div>
         <div>
-            {{ self::render_doc_comment_short(module.comment.as_ref(), module_path.level)|safe }}
+            {{ ctx.render_doc_comment_short(module.comment.as_ref())|safe }}
         </div>
     </li>
     {% endfor %}
 </ul>
 {% endif %}
 
-{% if !module.constants.is_empty() %}
+{% if !ctx.module.constants.is_empty() %}
 <h3 class="item-list-title">Constants</h3>
 <ul class="item-list">
-    {% for (name, item) in module.constants %}
+    {% for (name, item) in ctx.module.constants %}
     <li>
         <div>
             <a class="const" href="const.{{ name }}.html">{{ name }}</a>
@@ -33,17 +33,17 @@
             {% endif %}
         </div>
         <div>
-            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref(), module_path.level)|safe }}
+            {{ ctx.render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
         </div>
     </li>
     {% endfor %}
 </ul>
 {% endif %}
 
-{% if !module.overrides.is_empty() %}
+{% if !ctx.module.overrides.is_empty() %}
 <h3 class="item-list-title">Overrides</h3>
 <ul class="item-list">
-    {% for (name, item) in module.overrides %}
+    {% for (name, item) in ctx.module.overrides %}
     <li>
         <div>
             <a class="override" href="override.{{ name }}.html">{{ name }}</a>
@@ -52,17 +52,17 @@
             {% endif %}
         </div>
         <div>
-            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref(), module_path.level)|safe }}
+            {{ ctx.render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
         </div>
     </li>
     {% endfor %}
 </ul>
 {% endif %}
 
-{% if !module.global_variables.is_empty() %}
+{% if !ctx.module.global_variables.is_empty() %}
 <h3 class="item-list-title">Global Variables</h3>
 <ul class="item-list">
-    {% for (name, item) in module.global_variables %}
+    {% for (name, item) in ctx.module.global_variables %}
     <li>
         <div>
             <a class="var" href="var.{{ name }}.html">{{ name }}</a>
@@ -71,17 +71,17 @@
             {% endif %}
         </div>
         <div>
-            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref(), module_path.level)|safe }}
+            {{ ctx.render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
         </div>
     </li>
     {% endfor %}
 </ul>
 {% endif %}
 
-{% if !module.structs.is_empty() %}
+{% if !ctx.module.structs.is_empty() %}
 <h3 class="item-list-title">Structs</h3>
 <ul class="item-list">
-    {% for (name, item) in module.structs %}
+    {% for (name, item) in ctx.module.structs %}
     <li>
         <div>
             <a class="struct" href="struct.{{ name }}.html">{{ name }}</a>
@@ -90,17 +90,17 @@
             {% endif %}
         </div>
         <div>
-            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref(), module_path.level)|safe }}
+            {{ ctx.render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
         </div>
     </li>
     {% endfor %}
 </ul>
 {% endif %}
 
-{% if !module.functions.is_empty() %}
+{% if !ctx.module.functions.is_empty() %}
 <h3 class="item-list-title">Functions</h3>
 <ul class="item-list">
-    {% for (name, item) in module.functions %}
+    {% for (name, item) in ctx.module.functions %}
     <li>
         <div>
             <a class="fn" href="fn.{{ name }}.html">{{ name }}</a>
@@ -109,17 +109,17 @@
             {% endif %}
         </div>
         <div>
-            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref(), module_path.level)|safe }}
+            {{ ctx.render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
         </div>
     </li>
     {% endfor %}
 </ul>
 {% endif %}
 
-{% if !module.type_aliases.is_empty() %}
+{% if !ctx.module.type_aliases.is_empty() %}
 <h3 class="item-list-title">Type Aliases</h3>
 <ul class="item-list">
-    {% for (name, item) in module.type_aliases %}
+    {% for (name, item) in ctx.module.type_aliases %}
     <li>
         <div>
             <a class="type" href="alias.{{ name }}.html">{{ name }}</a>
@@ -128,17 +128,17 @@
             {% endif %}
         </div>
         <div>
-            {{ self::render_doc_comment_short(**item.instances[0].comment.as_ref(), module_path.level)|safe }}
+            {{ ctx.render_doc_comment_short(**item.instances[0].comment.as_ref())|safe }}
         </div>
     </li>
     {% endfor %}
 </ul>
 {% endif %}
 
-{% if !module.translate_time_features.is_empty() %}
+{% if !ctx.module.translate_time_features.is_empty() %}
 <h3 class="item-list-title">Translate-time features</h3>
 <ul class="item-list">
-    {% for translate_time_feature in module.translate_time_features %}
+    {% for translate_time_feature in ctx.module.translate_time_features %}
     <li class="feature">{{ translate_time_feature }}</li>
     {% endfor %}
 </ul>

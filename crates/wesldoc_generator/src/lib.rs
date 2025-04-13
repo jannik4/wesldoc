@@ -1,22 +1,19 @@
 mod all_items;
+mod context;
 mod index;
+mod render;
 mod static_files;
 
+use crate::{context::Context, render::*};
 use askama::Template;
 use serde_json::Value;
 use std::{
     cmp::Ordering,
     collections::HashSet,
     fs::{self, File},
-    ops::Deref,
     path::Path,
-    str::FromStr,
 };
-use wesldoc_ast::{
-    Attribute, BuiltinValue, Constant, DefinitionPath, DiagnosticSeverity, DocComment, Expression,
-    Function, GlobalVariable, Ident, InterpolationSampling, InterpolationType, IntraDocLink,
-    ItemKind, Module, Override, Span, Struct, TypeAlias, TypeExpression, Version, WeslDocs, md,
-};
+use wesldoc_ast::{ItemKind, Version, WeslDocs};
 
 pub type Error = Box<dyn std::error::Error>;
 pub type Result<T, E = Error> = std::result::Result<T, E>;
@@ -130,20 +127,7 @@ fn gen_doc(doc: &WeslDocs, build_as_latest: bool, base_path: &Path) -> Result<()
 
     // Gen modules
     gen_module(
-        &Base {
-            doc,
-            build_as_latest,
-            is_source_view: false,
-        },
-        &ModulePath {
-            segments: vec![(
-                doc.root.name.clone(),
-                "index.html".to_string(),
-                ItemKind::Module,
-            )],
-            level: 0,
-        },
-        &doc.root,
+        &Context::new(build_as_latest, doc),
         &base_path_docs,
         &base_path_src,
     )?;
@@ -159,19 +143,13 @@ fn gen_doc(doc: &WeslDocs, build_as_latest: bool, base_path: &Path) -> Result<()
     Ok(())
 }
 
-fn gen_module(
-    base: &Base,
-    module_path: &ModulePath,
-    module: &Module,
-    base_path_docs: &Path,
-    base_path_src: &Path,
-) -> Result<()> {
-    if let Some(source) = &module.source {
+fn gen_module(ctx: &Context, base_path_docs: &Path, base_path_src: &Path) -> Result<()> {
+    if let Some(source) = &ctx.module.source {
         let template = SourceTemplate {
-            base: &base.with_source_view(),
-            title: &module.name,
-            module_path,
+            ctx,
+            title: &ctx.module.name,
             source,
+            is_source_view: (),
         };
         let mut path = base_path_src.to_path_buf();
         path.set_extension("html");
@@ -179,15 +157,13 @@ fn gen_module(
     }
 
     let template = OverviewTemplate {
-        base,
-        title: &module.name,
-        module_path,
-        module,
+        ctx,
+        title: &ctx.module.name,
     };
     template.write_into(&mut File::create(base_path_docs.join("index.html"))?)?;
 
-    for module in &module.modules {
-        let module_path = module_path.extend(&module.name, "index.html", ItemKind::Module, true);
+    for module in &ctx.module.modules {
+        let ctx = ctx.with_submodule(module);
 
         let base_path_docs = base_path_docs.join(&module.name);
         fs::create_dir(&base_path_docs)?;
@@ -195,16 +171,14 @@ fn gen_module(
         let base_path_src = base_path_src.join(&module.name);
         fs::create_dir(&base_path_src)?;
 
-        gen_module(base, &module_path, module, &base_path_docs, &base_path_src)?;
+        gen_module(&ctx, &base_path_docs, &base_path_src)?;
     }
 
-    for (name, item) in &module.constants {
-        let module_path = module_path.extend(name.to_string(), "#", ItemKind::Constant, false);
+    for (name, item) in &ctx.module.constants {
+        let ctx = ctx.with_item(name.to_string(), ItemKind::Constant);
         let template = ConstantTemplate {
-            base,
+            ctx: &ctx,
             title: &name.to_string(),
-            module_path: &module_path,
-            module,
             constants: &item.instances,
         };
         template.write_into(&mut File::create(
@@ -212,13 +186,11 @@ fn gen_module(
         )?)?;
     }
 
-    for (name, item) in &module.overrides {
-        let module_path = module_path.extend(name.to_string(), "#", ItemKind::Override, false);
+    for (name, item) in &ctx.module.overrides {
+        let ctx = ctx.with_item(name.to_string(), ItemKind::Override);
         let template = OverrideTemplate {
-            base,
+            ctx: &ctx,
             title: &name.to_string(),
-            module_path: &module_path,
-            module,
             overrides: &item.instances,
         };
         template.write_into(&mut File::create(
@@ -226,14 +198,11 @@ fn gen_module(
         )?)?;
     }
 
-    for (name, item) in &module.global_variables {
-        let module_path =
-            module_path.extend(name.to_string(), "#", ItemKind::GlobalVariable, false);
+    for (name, item) in &ctx.module.global_variables {
+        let ctx = ctx.with_item(name.to_string(), ItemKind::GlobalVariable);
         let template = GlobalVariableTemplate {
-            base,
+            ctx: &ctx,
             title: &name.to_string(),
-            module_path: &module_path,
-            module,
             variables: &item.instances,
         };
         template.write_into(&mut File::create(
@@ -241,13 +210,11 @@ fn gen_module(
         )?)?;
     }
 
-    for (name, item) in &module.structs {
-        let module_path = module_path.extend(name.to_string(), "#", ItemKind::Struct, false);
+    for (name, item) in &ctx.module.structs {
+        let ctx = ctx.with_item(name.to_string(), ItemKind::Struct);
         let template = StructTemplate {
-            base,
+            ctx: &ctx,
             title: &name.to_string(),
-            module_path: &module_path,
-            module,
             structs: &item.instances,
         };
         template.write_into(&mut File::create(
@@ -255,13 +222,11 @@ fn gen_module(
         )?)?;
     }
 
-    for (name, item) in &module.functions {
-        let module_path = module_path.extend(name.to_string(), "#", ItemKind::Function, false);
+    for (name, item) in &ctx.module.functions {
+        let ctx = ctx.with_item(name.to_string(), ItemKind::Function);
         let template = FunctionTemplate {
-            base,
+            ctx: &ctx,
             title: &name.to_string(),
-            module_path: &module_path,
-            module,
             functions: &item.instances,
         };
         template.write_into(&mut File::create(
@@ -269,13 +234,11 @@ fn gen_module(
         )?)?;
     }
 
-    for (name, item) in &module.type_aliases {
-        let module_path = module_path.extend(name.to_string(), "#", ItemKind::TypeAlias, false);
+    for (name, item) in &ctx.module.type_aliases {
+        let ctx = ctx.with_item(name.to_string(), ItemKind::TypeAlias);
         let template = TypeAliasTemplate {
-            base,
+            ctx: &ctx,
             title: &name.to_string(),
-            module_path: &module_path,
-            module,
             type_aliases: &item.instances,
         };
         template.write_into(&mut File::create(
@@ -284,455 +247,4 @@ fn gen_module(
     }
 
     Ok(())
-}
-
-#[derive(Debug, Clone)]
-struct ModulePath {
-    segments: Vec<(String, String, ItemKind)>,
-    level: usize,
-}
-
-impl ModulePath {
-    fn extend(
-        &self,
-        name: impl Into<String>,
-        path: impl Into<String>,
-        kind: ItemKind,
-        is_child: bool,
-    ) -> Self {
-        Self {
-            segments: self
-                .segments
-                .iter()
-                .map(|(name, path, kind)| {
-                    if is_child {
-                        (name.clone(), format!("../{}", path), *kind)
-                    } else {
-                        (name.clone(), path.clone(), *kind)
-                    }
-                })
-                .chain([(name.into(), path.into(), kind)])
-                .collect(),
-            level: if is_child { self.level + 1 } else { self.level },
-        }
-    }
-
-    fn root_path(&self) -> String {
-        (0..self.level + 3).map(|_| "../").collect::<String>()
-    }
-
-    fn source_href(&self, span: Option<Span>) -> String {
-        let mut href = String::new();
-
-        for _ in 0..self.level {
-            href.push_str("../");
-        }
-        href.push_str("../src/");
-
-        for (idx, (name, _, kind)) in self.segments.iter().enumerate() {
-            let is_last = idx == self.segments.len() - 1;
-
-            if is_last {
-                if *kind == ItemKind::Module {
-                    href.push_str(name);
-                    href.push_str(".html");
-                } else {
-                    href.pop();
-                    href.push_str(".html");
-                }
-            } else {
-                href.push_str(name);
-                href.push('/');
-            }
-        }
-
-        if let Some(span) = span {
-            href.push('#');
-            href.push_str(&span.line_start.to_string());
-            if span.line_start != span.line_end {
-                href.push('-');
-                href.push_str(&span.line_end.to_string());
-            }
-        }
-
-        href
-    }
-}
-
-#[derive(Template)]
-#[template(path = "source.html")]
-struct SourceTemplate<'a> {
-    base: &'a Base<'a>,
-    title: &'a str,
-    module_path: &'a ModulePath,
-    source: &'a str,
-}
-
-#[derive(Template)]
-#[template(path = "overview.html")]
-struct OverviewTemplate<'a> {
-    base: &'a Base<'a>,
-    title: &'a str,
-    module_path: &'a ModulePath,
-    module: &'a Module,
-}
-
-#[derive(Template)]
-#[template(path = "constant.html")]
-struct ConstantTemplate<'a> {
-    base: &'a Base<'a>,
-    title: &'a str,
-    module_path: &'a ModulePath,
-    module: &'a Module,
-    constants: &'a [Constant],
-}
-
-#[derive(Template)]
-#[template(path = "override.html")]
-struct OverrideTemplate<'a> {
-    base: &'a Base<'a>,
-    title: &'a str,
-    module_path: &'a ModulePath,
-    module: &'a Module,
-    overrides: &'a [Override],
-}
-
-#[derive(Template)]
-#[template(path = "global_variable.html")]
-struct GlobalVariableTemplate<'a> {
-    base: &'a Base<'a>,
-    title: &'a str,
-    module_path: &'a ModulePath,
-    module: &'a Module,
-    variables: &'a [GlobalVariable],
-}
-
-#[derive(Template)]
-#[template(path = "struct.html")]
-struct StructTemplate<'a> {
-    base: &'a Base<'a>,
-    title: &'a str,
-    module_path: &'a ModulePath,
-    module: &'a Module,
-    structs: &'a [Struct],
-}
-
-#[derive(Template)]
-#[template(path = "function.html")]
-struct FunctionTemplate<'a> {
-    base: &'a Base<'a>,
-    title: &'a str,
-    module_path: &'a ModulePath,
-    module: &'a Module,
-    functions: &'a [Function],
-}
-
-#[derive(Template)]
-#[template(path = "type_alias.html")]
-struct TypeAliasTemplate<'a> {
-    base: &'a Base<'a>,
-    title: &'a str,
-    module_path: &'a ModulePath,
-    module: &'a Module,
-    type_aliases: &'a [TypeAlias],
-}
-
-#[derive(Template)]
-#[template(path = "render_type.html")]
-struct RenderTypeTemplate<'a> {
-    ty: &'a TypeExpression,
-    module_path: &'a ModulePath,
-    module: &'a Module,
-}
-
-fn render_type(ty: &TypeExpression, module_path: &ModulePath, module: &Module) -> String {
-    RenderTypeTemplate {
-        ty,
-        module_path,
-        module,
-    }
-    .to_string()
-}
-
-#[derive(Template)]
-#[template(path = "render_expression.html")]
-struct RenderExpressionTemplate<'a> {
-    expr: &'a Expression,
-    module_path: &'a ModulePath,
-    module: &'a Module,
-}
-
-impl RenderExpressionTemplate<'_> {
-    fn render_rec(&self, expr: &Expression) -> String {
-        RenderExpressionTemplate {
-            expr,
-            module_path: self.module_path,
-            module: self.module,
-        }
-        .to_string()
-    }
-}
-
-fn render_expression(expr: &Expression, module_path: &ModulePath, module: &Module) -> String {
-    RenderExpressionTemplate {
-        expr,
-        module_path,
-        module,
-    }
-    .to_string()
-}
-
-#[derive(Template)]
-#[template(path = "render_attribute.html")]
-struct RenderAttributeTemplate<'a> {
-    attr: &'a Attribute,
-    module_path: &'a ModulePath,
-    module: &'a Module,
-}
-
-fn render_attributes(
-    attributes: &[Attribute],
-    module_path: &ModulePath,
-    module: &Module,
-    new_line_indent: Option<usize>,
-) -> String {
-    if attributes.is_empty() {
-        return "".to_string();
-    }
-
-    let sep = match new_line_indent {
-        Some(indent) => {
-            let mut sep = String::new();
-            sep.push('\n');
-            for _ in 0..indent {
-                sep.push(' ');
-            }
-            sep
-        }
-        None => " ".to_string(),
-    };
-
-    let mut result = String::new();
-    for (idx, attr) in attributes.iter().enumerate() {
-        if idx != 0 {
-            if attributes.len() <= 3 {
-                result.push(' ');
-            } else {
-                result.push_str(&sep);
-            }
-        }
-        result.push_str(
-            &RenderAttributeTemplate {
-                attr,
-                module_path,
-                module,
-            }
-            .to_string(),
-        );
-    }
-
-    result.push_str(&sep);
-
-    result
-}
-
-fn show_function_inline(function: &Function) -> bool {
-    function.parameters.len() <= 3
-        && function
-            .parameters
-            .iter()
-            .all(|p| p.attributes.is_empty() && p.conditional.is_none())
-}
-
-fn def_path_href(
-    name: &Ident,
-    kind: &ItemKind,
-    def_path: &DefinitionPath,
-    module_path_level: &usize,
-) -> String {
-    let mut href = String::new();
-
-    match def_path {
-        DefinitionPath::Absolute(components) => {
-            for _ in 0..*module_path_level {
-                href.push_str("../");
-            }
-            for c in components {
-                href.push_str(c);
-                href.push('/');
-            }
-        }
-        DefinitionPath::Package(dep, version, components) => {
-            for _ in 0..*module_path_level + 3 {
-                href.push_str("../");
-            }
-            href.push_str(dep);
-            href.push('/');
-            href.push_str(&version.to_string());
-            href.push('/');
-            href.push_str(dep);
-            href.push('/');
-            for c in components {
-                href.push_str(c);
-                href.push('/');
-            }
-        }
-    }
-
-    match *kind {
-        ItemKind::Module => href.push_str("index.html"),
-        ItemKind::Constant => href.push_str(&format!("const.{}.html", name.0)),
-        ItemKind::Override => href.push_str(&format!("override.{}.html", name.0)),
-        ItemKind::GlobalVariable => href.push_str(&format!("var.{}.html", name.0)),
-        ItemKind::Struct => href.push_str(&format!("struct.{}.html", name.0)),
-        ItemKind::Function => href.push_str(&format!("fn.{}.html", name.0)),
-        ItemKind::TypeAlias => href.push_str(&format!("alias.{}.html", name.0)),
-    }
-
-    href
-}
-
-fn render_doc_comment(comment: Option<&DocComment>, module_path_level: &usize) -> String {
-    let mut output = String::new();
-    if let Some(comment) = comment {
-        output.push_str(r#"<div class="comment">"#);
-        let md = {
-            let mut md = String::new();
-            md::html::push_html(
-                &mut md,
-                comment
-                    .unsafe_full
-                    .iter()
-                    .cloned()
-                    .map(|e| process_intra_doc_links(e, *module_path_level)),
-            );
-            ammonia::clean(&md)
-        };
-        output.push_str(&md);
-        output.push_str(r#"</div>"#);
-    }
-    output
-}
-
-fn render_doc_comment_short(comment: Option<&DocComment>, module_path_level: &usize) -> String {
-    let mut output = String::new();
-    if let Some(comment) = comment {
-        output.push_str(r#"<div class="comment-inline">"#);
-        let md = {
-            let mut md = String::new();
-            md::html::push_html(
-                &mut md,
-                comment
-                    .unsafe_short
-                    .iter()
-                    .cloned()
-                    .map(|e| process_intra_doc_links(e, *module_path_level)),
-            );
-            ammonia::clean(&md)
-        };
-        output.push_str(&md);
-        output.push_str(r#"</div>"#);
-    }
-    output
-}
-
-fn render_doc_comment_short_no_links(comment: Option<&DocComment>) -> String {
-    let mut output = String::new();
-    if let Some(comment) = comment {
-        output.push_str(r#"<div class="comment-inline">"#);
-        let md = {
-            let mut md = String::new();
-            md::html::push_html(&mut md, comment.unsafe_short_no_links.iter().cloned());
-            ammonia::clean(&md)
-        };
-        output.push_str(&md);
-        output.push_str(r#"</div>"#);
-    }
-    output
-}
-
-fn process_intra_doc_links(mut event: md::Event, module_path_level: usize) -> md::Event {
-    if let md::Event::Start(md::Tag::Link { dest_url, .. }) = &mut event {
-        if let Ok(link) = IntraDocLink::from_str(dest_url) {
-            *dest_url =
-                def_path_href(&link.name, &link.kind, &link.def_path, &module_path_level).into();
-        }
-    }
-    event
-}
-
-struct Base<'a> {
-    doc: &'a WeslDocs,
-    build_as_latest: bool,
-    is_source_view: bool,
-}
-
-impl Base<'_> {
-    fn with_source_view(&self) -> Self {
-        Self {
-            doc: self.doc,
-            build_as_latest: self.build_as_latest,
-            is_source_view: true,
-        }
-    }
-}
-
-fn module_path_class(kind: &ItemKind, last: &bool) -> &'static str {
-    if !*last {
-        return "path";
-    }
-
-    match kind {
-        ItemKind::Module => "module",
-        ItemKind::Constant => "const",
-        ItemKind::Override => "override",
-        ItemKind::GlobalVariable => "var",
-        ItemKind::Struct => "struct",
-        ItemKind::Function => "fn",
-        ItemKind::TypeAlias => "type",
-    }
-}
-
-fn builtin_str(builtin: &BuiltinValue) -> &'static str {
-    match builtin {
-        BuiltinValue::VertexIndex => "vertex_index",
-        BuiltinValue::InstanceIndex => "instance_index",
-        BuiltinValue::Position => "position",
-        BuiltinValue::FrontFacing => "front_facing",
-        BuiltinValue::FragDepth => "frag_depth",
-        BuiltinValue::SampleIndex => "sample_index",
-        BuiltinValue::SampleMask => "sample_mask",
-        BuiltinValue::LocalInvocationId => "local_invocation_id",
-        BuiltinValue::LocalInvocationIndex => "local_invocation_index",
-        BuiltinValue::GlobalInvocationId => "global_invocation_id",
-        BuiltinValue::WorkgroupId => "workgroup_id",
-        BuiltinValue::NumWorkgroups => "num_workgroups",
-    }
-}
-
-fn severity_str(diagnostic: &DiagnosticSeverity) -> &'static str {
-    match diagnostic {
-        DiagnosticSeverity::Error => "error",
-        DiagnosticSeverity::Warning => "warning",
-        DiagnosticSeverity::Info => "info",
-        DiagnosticSeverity::Off => "off",
-    }
-}
-
-fn interpolation_str(interpolation: &InterpolationType) -> &'static str {
-    match interpolation {
-        InterpolationType::Perspective => "perspective",
-        InterpolationType::Linear => "linear",
-        InterpolationType::Flat => "flat",
-    }
-}
-
-fn sampling_str(sampling: &InterpolationSampling) -> &'static str {
-    match sampling {
-        InterpolationSampling::Center => "center",
-        InterpolationSampling::Centroid => "centroid",
-        InterpolationSampling::Sample => "sample",
-        InterpolationSampling::First => "first",
-        InterpolationSampling::Either => "either",
-    }
 }
