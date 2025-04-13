@@ -1,6 +1,6 @@
 {% match ty %}
 {%- when TypeExpression::Referenced with { name, kind, def_path } -%}
-<a class="struct" href="{{ ctx.def_path_url(name, kind, def_path) }}">
+<a class="{{ self::item_class(kind) }}" href="{{ ctx.def_path_url(name, kind, def_path) }}">
     {{- name -}}
 </a>
 {%- when TypeExpression::TypeIdentifier with { name, template_args } %}

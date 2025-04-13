@@ -57,7 +57,7 @@
             <h2>
                 {% for (name, path, kind) in ctx.segments() -%}
                 {% if !loop.first %}<span>::</span><wbr>{% endif -%}
-                <a class="{{ self::module_path_class(kind, loop.last) }}" href="{{ path }}">{{ name }}</a>
+                <a class="{{ self::path_item_class(kind, loop.last) }}" href="{{ path }}">{{ name }}</a>
                 {%- endfor %}
             </h2>
             {% endif %}

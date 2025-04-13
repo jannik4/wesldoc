@@ -100,11 +100,7 @@ fn show_function_inline(function: &Function) -> bool {
             .all(|p| p.attributes.is_empty() && p.conditional.is_none())
 }
 
-fn module_path_class(kind: &ItemKind, last: &bool) -> &'static str {
-    if !*last {
-        return "path";
-    }
-
+fn item_class(kind: &ItemKind) -> &'static str {
     match kind {
         ItemKind::Module => "module",
         ItemKind::Constant => "const",
@@ -114,6 +110,10 @@ fn module_path_class(kind: &ItemKind, last: &bool) -> &'static str {
         ItemKind::Function => "fn",
         ItemKind::TypeAlias => "type",
     }
+}
+
+fn path_item_class(kind: &ItemKind, last: &bool) -> &'static str {
+    if *last { item_class(kind) } else { "path" }
 }
 
 fn builtin_str(builtin: &BuiltinValue) -> &'static str {
