@@ -200,7 +200,7 @@ impl ModulePath {
     fn extend(
         &self,
         name: impl Into<String>,
-        path: impl Into<String>,
+        url: impl Into<String>,
         kind: ItemKind,
         is_child: bool,
     ) -> Self {
@@ -208,14 +208,14 @@ impl ModulePath {
             segments: self
                 .segments
                 .iter()
-                .map(|(name, path, kind)| {
+                .map(|(name, url, kind)| {
                     if is_child {
-                        (name.clone(), format!("../{}", path), *kind)
+                        (name.clone(), format!("../{}", url), *kind)
                     } else {
-                        (name.clone(), path.clone(), *kind)
+                        (name.clone(), url.clone(), *kind)
                     }
                 })
-                .chain([(name.into(), path.into(), kind)])
+                .chain([(name.into(), url.into(), kind)])
                 .collect(),
             level: if is_child { self.level + 1 } else { self.level },
         }

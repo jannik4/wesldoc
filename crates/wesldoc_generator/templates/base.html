@@ -55,9 +55,9 @@
         <div id="innerContent">
             {% if is_source_view is not defined %}
             <h2>
-                {% for (name, path, kind) in ctx.segments() -%}
+                {% for (name, url, kind) in ctx.segments() -%}
                 {% if !loop.first %}<span>::</span><wbr>{% endif -%}
-                <a class="{{ self::path_item_class(kind, loop.last) }}" href="{{ path }}">{{ name }}</a>
+                <a class="{{ self::path_item_class(kind, loop.last) }}" href="{{ url }}">{{ name }}</a>
                 {%- endfor %}
             </h2>
             {% endif %}
