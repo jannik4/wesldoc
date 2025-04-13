@@ -1,8 +1,12 @@
 [package]
 name = "wesldoc_generator"
-version = "0.1.0"
-edition = "2024"
-license = "MIT OR Apache-2.0"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description.workspace = true
+repository.workspace = true
+license.workspace = true
+readme.workspace = true
 
 [dependencies]
 wesldoc_ast = { path = "../wesldoc_ast" }

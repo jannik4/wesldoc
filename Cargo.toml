@@ -1,3 +1,15 @@
 [workspace]
 resolver = "2"
 members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.86.0"
+description = "WESL documentation generator"
+repository = "https://github.com/jannik4/wesldoc"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+
+[workspace.dependencies]
+wesl = { git = "https://github.com/wgsl-tooling-wg/wesl-rs", rev = "ff538850b5e589784ee4fb9c69938ce67d3707d4" }
