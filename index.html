@@ -12,18 +12,25 @@
     <link rel="stylesheet" href="-/static/css/themes.css">
     <link rel="stylesheet" href="-/static/css/styles.css">
     <link rel="stylesheet" href="-/static/css/icons.css">
-    <script src="-/static/js/theme.js"></script>
+    <script src="-/static/js/settings.js"></script>
 </head>
 
 <body>
     <div class="nav">
         <span style="margin-right: 12px;">WESL Docs</span>
-        <button class="toggle-theme is-light-theme icon icon-moon" onclick="toggleTheme()"
-            aria-label="Switch to dark mode">
-        </button>
-        <button class="toggle-theme is-dark-theme icon icon-sun" onclick="toggleTheme()"
-            aria-label="Switch to light mode">
-        </button>
+        <button id="show-settings" class="icon icon-settings" aria-label="Show settings"></button>
+<div id="settings-menu">
+    <div class="settings-title">Theme</div>
+    <label>
+        <input type="radio" name="theme" id="theme-auto" value="auto"> Auto
+    </label>
+    <label>
+        <input type="radio" name="theme" id="theme-dark" value="dark"> Dark
+    </label>
+    <label>
+        <input type="radio" name="theme" id="theme-light" value="light"> Light
+    </label>
+</div>
     </div>
     <div class="content">
         <h3 class="item-list-title">Packages</h3>
