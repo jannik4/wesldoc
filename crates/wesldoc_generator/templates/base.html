@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="{{ root_url }}-/static/css/themes.css">
     <link rel="stylesheet" href="{{ root_url }}-/static/css/styles.css">
     <link rel="stylesheet" href="{{ root_url }}-/static/css/icons.css">
-    <script src="{{ root_url }}-/static/js/theme.js"></script>
+    <script src="{{ root_url }}-/static/js/settings.js"></script>
 
     {% block head %}{% endblock %}
 </head>
@@ -42,12 +42,7 @@
                 {{ this_version }}
             </option>
         </select>
-        <button class="toggle-theme is-light-theme icon icon-moon" onclick="toggleTheme()"
-            aria-label="Switch to dark mode">
-        </button>
-        <button class="toggle-theme is-dark-theme icon icon-sun" onclick="toggleTheme()"
-            aria-label="Switch to light mode">
-        </button>
+        {% include "settings.html" %}
     </div>
     <div class="content">
         <input type="text" id="search" placeholder="Search" oninput="searchDebounced()" autocomplete="off">
