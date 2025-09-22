@@ -152,7 +152,8 @@ fn compile_module(
                 }
                 syntax::DeclarationKind::Let => (), // should be unreachable?
                 syntax::DeclarationKind::Var(address_space) => {
-                    let address_space = address_space.unwrap_or(syntax::AddressSpace::Handle);
+                    let address_space =
+                        address_space.unwrap_or((syntax::AddressSpace::Handle, None));
                     let name = map(&declaration.ident);
                     module
                         .global_variables

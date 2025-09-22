@@ -18,44 +18,37 @@ impl DocsResolver {
         }
     }
 
-    fn package_and_path(
+    fn resolver_and_path(
         &self,
         path: &ModulePath,
     ) -> Result<(&FileResolver, ModulePath), ResolveError> {
-        let Some(package) = path
-            .components
-            .first()
-            .and_then(|p| self.dependencies.get(p))
-        else {
-            return Err(ResolveError::ModuleNotFound(
-                path.clone(),
-                "package not found".to_string(),
-            ));
-        };
-        let path = ModulePath {
-            origin: PathOrigin::Absolute,
-            components: path.components[1..].to_vec(),
-        };
-        Ok((package, path))
+        match &path.origin {
+            PathOrigin::Absolute | PathOrigin::Relative(_) => Ok((&self.this, path.clone())),
+            PathOrigin::Package(package) => {
+                let Some(package) = self.dependencies.get(package) else {
+                    return Err(ResolveError::ModuleNotFound(
+                        path.clone(),
+                        "package not found".to_string(),
+                    ));
+                };
+                let path = ModulePath {
+                    origin: PathOrigin::Absolute,
+                    components: path.components.clone(),
+                };
+                Ok((package, path))
+            }
+        }
     }
 }
 
 impl Resolver for DocsResolver {
     fn resolve_source<'a>(&'a self, path: &ModulePath) -> Result<Cow<'a, str>, ResolveError> {
-        if path.origin.is_package() {
-            let (package, path) = self.package_and_path(path)?;
-            package.resolve_source(&path)
-        } else {
-            self.this.resolve_source(path)
-        }
+        let (resolver, path) = self.resolver_and_path(path)?;
+        resolver.resolve_source(&path)
     }
 
     fn display_name(&self, path: &ModulePath) -> Option<String> {
-        if path.origin.is_package() {
-            let (package, path) = self.package_and_path(path).ok()?;
-            package.display_name(&path)
-        } else {
-            self.this.display_name(path)
-        }
+        let (resolver, path) = self.resolver_and_path(path).ok()?;
+        resolver.display_name(&path)
     }
 }

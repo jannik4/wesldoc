@@ -120,6 +120,7 @@ fn builtin_str(builtin: &BuiltinValue) -> &'static str {
     match builtin {
         BuiltinValue::VertexIndex => "vertex_index",
         BuiltinValue::InstanceIndex => "instance_index",
+        BuiltinValue::ClipDistances => "clip_distances",
         BuiltinValue::Position => "position",
         BuiltinValue::FrontFacing => "front_facing",
         BuiltinValue::FragDepth => "frag_depth",
@@ -130,6 +131,8 @@ fn builtin_str(builtin: &BuiltinValue) -> &'static str {
         BuiltinValue::GlobalInvocationId => "global_invocation_id",
         BuiltinValue::WorkgroupId => "workgroup_id",
         BuiltinValue::NumWorkgroups => "num_workgroups",
+        BuiltinValue::SubgroupInvocationId => "subgroup_invocation_id",
+        BuiltinValue::SubgroupSize => "subgroup_size",
     }
 }
 

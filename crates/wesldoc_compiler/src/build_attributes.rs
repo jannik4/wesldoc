@@ -56,5 +56,8 @@ fn build_attribute(attr: &syntax::Attribute, ctx: &Context) -> Option<Attribute>
         syntax::Attribute::If(_) | syntax::Attribute::Elif(_) | syntax::Attribute::Else => {
             return None;
         }
+
+        // Ignore for now
+        wesl::syntax::Attribute::Publish => return None, // TODO: handle publish attribute
     })
 }

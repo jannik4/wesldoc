@@ -15,14 +15,15 @@ impl Map<Ident> for syntax::Ident {
     }
 }
 
-impl Map<AddressSpace> for syntax::AddressSpace {
+impl Map<AddressSpace> for (syntax::AddressSpace, Option<syntax::AccessMode>) {
     fn map(&self) -> AddressSpace {
-        match self {
+        let (address_space, access_mode) = self;
+        match address_space {
             syntax::AddressSpace::Function => AddressSpace::Function,
             syntax::AddressSpace::Private => AddressSpace::Private,
             syntax::AddressSpace::Workgroup => AddressSpace::WorkGroup,
             syntax::AddressSpace::Uniform => AddressSpace::Uniform,
-            syntax::AddressSpace::Storage(access_mode) => match access_mode {
+            syntax::AddressSpace::Storage => match access_mode {
                 Some(syntax::AccessMode::Read) => AddressSpace::Storage {
                     load: true,
                     store: false,
@@ -36,7 +37,7 @@ impl Map<AddressSpace> for syntax::AddressSpace {
                     store: true,
                 },
                 None => AddressSpace::Storage {
-                    load: false,
+                    load: true,
                     store: false,
                 },
             },
@@ -64,6 +65,7 @@ impl Map<BuiltinValue> for syntax::BuiltinValue {
         match self {
             syntax::BuiltinValue::VertexIndex => BuiltinValue::VertexIndex,
             syntax::BuiltinValue::InstanceIndex => BuiltinValue::InstanceIndex,
+            syntax::BuiltinValue::ClipDistances => BuiltinValue::ClipDistances,
             syntax::BuiltinValue::Position => BuiltinValue::Position,
             syntax::BuiltinValue::FrontFacing => BuiltinValue::FrontFacing,
             syntax::BuiltinValue::FragDepth => BuiltinValue::FragDepth,
@@ -74,6 +76,8 @@ impl Map<BuiltinValue> for syntax::BuiltinValue {
             syntax::BuiltinValue::GlobalInvocationId => BuiltinValue::GlobalInvocationId,
             syntax::BuiltinValue::WorkgroupId => BuiltinValue::WorkgroupId,
             syntax::BuiltinValue::NumWorkgroups => BuiltinValue::NumWorkgroups,
+            syntax::BuiltinValue::SubgroupInvocationId => BuiltinValue::SubgroupInvocationId,
+            syntax::BuiltinValue::SubgroupSize => BuiltinValue::SubgroupSize,
         }
     }
 }

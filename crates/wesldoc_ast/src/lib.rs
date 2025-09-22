@@ -471,6 +471,7 @@ impl Attribute {
 pub enum BuiltinValue {
     VertexIndex,
     InstanceIndex,
+    ClipDistances,
     Position,
     FrontFacing,
     FragDepth,
@@ -481,6 +482,8 @@ pub enum BuiltinValue {
     GlobalInvocationId,
     WorkgroupId,
     NumWorkgroups,
+    SubgroupInvocationId,
+    SubgroupSize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

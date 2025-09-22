@@ -108,7 +108,7 @@ impl Context<'_> {
         target: ResolveTarget,
     ) -> Option<(Ident, ItemKind, DefinitionPath)> {
         let (name, kind, path) = self.get_decl(target)?;
-        let def_path = match path.origin {
+        let def_path = match &path.origin {
             syntax::PathOrigin::Absolute => DefinitionPath::Absolute(path.components.clone()),
             syntax::PathOrigin::Relative(n) => {
                 if self.module_path.len() < n + 1 {
@@ -124,22 +124,14 @@ impl Context<'_> {
                     DefinitionPath::Absolute(combined)
                 }
             }
-            syntax::PathOrigin::Package => match path.components.split_first() {
-                Some((dep, rest)) => match self.dependencies.get(dep) {
-                    Some(version) => {
-                        DefinitionPath::Package(dep.clone(), version.clone(), rest.to_vec())
-                    }
-                    None => {
-                        log::warn!("dependency {} not found", dep,);
-                        return None;
-                    }
-                },
+            syntax::PathOrigin::Package(package) => match self.dependencies.get(package) {
+                Some(version) => DefinitionPath::Package(
+                    package.clone(),
+                    version.clone(),
+                    path.components.to_vec(),
+                ),
                 None => {
-                    log::warn!(
-                        "invalid package path for type {} in module {}",
-                        name,
-                        self.module_path.join("/")
-                    );
+                    log::warn!("dependency {} not found", package);
                     return None;
                 }
             },

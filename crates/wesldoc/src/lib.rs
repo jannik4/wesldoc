@@ -5,9 +5,9 @@ use clap::Parser;
 use std::{
     collections::HashMap,
     fs,
-    path::{Path, PathBuf},
+    path::{Component, Path, PathBuf},
 };
-use wesl::{CompileOptions, Feature, Features, ManglerKind, Wesl};
+use wesl::{CompileOptions, Feature, Features, ManglerKind, ModulePath, Wesl, syntax::PathOrigin};
 use wesldoc_ast::Version;
 use wesldoc_compiler::{WeslModule, WeslPackage};
 
@@ -71,7 +71,9 @@ fn compile_package(package: Package, dependencies: Vec<Package>) -> Result<WeslP
                 lower: false,
                 validate: false,
                 lazy: true,
+                mangle_root: false,
                 keep: None,
+                keep_root: true,
                 features: Features {
                     default: Feature::Keep,
                     flags: HashMap::default(),
@@ -119,7 +121,19 @@ fn compile_submodules(
                     compiled: None,
                     submodules: Vec::new(),
                 });
-            sub.compiled = Some(wesl.compile(path.strip_prefix(root)?)?)
+            sub.compiled = Some(
+                wesl.compile(&ModulePath {
+                    origin: PathOrigin::Absolute,
+                    components: path
+                        .strip_prefix(root)?
+                        .components()
+                        .map(|part| match part {
+                            Component::Normal(name) => Ok(name.to_string_lossy().to_string()),
+                            _ => Err("unexpected path component".into()),
+                        })
+                        .collect::<Result<_>>()?,
+                })?,
+            );
         } else if path.is_dir() {
             let sub = submodules
                 .entry(name)

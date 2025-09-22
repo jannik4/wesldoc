@@ -10,7 +10,7 @@
 //!
 //! fn main() {
 //!    // Create a cuboid from its size
-//!    let cuboid1 = cuboid::new(2.0, 3.0, 4.0);    
+//!    let cuboid1 = cuboid::create(2.0, 3.0, 4.0);    
 //! }
 //! ```
 
@@ -21,7 +21,7 @@ struct Cuboid {
     half_size: vec3<f32>,
 }
 
-fn new(x_length: f32, y_length: f32, z_length: f32) -> Cuboid {
+fn create(x_length: f32, y_length: f32, z_length: f32) -> Cuboid {
     return from_size(vec3<f32>(x_length, y_length, z_length));
 }
 
