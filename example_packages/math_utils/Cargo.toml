@@ -1,0 +1,6 @@
+[package]
+name = "math_utils"
+version = "0.0.0"
+
+[dependencies]
+primitives = { path = "../primitives" }
