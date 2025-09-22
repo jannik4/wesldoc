@@ -182,7 +182,7 @@ fn gen_module(ctx: &Context, base_path_docs: &Path, base_path_src: &Path) -> Res
             constants: &item.instances,
         };
         template.write_into(&mut File::create(
-            base_path_docs.join(format!("const.{}.html", name)),
+            base_path_docs.join(format!("const.{name}.html")),
         )?)?;
     }
 
@@ -194,7 +194,7 @@ fn gen_module(ctx: &Context, base_path_docs: &Path, base_path_src: &Path) -> Res
             overrides: &item.instances,
         };
         template.write_into(&mut File::create(
-            base_path_docs.join(format!("override.{}.html", name)),
+            base_path_docs.join(format!("override.{name}.html")),
         )?)?;
     }
 
@@ -206,7 +206,7 @@ fn gen_module(ctx: &Context, base_path_docs: &Path, base_path_src: &Path) -> Res
             variables: &item.instances,
         };
         template.write_into(&mut File::create(
-            base_path_docs.join(format!("var.{}.html", name)),
+            base_path_docs.join(format!("var.{name}.html")),
         )?)?;
     }
 
@@ -218,7 +218,7 @@ fn gen_module(ctx: &Context, base_path_docs: &Path, base_path_src: &Path) -> Res
             structs: &item.instances,
         };
         template.write_into(&mut File::create(
-            base_path_docs.join(format!("struct.{}.html", name)),
+            base_path_docs.join(format!("struct.{name}.html")),
         )?)?;
     }
 
@@ -230,7 +230,7 @@ fn gen_module(ctx: &Context, base_path_docs: &Path, base_path_src: &Path) -> Res
             functions: &item.instances,
         };
         template.write_into(&mut File::create(
-            base_path_docs.join(format!("fn.{}.html", name)),
+            base_path_docs.join(format!("fn.{name}.html")),
         )?)?;
     }
 
@@ -242,7 +242,7 @@ fn gen_module(ctx: &Context, base_path_docs: &Path, base_path_src: &Path) -> Res
             type_aliases: &item.instances,
         };
         template.write_into(&mut File::create(
-            base_path_docs.join(format!("alias.{}.html", name)),
+            base_path_docs.join(format!("alias.{name}.html")),
         )?)?;
     }
 

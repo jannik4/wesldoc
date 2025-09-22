@@ -29,7 +29,7 @@ pub fn extract_comments_outer(item_span: Span, source: &str) -> String {
 
         let line = line.trim_start();
         if line.starts_with("///") {
-            comments = format!("{}\n{}", line, comments);
+            comments = format!("{line}\n{comments}");
         } else if !line.is_empty() {
             break;
         }

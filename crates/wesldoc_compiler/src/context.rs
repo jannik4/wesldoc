@@ -20,7 +20,7 @@ impl Context<'_> {
     ) -> Context<'a> {
         // Warn if the source map is not found
         if compiled.sourcemap.is_none() {
-            log::warn!("no source map found for module {:?}", module_path);
+            log::warn!("no source map found for module {module_path:?}");
         }
 
         // Build local items
@@ -131,7 +131,7 @@ impl Context<'_> {
                     path.components.to_vec(),
                 ),
                 None => {
-                    log::warn!("dependency {} not found", package);
+                    log::warn!("dependency {package} not found");
                     return None;
                 }
             },

@@ -78,13 +78,13 @@ impl SerializedItem {
     ) -> Self {
         let mut url = path.join("/");
         match kind {
-            SerializedItemKind::Module => url.push_str(&format!("/{}/index.html", name)),
-            SerializedItemKind::Constant => url.push_str(&format!("/const.{}.html", name)),
-            SerializedItemKind::Override => url.push_str(&format!("/override.{}.html", name)),
-            SerializedItemKind::GlobalVariable => url.push_str(&format!("/var.{}.html", name)),
-            SerializedItemKind::Struct => url.push_str(&format!("/struct.{}.html", name)),
-            SerializedItemKind::Function => url.push_str(&format!("/fn.{}.html", name)),
-            SerializedItemKind::TypeAlias => url.push_str(&format!("/alias.{}.html", name)),
+            SerializedItemKind::Module => url.push_str(&format!("/{name}/index.html")),
+            SerializedItemKind::Constant => url.push_str(&format!("/const.{name}.html")),
+            SerializedItemKind::Override => url.push_str(&format!("/override.{name}.html")),
+            SerializedItemKind::GlobalVariable => url.push_str(&format!("/var.{name}.html")),
+            SerializedItemKind::Struct => url.push_str(&format!("/struct.{name}.html")),
+            SerializedItemKind::Function => url.push_str(&format!("/fn.{name}.html")),
+            SerializedItemKind::TypeAlias => url.push_str(&format!("/alias.{name}.html")),
         }
 
         Self {

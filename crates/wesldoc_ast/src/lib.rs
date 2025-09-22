@@ -58,39 +58,39 @@ impl fmt::Display for Conditional {
         match self {
             Conditional::False => write!(f, "false"),
             Conditional::True => write!(f, "true"),
-            Conditional::Feature(ident) => write!(f, "{}", ident),
+            Conditional::Feature(ident) => write!(f, "{ident}"),
             Conditional::Not(operand) => {
                 if matches!(**operand, Conditional::And(_, _) | Conditional::Or(_, _)) {
-                    write!(f, "!({})", operand)
+                    write!(f, "!({operand})")
                 } else {
-                    write!(f, "!{}", operand)
+                    write!(f, "!{operand}")
                 }
             }
             Conditional::And(left, right) => {
                 if matches!(**left, Conditional::Or(_, _)) {
-                    write!(f, "({})", left)?;
+                    write!(f, "({left})")?;
                 } else {
-                    write!(f, "{}", left)?;
+                    write!(f, "{left}")?;
                 }
                 write!(f, " && ")?;
                 if matches!(**right, Conditional::Or(_, _)) {
-                    write!(f, "({})", right)?;
+                    write!(f, "({right})")?;
                 } else {
-                    write!(f, "{}", right)?;
+                    write!(f, "{right}")?;
                 }
                 Ok(())
             }
             Conditional::Or(left, right) => {
                 if matches!(**left, Conditional::And(_, _)) {
-                    write!(f, "({})", left)?;
+                    write!(f, "({left})")?;
                 } else {
-                    write!(f, "{}", left)?;
+                    write!(f, "{left}")?;
                 }
                 write!(f, " || ")?;
                 if matches!(**right, Conditional::And(_, _)) {
-                    write!(f, "({})", right)?;
+                    write!(f, "({right})")?;
                 } else {
-                    write!(f, "{}", right)?;
+                    write!(f, "{right}")?;
                 }
                 Ok(())
             }
@@ -265,13 +265,13 @@ pub enum Literal {
 impl fmt::Display for Literal {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Literal::Bool(value) => write!(f, "{}", value),
-            Literal::AbstractInt(value) => write!(f, "{}", value),
-            Literal::AbstractFloat(value) => write!(f, "{}", value),
-            Literal::I32(value) => write!(f, "{}", value),
-            Literal::U32(value) => write!(f, "{}", value),
-            Literal::F32(value) => write!(f, "{}", value),
-            Literal::F16(value) => write!(f, "{}", value),
+            Literal::Bool(value) => write!(f, "{value}"),
+            Literal::AbstractInt(value) => write!(f, "{value}"),
+            Literal::AbstractFloat(value) => write!(f, "{value}"),
+            Literal::I32(value) => write!(f, "{value}"),
+            Literal::U32(value) => write!(f, "{value}"),
+            Literal::F32(value) => write!(f, "{value}"),
+            Literal::F16(value) => write!(f, "{value}"),
         }
     }
 }

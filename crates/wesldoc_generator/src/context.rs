@@ -210,7 +210,7 @@ impl ModulePath {
                 .iter()
                 .map(|(name, url, kind)| {
                     if is_child {
-                        (name.clone(), format!("../{}", url), *kind)
+                        (name.clone(), format!("../{url}"), *kind)
                     } else {
                         (name.clone(), url.clone(), *kind)
                     }

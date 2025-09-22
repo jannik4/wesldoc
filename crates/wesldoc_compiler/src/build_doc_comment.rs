@@ -148,7 +148,7 @@ fn resolve_intra_doc_links(events: &mut [md::Event], ctx: &Context) {
                 .to_string()
                 .into();
             } else {
-                log::warn!("Failed to resolve intra-doc link: {}", dest_url);
+                log::warn!("Failed to resolve intra-doc link: {dest_url}");
             }
         }
     }
