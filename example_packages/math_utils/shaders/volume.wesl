@@ -1,5 +1,5 @@
 import package::constants::PI;
-import primitives::{cuboid::Cuboid, cylinder::Cylinder};
+import my_primitives::{cuboid::Cuboid, cylinder::Cylinder};
 
 /// Calculates the volume of a [`Cuboid`].
 fn cuboid_volume(cuboid: Cuboid) -> f32 {

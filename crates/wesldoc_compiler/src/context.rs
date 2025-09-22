@@ -6,7 +6,7 @@ pub struct Context<'a> {
     compiled: &'a CompileResult,
 
     module_path: &'a [String],
-    dependencies: &'a HashMap<String, Version>,
+    dependencies: &'a HashMap<String, (String, Version)>,
 
     local: HashMap<String, ItemKind>,
     local_path: ModulePath,
@@ -16,7 +16,7 @@ impl Context<'_> {
     pub fn init<'a>(
         compiled: &'a CompileResult,
         module_path: &'a [String],
-        dependencies: &'a HashMap<String, Version>,
+        dependencies: &'a HashMap<String, (String, Version)>,
     ) -> Context<'a> {
         // Warn if the source map is not found
         if compiled.sourcemap.is_none() {
@@ -125,7 +125,7 @@ impl Context<'_> {
                 }
             }
             syntax::PathOrigin::Package(package) => match self.dependencies.get(package) {
-                Some(version) => DefinitionPath::Package(
+                Some((package, version)) => DefinitionPath::Package(
                     package.clone(),
                     version.clone(),
                     path.components.to_vec(),

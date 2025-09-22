@@ -4,4 +4,4 @@ root = "shaders"
 package-manager = "cargo"
 
 [dependencies]
-primitives = {}
+my_primitives = { package = "primitives" }

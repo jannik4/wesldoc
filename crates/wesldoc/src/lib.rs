@@ -170,7 +170,12 @@ fn compile_package(package: Package, dependencies: Vec<Package>) -> Result<WeslP
         version: package.version,
         dependencies: dependencies
             .iter()
-            .map(|dep| (dep.local_name.clone(), dep.version.clone()))
+            .map(|dep| {
+                (
+                    dep.local_name.clone(),
+                    (dep.package_name.clone(), dep.version.clone()),
+                )
+            })
             .collect(),
         root: WeslModule {
             name: package.package_name,

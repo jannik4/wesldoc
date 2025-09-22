@@ -31,7 +31,7 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 pub struct WeslPackage {
     pub version: Version,
-    pub dependencies: HashMap<String, Version>,
+    pub dependencies: HashMap<String, (String, Version)>,
     pub root: WeslModule,
 }
 
@@ -55,7 +55,7 @@ pub fn compile(package: &WeslPackage) -> Result<WeslDocs> {
 fn compile_module(
     wesl_module: &WeslModule,
     path: &[String],
-    dependencies: &HashMap<String, Version>,
+    dependencies: &HashMap<String, (String, Version)>,
 ) -> Result<Module> {
     let mut path = path.to_vec();
     path.push(wesl_module.name.clone());
