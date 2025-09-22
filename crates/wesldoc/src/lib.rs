@@ -1,6 +1,9 @@
 mod resolver;
+mod wesl_toml;
 
-use self::resolver::DocsResolver;
+use crate::wesl_toml::WeslTomlPackageManager;
+
+use self::{resolver::DocsResolver, wesl_toml::WeslToml};
 use clap::Parser;
 use std::{
     collections::HashMap,
@@ -23,24 +26,84 @@ pub struct Args {
     /// The path to the output directory.
     #[arg(short, long, default_value = "target/wesldoc")]
     output: PathBuf,
-
-    /// The path to a dependency. This can be used multiple times.
-    #[arg(short, long)]
-    dependency: Vec<PathBuf>,
 }
 
 impl Args {
     pub fn run(self) -> Result<()> {
-        // Read package
-        let package = Package::from_dir(&self.package)?;
+        // Check Cargo.toml/wesl.toml exist
+        if !self.package.join("Cargo.toml").is_file() {
+            return Err("Cargo.toml not found".into());
+        }
+        if !self.package.join("wesl.toml").is_file() {
+            return Err("wesl.toml not found".into());
+        }
 
-        // Read dependencies
-        let dependencies = self
-            .dependency
+        // Parse wesl.toml and validate
+        let wesl_toml = toml::from_slice::<WeslToml>(&fs::read(self.package.join("wesl.toml"))?)?;
+        validate_wesl_toml(&wesl_toml)?;
+
+        // Resolve cargo dependencies
+        let metadata = cargo_metadata::MetadataCommand::new()
+            .manifest_path(self.package.join("Cargo.toml"))
+            .exec()?;
+        let metadata_root_package = metadata.root_package().ok_or("no root package")?;
+        let resolved_deps = {
+            let resolve = metadata.resolve.as_ref().ok_or("no resolve")?;
+            let root_node = resolve
+                .nodes
+                .iter()
+                .find(|node| node.id == metadata_root_package.id)
+                .ok_or("no root node")?;
+            root_node
+                .deps
+                .iter()
+                .map(|dep| (dep.name.clone(), dep.pkg.clone()))
+                .collect::<HashMap<_, _>>()
+        };
+
+        // Get package and dependencies
+        let package = Package::new(
+            metadata_root_package.name.to_string(),
+            &self.package,
+            metadata_root_package,
+            &wesl_toml,
+        );
+        let dependencies = wesl_toml
+            .dependencies
             .iter()
-            .map(|dep| {
-                let package = Package::from_dir(dep)?;
-                Ok(package)
+            .map(|(dep_key, dep)| {
+                if dep.path.is_some() {
+                    // TODO: this needs to get the version of the path dependency using a separate
+                    // cargo metadata call? Or completely ignore versions for path dependencies?
+                    return Err("path dependencies are not supported yet".into());
+                }
+
+                let dep_name = dep.package.as_ref().unwrap_or(dep_key);
+                let dep_pkg_id = resolved_deps
+                    .get(dep_name)
+                    .ok_or(format!("dependency '{dep_name}' not found in Cargo.toml"))?;
+                let metadata_package = metadata
+                    .packages
+                    .iter()
+                    .find(|pkg| &pkg.id == dep_pkg_id)
+                    .unwrap();
+                let crate_path = metadata_package
+                    .manifest_path
+                    .parent()
+                    .unwrap()
+                    .to_path_buf()
+                    .into_std_path_buf();
+
+                let dep_wesl_toml =
+                    toml::from_slice::<WeslToml>(&fs::read(crate_path.join("wesl.toml"))?)?;
+                validate_wesl_toml(&dep_wesl_toml)?;
+
+                Ok(Package::new(
+                    dep_key.clone(),
+                    &crate_path,
+                    metadata_package,
+                    &dep_wesl_toml,
+                ))
             })
             .collect::<Result<_>>()?;
 
@@ -55,6 +118,27 @@ impl Args {
 
         Ok(())
     }
+}
+
+fn validate_wesl_toml(toml: &WeslToml) -> Result<()> {
+    if toml.package.edition != "unstable_2025" {
+        return Err("only edition 'unstable_2025' is supported".into());
+    }
+
+    match toml.package.package_manager {
+        Some(WeslTomlPackageManager::Cargo) | None => (),
+        Some(WeslTomlPackageManager::Npm) => {
+            return Err("npm package manager is not supported yet".into());
+        }
+    }
+
+    for dep in toml.dependencies.values() {
+        if dep.package.is_some() && dep.path.is_some() {
+            return Err("dependency cannot have both 'package' and 'path'".into());
+        }
+    }
+
+    Ok(())
 }
 
 fn compile_package(package: Package, dependencies: Vec<Package>) -> Result<WeslPackage> {
@@ -86,10 +170,10 @@ fn compile_package(package: Package, dependencies: Vec<Package>) -> Result<WeslP
         version: package.version,
         dependencies: dependencies
             .iter()
-            .map(|dep| (dep.name.clone(), dep.version.clone()))
+            .map(|dep| (dep.local_name.clone(), dep.version.clone()))
             .collect(),
         root: WeslModule {
-            name: package.name,
+            name: package.package_name,
             compiled: None,
             submodules: compile_submodules(&wesl, &package.root, &package.root)?,
         },
@@ -107,7 +191,7 @@ fn compile_submodules(
         let entry = entry?;
         let path = entry.path();
 
-        let name = name_from_path(&path);
+        let name = name_from_path(&path)?;
 
         if path.is_file()
             && path
@@ -151,26 +235,33 @@ fn compile_submodules(
 
 #[derive(Debug, Clone)]
 struct Package {
-    name: String,
+    local_name: String,
+    package_name: String,
     root: PathBuf,
     version: Version,
 }
 
 impl Package {
-    fn from_dir(dir: &Path) -> Result<Self> {
-        let dir = dir.canonicalize()?;
-
-        Ok(Self {
-            name: name_from_path(&dir),
-            root: dir,
-            version: Version::new(0, 0, 0),
-        })
+    fn new(
+        local_name: String,
+        base_path: impl AsRef<Path>,
+        metadata_package: &cargo_metadata::Package,
+        wesl_toml: &WeslToml,
+    ) -> Self {
+        Self {
+            local_name,
+            package_name: metadata_package.name.to_string(),
+            root: base_path.as_ref().join(&wesl_toml.package.root),
+            version: metadata_package.version.clone(),
+        }
     }
 }
 
-fn name_from_path(path: &Path) -> String {
-    path.file_stem()
+fn name_from_path(path: &Path) -> Result<String> {
+    let path = path.canonicalize()?;
+    Ok(path
+        .file_stem()
         .unwrap()
         .to_string_lossy()
-        .replace('-', "_")
+        .replace('-', "_"))
 }

@@ -13,7 +13,7 @@ impl DocsResolver {
             this: FileResolver::new(&this.root),
             dependencies: dependencies
                 .iter()
-                .map(|dep| (dep.name.clone(), FileResolver::new(&dep.root)))
+                .map(|dep| (dep.local_name.clone(), FileResolver::new(&dep.root)))
                 .collect(),
         }
     }
