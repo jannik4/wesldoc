@@ -430,8 +430,8 @@ pub enum Attribute {
     Size(Expression),
     WorkgroupSize {
         x: Expression,
-        y: Option<Expression>,
-        z: Option<Expression>,
+        y: Option<Box<Expression>>,
+        z: Option<Box<Expression>>,
     },
     Vertex,
     Fragment,

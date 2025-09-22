@@ -35,11 +35,11 @@ fn build_attribute(attr: &syntax::Attribute, ctx: &Context) -> Option<Attribute>
             y: workgroup_size_attribute
                 .y
                 .as_ref()
-                .map(|y| build_expression(y, ctx)),
+                .map(|y| Box::new(build_expression(y, ctx))),
             z: workgroup_size_attribute
                 .z
                 .as_ref()
-                .map(|z| build_expression(z, ctx)),
+                .map(|z| Box::new(build_expression(z, ctx))),
         },
         syntax::Attribute::Vertex => Attribute::Vertex,
         syntax::Attribute::Fragment => Attribute::Fragment,
