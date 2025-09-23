@@ -1,41 +1,107 @@
-use crate::Package;
-use std::{borrow::Cow, collections::HashMap};
+use crate::{CargoMetadata, Package};
+use std::{borrow::Cow, cell::RefCell, collections::HashMap};
 use wesl::{FileResolver, ModulePath, ResolveError, Resolver, syntax::PathOrigin};
 
 pub struct DocsResolver {
     this: FileResolver,
-    dependencies: HashMap<String, FileResolver>,
+    dependencies: Dependencies,
+}
+
+enum Dependencies {
+    Explicit {
+        dependencies: HashMap<String, (Package, FileResolver)>,
+    },
+    Auto {
+        dependencies: RefCell<HashMap<String, (Package, FileResolver)>>,
+        cargo_metadata: Box<CargoMetadata>,
+    },
 }
 
 impl DocsResolver {
-    pub fn new(this: &Package, dependencies: &[Package]) -> Self {
+    pub fn new_explicit(this: &Package, dependencies: impl IntoIterator<Item = Package>) -> Self {
         Self {
             this: FileResolver::new(&this.root),
-            dependencies: dependencies
-                .iter()
-                .map(|dep| (dep.local_name.clone(), FileResolver::new(&dep.root)))
+            dependencies: Dependencies::Explicit {
+                dependencies: dependencies
+                    .into_iter()
+                    .map(|dep| {
+                        let resolver = FileResolver::new(&dep.root);
+                        (dep.local_name.clone(), (dep, resolver))
+                    })
+                    .collect(),
+            },
+        }
+    }
+
+    pub fn new_auto(this: &Package, cargo_metadata: CargoMetadata) -> Self {
+        Self {
+            this: FileResolver::new(&this.root),
+            dependencies: Dependencies::Auto {
+                dependencies: RefCell::new(HashMap::new()),
+                cargo_metadata: Box::new(cargo_metadata),
+            },
+        }
+    }
+
+    pub fn resolved_dependencies(&self) -> Vec<Package> {
+        match &self.dependencies {
+            Dependencies::Explicit { dependencies } => {
+                dependencies.values().map(|(pkg, _)| pkg.clone()).collect()
+            }
+            Dependencies::Auto { dependencies, .. } => dependencies
+                .borrow()
+                .values()
+                .map(|(pkg, _)| pkg.clone())
                 .collect(),
         }
     }
 
-    fn resolver_and_path(
+    fn resolve<T>(
         &self,
         path: &ModulePath,
-    ) -> Result<(&FileResolver, ModulePath), ResolveError> {
+        f: impl FnOnce(&FileResolver, &ModulePath) -> Result<T, ResolveError>,
+    ) -> Result<T, ResolveError> {
         match &path.origin {
-            PathOrigin::Absolute | PathOrigin::Relative(_) => Ok((&self.this, path.clone())),
+            PathOrigin::Absolute | PathOrigin::Relative(_) => Ok(f(&self.this, path)?),
             PathOrigin::Package(package) => {
-                let Some(package) = self.dependencies.get(package) else {
-                    return Err(ResolveError::ModuleNotFound(
-                        path.clone(),
-                        "package not found".to_string(),
-                    ));
-                };
-                let path = ModulePath {
+                // Rebase the path to be absolute
+                let path_absolute = ModulePath {
                     origin: PathOrigin::Absolute,
                     components: path.components.clone(),
                 };
-                Ok((package, path))
+
+                // Look up the resolver for the package
+                match &self.dependencies {
+                    Dependencies::Explicit { dependencies } => {
+                        let (_, resolver) = dependencies.get(package).ok_or_else(|| {
+                            ResolveError::ModuleNotFound(
+                                path.clone(),
+                                "package not found".to_string(),
+                            )
+                        })?;
+                        f(resolver, &path_absolute)
+                    }
+                    Dependencies::Auto {
+                        dependencies,
+                        cargo_metadata,
+                    } => {
+                        let mut dependencies = dependencies.borrow_mut();
+                        if let Some((_, resolver)) = dependencies.get(package) {
+                            return f(resolver, &path_absolute);
+                        }
+
+                        // Dependency not used yet, try to find it
+                        let dep = Package::new_dependency(package, None, cargo_metadata).map_err(
+                            |err| ResolveError::ModuleNotFound(path.clone(), err.to_string()),
+                        )?;
+                        let resolver = FileResolver::new(&dep.root);
+
+                        let res = f(&resolver, &path_absolute);
+                        dependencies.insert(dep.local_name.clone(), (dep, resolver));
+
+                        Ok(res?)
+                    }
+                }
             }
         }
     }
@@ -43,12 +109,15 @@ impl DocsResolver {
 
 impl Resolver for DocsResolver {
     fn resolve_source<'a>(&'a self, path: &ModulePath) -> Result<Cow<'a, str>, ResolveError> {
-        let (resolver, path) = self.resolver_and_path(path)?;
-        resolver.resolve_source(&path)
+        self.resolve(path, |resolver, path| {
+            resolver
+                .resolve_source(path)
+                .map(|source| Cow::Owned(source.into()))
+        })
     }
 
     fn display_name(&self, path: &ModulePath) -> Option<String> {
-        let (resolver, path) = self.resolver_and_path(path).ok()?;
-        resolver.display_name(&path)
+        self.resolve(path, |resolver, path| Ok(resolver.display_name(path)))
+            .ok()?
     }
 }

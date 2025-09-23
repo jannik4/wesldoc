@@ -2,3 +2,5 @@
 edition = "unstable_2025"
 root = "shaders"
 package-manager = "cargo"
+
+dependencies = "auto"

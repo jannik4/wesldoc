@@ -1,3 +1,7 @@
+import math_utils::constants::PI;
+
+const FOG_PI: f32 = PI;
+
 struct Fog {
     base_color: vec4<f32>,
     @if(emissive)
@@ -82,5 +86,5 @@ fn linear_fog(
     @if(fog_extra_flags)
     extra_flags: u32,
 ) -> vec4<f32> {
-    return mix(input_color, fog.base_color, distance);
+    return mix(input_color, fog.base_color, distance) * PI;
 }

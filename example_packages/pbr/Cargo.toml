@@ -1,3 +1,6 @@
 [package]
 name = "pbr"
 version = "0.0.0"
+
+[dependencies]
+math_utils = { path = "../math_utils" }
