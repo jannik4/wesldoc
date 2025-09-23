@@ -43,7 +43,7 @@ impl Args {
         wesl_toml.validate()?;
 
         // Resolve cargo dependencies
-        let cargo_metadata = CargoMetadata::resolve(self.package.join("Cargo.toml"))?;
+        let cargo_metadata = CargoMetadata::resolve(&self.package)?;
 
         // Create package and resolver
         let package = Package::new(
@@ -179,15 +179,17 @@ fn compile_submodules(
 }
 
 struct CargoMetadata {
+    base_path: PathBuf,
     metadata: cargo_metadata::Metadata,
     root_package: cargo_metadata::Package,
     resolved_dependencies: HashMap<String, cargo_metadata::PackageId>,
 }
 
 impl CargoMetadata {
-    fn resolve(manifest_path: impl Into<PathBuf>) -> Result<Self> {
+    fn resolve(base_path: impl Into<PathBuf>) -> Result<Self> {
+        let base_path = base_path.into();
         let metadata = cargo_metadata::MetadataCommand::new()
-            .manifest_path(manifest_path)
+            .manifest_path(base_path.join("Cargo.toml"))
             .exec()?;
         let root_package = metadata.root_package().ok_or("no root package")?.clone();
         let resolve = metadata.resolve.as_ref().ok_or("no resolve")?;
@@ -203,6 +205,7 @@ impl CargoMetadata {
             .collect::<HashMap<_, _>>();
 
         Ok(Self {
+            base_path,
             metadata,
             root_package,
             resolved_dependencies,
@@ -239,16 +242,25 @@ impl Package {
         cargo_metadata: &CargoMetadata,
     ) -> Result<Self> {
         let dependency_key = dependency_key.into();
-
-        if dependency.is_some_and(|d| d.path.is_some()) {
-            // TODO: this needs to get the version of the path dependency using a separate
-            // cargo metadata call? Or completely ignore versions for path dependencies?
-            return Err("path dependencies are not supported yet".into());
-        }
-
         let dep_name = dependency
             .and_then(|d| d.package.as_ref())
             .unwrap_or(&dependency_key);
+
+        // Handle path dependencies
+        if let Some(dep_path) = dependency.and_then(|d| d.path.as_ref()) {
+            let dep_path = cargo_metadata.base_path.join(dep_path);
+            let dep_wesl_toml =
+                toml::from_slice::<WeslToml>(&fs::read(dep_path.join("wesl.toml"))?)?;
+            dep_wesl_toml.validate()?;
+
+            return Ok(Package {
+                local_name: dependency_key.clone(),
+                package_name: dep_name.clone(),
+                root: dep_path.join(&dep_wesl_toml.package.root),
+                version: Version::new(0, 0, 0), // TODO: path dependencies don't have versions
+            });
+        }
+
         let dep_pkg_id = cargo_metadata
             .resolved_dependencies
             .get(dep_name)

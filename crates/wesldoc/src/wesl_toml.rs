@@ -30,12 +30,6 @@ impl WeslToml {
             );
         }
 
-        for dep in self.dependencies.values() {
-            if dep.package.is_some() && dep.path.is_some() {
-                return Err("dependency cannot have both 'package' and 'path'".into());
-            }
-        }
-
         Ok(())
     }
 }
@@ -71,7 +65,7 @@ pub struct WeslTomlDependency {
     #[serde(default)]
     pub package: Option<String>,
     #[serde(default)]
-    pub path: Option<String>,
+    pub path: Option<PathBuf>,
 }
 
 fn latest_known_edition() -> String {
