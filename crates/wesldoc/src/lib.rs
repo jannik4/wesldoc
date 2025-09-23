@@ -1,9 +1,10 @@
 mod resolver;
 mod wesl_toml;
 
-use crate::wesl_toml::{DependenciesAuto, WeslTomlDependency};
-
-use self::{resolver::DocsResolver, wesl_toml::WeslToml};
+use self::{
+    resolver::DocsResolver,
+    wesl_toml::{DependenciesAuto, WeslToml, WeslTomlDependency},
+};
 use clap::Parser;
 use std::{
     collections::HashMap,
@@ -73,7 +74,7 @@ impl Args {
         let docs = wesldoc_compiler::compile(&wesl_package)?;
 
         // Generate docs
-        wesldoc_generator::generate(&docs, Path::new("target/wesldoc"))?;
+        wesldoc_generator::generate(&docs, &self.output)?;
 
         Ok(())
     }
