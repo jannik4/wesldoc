@@ -1453,7 +1453,7 @@ dependencies = [
 [[package]]
 name = "tokrepr"
 version = "0.1.1"
-source = "git+https://github.com/jannik4/wesl-rs?rev=202257f4bdecc00f186ba5cf721cedc368703c7f#202257f4bdecc00f186ba5cf721cedc368703c7f"
+source = "git+https://github.com/wgsl-tooling-wg/wesl-rs?rev=9e510a38f6f9d6834f00803f8fead72b4a7707bb#9e510a38f6f9d6834f00803f8fead72b4a7707bb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1463,7 +1463,7 @@ dependencies = [
 [[package]]
 name = "tokrepr-derive"
 version = "0.1.0"
-source = "git+https://github.com/jannik4/wesl-rs?rev=202257f4bdecc00f186ba5cf721cedc368703c7f#202257f4bdecc00f186ba5cf721cedc368703c7f"
+source = "git+https://github.com/wgsl-tooling-wg/wesl-rs?rev=9e510a38f6f9d6834f00803f8fead72b4a7707bb#9e510a38f6f9d6834f00803f8fead72b4a7707bb"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -1654,7 +1654,7 @@ dependencies = [
 [[package]]
 name = "wesl"
 version = "0.2.0"
-source = "git+https://github.com/jannik4/wesl-rs?rev=202257f4bdecc00f186ba5cf721cedc368703c7f#202257f4bdecc00f186ba5cf721cedc368703c7f"
+source = "git+https://github.com/wgsl-tooling-wg/wesl-rs?rev=9e510a38f6f9d6834f00803f8fead72b4a7707bb#9e510a38f6f9d6834f00803f8fead72b4a7707bb"
 dependencies = [
  "annotate-snippets",
  "derive_more",
@@ -1670,7 +1670,7 @@ dependencies = [
 [[package]]
 name = "wesl-macros"
 version = "0.2.0"
-source = "git+https://github.com/jannik4/wesl-rs?rev=202257f4bdecc00f186ba5cf721cedc368703c7f#202257f4bdecc00f186ba5cf721cedc368703c7f"
+source = "git+https://github.com/wgsl-tooling-wg/wesl-rs?rev=9e510a38f6f9d6834f00803f8fead72b4a7707bb#9e510a38f6f9d6834f00803f8fead72b4a7707bb"
 dependencies = [
  "itertools",
  "proc-macro2",
@@ -1727,7 +1727,7 @@ dependencies = [
 [[package]]
 name = "wgsl-parse"
 version = "0.2.0"
-source = "git+https://github.com/jannik4/wesl-rs?rev=202257f4bdecc00f186ba5cf721cedc368703c7f#202257f4bdecc00f186ba5cf721cedc368703c7f"
+source = "git+https://github.com/wgsl-tooling-wg/wesl-rs?rev=9e510a38f6f9d6834f00803f8fead72b4a7707bb#9e510a38f6f9d6834f00803f8fead72b4a7707bb"
 dependencies = [
  "annotate-snippets",
  "derive_more",
@@ -1744,7 +1744,7 @@ dependencies = [
 [[package]]
 name = "wgsl-types"
 version = "0.2.0"
-source = "git+https://github.com/jannik4/wesl-rs?rev=202257f4bdecc00f186ba5cf721cedc368703c7f#202257f4bdecc00f186ba5cf721cedc368703c7f"
+source = "git+https://github.com/wgsl-tooling-wg/wesl-rs?rev=9e510a38f6f9d6834f00803f8fead72b4a7707bb#9e510a38f6f9d6834f00803f8fead72b4a7707bb"
 dependencies = [
  "half",
  "itertools",
