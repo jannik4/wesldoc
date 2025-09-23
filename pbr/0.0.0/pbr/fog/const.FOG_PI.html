@@ -13,7 +13,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
         
-        Fog - pbr
+        FOG_PI - pbr
         
     </title>
 
@@ -34,8 +34,8 @@
         <span style="margin-right: 12px;">pbr</span>
         <select class="select" id="selectVersion" onchange="changeVersion()" autocomplete="off">
             <option
-                value="../../../latest/pbr/index.html">
-                latest
+                value="../../../0.0.0/pbr/index.html">
+                0.0.0
             </option>
         </select>
         <button id="show-settings" class="icon icon-settings" aria-label="Show settings"></button>
@@ -58,7 +58,7 @@
         <div id="innerContent">
             
             <h2>
-                <a class="path" href="../index.html">pbr</a><span>::</span><wbr><a class="path" href="index.html">fog</a><span>::</span><wbr><a class="struct" href="#">Fog</a>
+                <a class="path" href="../index.html">pbr</a><span>::</span><wbr><a class="path" href="index.html">fog</a><span>::</span><wbr><a class="const" href="#">FOG_PI</a>
             </h2>
             
 
@@ -66,39 +66,12 @@
 
 
 
-<a class="module" href="../../src/pbr/fog.html#5-15">Source</a>
+<a class="module" href="../../src/pbr/fog.html#3">Source</a>
 
 
 <pre class="code-block">
-<code>struct Fog {
-    base_color: vec4&lt;f32&gt;,
-    <span class="conditional-code">emissive</span>
-    emissive: vec4&lt;f32&gt;,
-    <span class="conditional-code">fog_flags_unsigned</span>
-    flags: u32,
-    <span class="conditional-code">fog_flags_signed &#38;&#38; !fog_flags_unsigned</span>
-    flags: i32,
-    <span class="conditional-code">!fog_flags_unsigned &#38;&#38; !fog_flags_signed</span>
-    flags: bool
-}</code>
+<code>const FOG_PI: f32 = <a class="const" href="../../../../math_utils/0.0.0/math_utils/constants/const.PI.html">PI</a>;</code>
 </pre>
-
-<h2 class="item-list-title">Fields</h2>
-
-<div style="margin: 8px 0;"><code>base_color: vec4&lt;f32&gt;</code></div>
-
-
-<div style="margin: 8px 0;"><code>emissive: vec4&lt;f32&gt;</code></div>
-
-
-<div style="margin: 8px 0;"><code>flags: u32</code></div>
-
-
-<div style="margin: 8px 0;"><code>flags: i32</code></div>
-
-
-<div style="margin: 8px 0;"><code>flags: bool</code></div>
-
 
 
 
@@ -110,7 +83,7 @@
 
     <script>
         window.DOCS_THIS_PACKAGE = {
-            version: "latest",
+            version: "0.0.0",
             name: "pbr",
             root: "../../",
         };

@@ -66,91 +66,91 @@
             id="1"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >1</a>struct Fog {
+        >1</a>import math_utils::constants::PI;
 <a
             href="#2"
             id="2"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >2</a>    base_color: vec4&#60;f32&#62;,
+        >2</a>
 <a
             href="#3"
             id="3"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >3</a>    @if(emissive)
+        >3</a>const FOG_PI: f32 = PI;
 <a
             href="#4"
             id="4"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >4</a>    emissive: vec4&#60;f32&#62;,
+        >4</a>
 <a
             href="#5"
             id="5"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >5</a>    @if(fog_flags_unsigned)
+        >5</a>struct Fog {
 <a
             href="#6"
             id="6"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >6</a>    flags: u32,
+        >6</a>    base_color: vec4&#60;f32&#62;,
 <a
             href="#7"
             id="7"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >7</a>    @elif(fog_flags_signed)
+        >7</a>    @if(emissive)
 <a
             href="#8"
             id="8"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >8</a>    flags: i32,
+        >8</a>    emissive: vec4&#60;f32&#62;,
 <a
             href="#9"
             id="9"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >9</a>    @else
+        >9</a>    @if(fog_flags_unsigned)
 <a
             href="#10"
             id="10"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >10</a>    flags: bool,
+        >10</a>    flags: u32,
 <a
             href="#11"
             id="11"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >11</a>}
+        >11</a>    @elif(fog_flags_signed)
 <a
             href="#12"
             id="12"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >12</a>
+        >12</a>    flags: i32,
 <a
             href="#13"
             id="13"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >13</a>// Empty lines to make this page scrollable in the browser
+        >13</a>    @else
 <a
             href="#14"
             id="14"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >14</a>
+        >14</a>    flags: bool,
 <a
             href="#15"
             id="15"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >15</a>
+        >15</a>}
 <a
             href="#16"
             id="16"
@@ -162,7 +162,7 @@
             id="17"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >17</a>
+        >17</a>// Empty lines to make this page scrollable in the browser
 <a
             href="#18"
             id="18"
@@ -198,7 +198,7 @@
             id="23"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >23</a>// ...
+        >23</a>
 <a
             href="#24"
             id="24"
@@ -222,7 +222,7 @@
             id="27"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >27</a>
+        >27</a>// ...
 <a
             href="#28"
             id="28"
@@ -258,7 +258,7 @@
             id="33"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >33</a>// ...
+        >33</a>
 <a
             href="#34"
             id="34"
@@ -282,7 +282,7 @@
             id="37"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >37</a>
+        >37</a>// ...
 <a
             href="#38"
             id="38"
@@ -318,7 +318,7 @@
             id="43"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >43</a>// ...
+        >43</a>
 <a
             href="#44"
             id="44"
@@ -342,7 +342,7 @@
             id="47"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >47</a>
+        >47</a>// ...
 <a
             href="#48"
             id="48"
@@ -378,7 +378,7 @@
             id="53"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >53</a>// ...
+        >53</a>
 <a
             href="#54"
             id="54"
@@ -402,7 +402,7 @@
             id="57"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >57</a>
+        >57</a>// ...
 <a
             href="#58"
             id="58"
@@ -438,7 +438,7 @@
             id="63"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >63</a>// ...
+        >63</a>
 <a
             href="#64"
             id="64"
@@ -462,7 +462,7 @@
             id="67"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >67</a>
+        >67</a>// ...
 <a
             href="#68"
             id="68"
@@ -498,7 +498,7 @@
             id="73"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >73</a>// ...
+        >73</a>
 <a
             href="#74"
             id="74"
@@ -522,61 +522,85 @@
             id="77"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >77</a>@if(linear_fog)
+        >77</a>// ...
 <a
             href="#78"
             id="78"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >78</a>fn linear_fog(
+        >78</a>
 <a
             href="#79"
             id="79"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >79</a>    fog: Fog,
+        >79</a>
 <a
             href="#80"
             id="80"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >80</a>    input_color: vec4&#60;f32&#62;,
+        >80</a>
 <a
             href="#81"
             id="81"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >81</a>    distance: f32,
+        >81</a>@if(linear_fog)
 <a
             href="#82"
             id="82"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >82</a>    @if(fog_extra_flags)
+        >82</a>fn linear_fog(
 <a
             href="#83"
             id="83"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >83</a>    extra_flags: u32,
+        >83</a>    fog: Fog,
 <a
             href="#84"
             id="84"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >84</a>) -&#62; vec4&#60;f32&#62; {
+        >84</a>    input_color: vec4&#60;f32&#62;,
 <a
             href="#85"
             id="85"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >85</a>    return mix(input_color, fog.base_color, distance);
+        >85</a>    distance: f32,
 <a
             href="#86"
             id="86"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >86</a>}</code>
+        >86</a>    @if(fog_extra_flags)
+<a
+            href="#87"
+            id="87"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >87</a>    extra_flags: u32,
+<a
+            href="#88"
+            id="88"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >88</a>) -&#62; vec4&#60;f32&#62; {
+<a
+            href="#89"
+            id="89"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >89</a>    return mix(input_color, fog.base_color, distance) * PI;
+<a
+            href="#90"
+            id="90"
+            class="line-number line-number-digits-2"
+            data-nosnippet
+        >90</a>}</code>
 </pre>
 
         </div>
