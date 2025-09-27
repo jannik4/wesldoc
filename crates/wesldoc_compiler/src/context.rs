@@ -87,7 +87,7 @@ impl Context<'_> {
         }
     }
 
-    pub fn at_path(&self, path: ModulePath) -> Context {
+    pub fn at_path(&self, path: ModulePath) -> Context<'_> {
         Context {
             compiled: self.compiled,
             exports: self.exports.clone(),
