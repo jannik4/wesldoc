@@ -18,4 +18,4 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 
 [workspace.dependencies]
-wesl = { git = "https://github.com/wgsl-tooling-wg/wesl-rs", rev = "9e510a38f6f9d6834f00803f8fead72b4a7707bb" }
+wesl = { git = "https://github.com/jannik4/wesl-rs", rev = "7cdb8d0fa860b0a4b141e05dd0e797d24940d900" }

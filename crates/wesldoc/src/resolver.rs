@@ -1,10 +1,15 @@
 use crate::{CargoMetadata, Package};
 use std::{borrow::Cow, cell::RefCell, collections::HashMap};
-use wesl::{FileResolver, ModulePath, ResolveError, Resolver, syntax::PathOrigin};
+use wesl::{
+    FileResolver, ModulePath, ResolveError, Resolver,
+    syntax::{ImportStatement, PathOrigin, TranslationUnit},
+};
 
 pub struct DocsResolver {
     this: FileResolver,
     dependencies: Dependencies,
+
+    root_file_imports: RefCell<Option<Vec<ImportStatement>>>,
 }
 
 enum Dependencies {
@@ -30,6 +35,8 @@ impl DocsResolver {
                     })
                     .collect(),
             },
+
+            root_file_imports: RefCell::new(None),
         }
     }
 
@@ -40,6 +47,8 @@ impl DocsResolver {
                 dependencies: RefCell::new(HashMap::new()),
                 cargo_metadata: Box::new(cargo_metadata),
             },
+
+            root_file_imports: RefCell::new(None),
         }
     }
 
@@ -54,6 +63,10 @@ impl DocsResolver {
                 .map(|(pkg, _)| pkg.clone())
                 .collect(),
         }
+    }
+
+    pub fn take_root_file_imports(&self) -> Vec<ImportStatement> {
+        self.root_file_imports.borrow_mut().take().unwrap()
     }
 
     fn resolve<T>(
@@ -114,6 +127,22 @@ impl Resolver for DocsResolver {
                 .resolve_source(path)
                 .map(|source| Cow::Owned(source.into()))
         })
+    }
+
+    fn resolve_module(&self, path: &ModulePath) -> Result<TranslationUnit, ResolveError> {
+        let source = self.resolve_source(path)?;
+        let wesl = source.parse::<TranslationUnit>().map_err(|e| {
+            wesl::Diagnostic::from(e)
+                .with_module_path(path.clone(), self.display_name(path))
+                .with_source(source.to_string())
+        })?;
+
+        let mut root_file_imports = self.root_file_imports.borrow_mut();
+        if root_file_imports.is_none() {
+            *root_file_imports = Some(wesl.imports.clone());
+        }
+
+        Ok(wesl)
     }
 
     fn display_name(&self, path: &ModulePath) -> Option<String> {

@@ -3,7 +3,7 @@ use std::ops::Range;
 use wesldoc_ast::*;
 
 pub fn calculate_span(range: Range<usize>, ctx: &Context) -> Option<Span> {
-    let source = ctx.default_source()?;
+    let source = ctx.get_source()?;
 
     let mut span_line_start = None;
     let mut span_line_end = None;

@@ -9,7 +9,7 @@ pub fn collect_features(ctx: &Context) -> IndexSet<String> {
         collect_from_global_directive(directive, &mut features);
     }
     for decl in &ctx.compiled().syntax.global_declarations {
-        if !ctx.is_local(decl) {
+        if ctx.as_local(decl).is_none() {
             continue;
         }
         collect_from_global_declaration(decl, &mut features);

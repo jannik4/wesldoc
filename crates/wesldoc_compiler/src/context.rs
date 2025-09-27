@@ -1,11 +1,13 @@
+use crate::map::map;
 use std::collections::HashMap;
 use wesl::{CompileResult, Mangler, ModulePath, SourceMap as _, syntax};
 use wesldoc_ast::{DefinitionPath, Ident, ItemKind, Version};
 
 pub struct Context<'a> {
     compiled: &'a CompileResult,
+    exports: HashMap<(ModulePath, Ident), Ident>, // (path, item_name) -> rename.unwrap_or(item_name)
 
-    module_path: &'a [String],
+    module_path: ModulePath,
     dependencies: &'a HashMap<String, (String, Version)>,
 
     local: HashMap<String, ItemKind>,
@@ -14,14 +16,18 @@ pub struct Context<'a> {
 
 impl Context<'_> {
     pub fn init<'a>(
+        imports: &[syntax::ImportStatement],
         compiled: &'a CompileResult,
-        module_path: &'a [String],
+        module_path: ModulePath,
         dependencies: &'a HashMap<String, (String, Version)>,
     ) -> Context<'a> {
         // Warn if the source map is not found
         if compiled.sourcemap.is_none() {
             log::warn!("no source map found for module {module_path:?}");
         }
+
+        // Collect exports
+        let exports = collect_exports(imports);
 
         // Build local items
         let local = compiled
@@ -68,6 +74,7 @@ impl Context<'_> {
 
         Context {
             compiled,
+            exports,
 
             module_path,
             dependencies,
@@ -80,27 +87,58 @@ impl Context<'_> {
         }
     }
 
+    pub fn at_path(&self, path: ModulePath) -> Context {
+        Context {
+            compiled: self.compiled,
+            exports: self.exports.clone(),
+            module_path: path,
+            dependencies: self.dependencies,
+            local: self.local.clone(),
+            local_path: self.local_path.clone(),
+        }
+    }
+
     pub fn compiled(&self) -> &CompileResult {
         self.compiled
     }
 
-    pub fn is_local(&self, decl: &syntax::GlobalDeclaration) -> bool {
+    pub fn as_local(&self, decl: &syntax::GlobalDeclaration) -> Option<Ident> {
         let decl = match decl {
-            syntax::GlobalDeclaration::Void => return false,
+            syntax::GlobalDeclaration::Void => return None,
             syntax::GlobalDeclaration::Declaration(declaration) => &declaration.ident,
             syntax::GlobalDeclaration::TypeAlias(type_alias) => &type_alias.ident,
             syntax::GlobalDeclaration::Struct(struct_) => &struct_.ident,
             syntax::GlobalDeclaration::Function(function) => &function.ident,
-            syntax::GlobalDeclaration::ConstAssert(_const_assert) => return false,
+            syntax::GlobalDeclaration::ConstAssert(_const_assert) => return None,
         };
-        self.local.contains_key(decl.name().as_str())
+        let name = map(decl);
+        self.local.contains_key(&name.0).then_some(name)
     }
 
-    pub fn default_source(&self) -> Option<&str> {
+    pub fn get_source(&self) -> Option<&str> {
         self.compiled
             .sourcemap
             .as_ref()
-            .and_then(|s| s.get_default_source())
+            .and_then(|s| s.get_source(&self.module_path))
+    }
+
+    pub fn as_export(&self, decl: &syntax::GlobalDeclaration) -> Option<(ModulePath, &Ident)> {
+        let decl = match decl {
+            syntax::GlobalDeclaration::Void => return None,
+            syntax::GlobalDeclaration::Declaration(declaration) => &declaration.ident,
+            syntax::GlobalDeclaration::TypeAlias(type_alias) => &type_alias.ident,
+            syntax::GlobalDeclaration::Struct(struct_) => &struct_.ident,
+            syntax::GlobalDeclaration::Function(function) => &function.ident,
+            syntax::GlobalDeclaration::ConstAssert(_const_assert) => return None,
+        };
+
+        // TODO: This assumes the escape mangler was used.
+        let mangler = wesl::EscapeMangler;
+        let (path, name) = mangler.unmangle(&decl.name())?;
+
+        let local_name = self.exports.get(&(path.clone(), Ident(name)))?;
+
+        Some((path, local_name))
     }
 
     pub fn resolve_reference(
@@ -111,15 +149,17 @@ impl Context<'_> {
         let def_path = match &path.origin {
             syntax::PathOrigin::Absolute => DefinitionPath::Absolute(path.components.clone()),
             syntax::PathOrigin::Relative(n) => {
-                if self.module_path.len() < n + 1 {
+                if self.module_path.components.len() < *n {
                     log::warn!(
                         "invalid relative path for type {} in module {}",
                         name,
-                        self.module_path.join("/")
+                        self.module_path.components.join("/")
                     );
                     return None;
                 } else {
-                    let mut combined = self.module_path[1..self.module_path.len() - n].to_vec();
+                    let mut combined = self.module_path.components
+                        [0..self.module_path.components.len() - n]
+                        .to_vec();
                     combined.extend_from_slice(&path.components);
                     DefinitionPath::Absolute(combined)
                 }
@@ -214,4 +254,45 @@ fn mangled_item(
     }
 
     None
+}
+
+// TODO: This assumes the re-exported items are defined in the re-exported module.
+// This does not handle re-exports of re-exports correctly.
+fn collect_exports(imports: &[syntax::ImportStatement]) -> HashMap<(ModulePath, Ident), Ident> {
+    fn add_rec(
+        exports: &mut HashMap<(ModulePath, Ident), Ident>,
+        path: &ModulePath,
+        content: &syntax::ImportContent,
+    ) {
+        match content {
+            syntax::ImportContent::Item(import_item) => {
+                exports.insert(
+                    (path.clone(), map(&import_item.ident)),
+                    map(&import_item
+                        .rename
+                        .clone()
+                        .unwrap_or_else(|| import_item.ident.clone())),
+                );
+            }
+            syntax::ImportContent::Collection(imports) => {
+                for import in imports {
+                    let mut path = path.clone();
+                    path.components.extend(import.path.iter().cloned());
+                    add_rec(exports, &path, &import.content);
+                }
+            }
+        }
+    }
+
+    let mut exports = HashMap::new();
+    for import in imports {
+        let is_export = import
+            .attributes
+            .iter()
+            .any(|attr| **attr == syntax::Attribute::Publish);
+        if is_export && let Some(path) = &import.path {
+            add_rec(&mut exports, path, &import.content);
+        }
+    }
+    exports
 }

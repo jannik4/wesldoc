@@ -151,19 +151,28 @@ fn compile_submodules(
                     compiled: None,
                     submodules: Vec::new(),
                 });
-            sub.compiled = Some(
-                wesl.compile(&ModulePath {
-                    origin: PathOrigin::Absolute,
-                    components: path
-                        .strip_prefix(root)?
-                        .components()
-                        .map(|part| match part {
-                            Component::Normal(name) => Ok(name.to_string_lossy().to_string()),
-                            _ => Err("unexpected path component".into()),
-                        })
-                        .collect::<Result<_>>()?,
-                })?,
-            );
+
+            let compile_result = wesl.compile(&ModulePath {
+                origin: PathOrigin::Absolute,
+                components: path
+                    .strip_prefix(root)?
+                    .components()
+                    .map(|part| match part {
+                        Component::Normal(name) => {
+                            let name = name.to_string_lossy().to_string();
+                            let name = name
+                                .strip_suffix(".wesl")
+                                .or_else(|| name.strip_suffix(".wgsl"))
+                                .map(|s| s.to_string())
+                                .unwrap_or(name);
+                            Ok(name)
+                        }
+                        _ => Err("unexpected path component".into()),
+                    })
+                    .collect::<Result<_>>()?,
+            })?;
+            let root_file_imports = wesl.resolver().take_root_file_imports();
+            sub.compiled = Some((root_file_imports, compile_result));
         } else if path.is_dir() {
             let sub = submodules
                 .entry(name)
