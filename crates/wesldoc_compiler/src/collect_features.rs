@@ -74,10 +74,8 @@ fn collect_from_attributes(attributes: &Attributes, features: &mut IndexSet<Stri
 fn collect_from_cond(expr: &Expression, features: &mut IndexSet<String>) {
     match expr {
         Expression::Parenthesized(paren) => collect_from_cond(paren.expression.node(), features),
-        Expression::Unary(unary) => {
-            if unary.operator == UnaryOperator::LogicalNegation {
-                collect_from_cond(unary.operand.node(), features);
-            }
+        Expression::Unary(unary) if unary.operator == UnaryOperator::LogicalNegation => {
+            collect_from_cond(unary.operand.node(), features);
         }
         Expression::Binary(binary) => match binary.operator {
             BinaryOperator::ShortCircuitOr | BinaryOperator::ShortCircuitAnd => {
