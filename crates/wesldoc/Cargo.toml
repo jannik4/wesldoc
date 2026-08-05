@@ -21,5 +21,5 @@ toml = "0.9.7"
 serde = { version = "1.0.226", features = ["derive"] }
 
 [dev-dependencies]
-dirsnap = "0.1.0"
+dirsnap = "0.2.0"
 tempfile = "3.27.0"

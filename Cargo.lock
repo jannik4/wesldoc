@@ -397,9 +397,9 @@ dependencies = [
 
 [[package]]
 name = "dirsnap"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1099702a186f2152316d3ad8fd8219c72ac59e5d360874a4b637304a682cba8"
+checksum = "8f0ac7412bb055253b952ff8a6b5544c9aded3fa64b26a6abc16adb72a75d4d0"
 dependencies = [
  "content_inspector",
  "similar",
