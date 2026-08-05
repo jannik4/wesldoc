@@ -11,11 +11,12 @@ exclude = [
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.86.0"
+rust-version = "1.96.0"
 description = "WESL documentation generator"
 repository = "https://github.com/jannik4/wesldoc"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 
 [workspace.dependencies]
-wesl = { git = "https://github.com/jannik4/wesl-rs", rev = "7cdb8d0fa860b0a4b141e05dd0e797d24940d900" }
+wesl = { git = "https://github.com/jannik4/wesl-rs", rev = "2b63d5e69efd03f394c03242a81db086198602fa" }
+wgsl-parse = { git = "https://github.com/jannik4/wesl-rs", rev = "2b63d5e69efd03f394c03242a81db086198602fa" }

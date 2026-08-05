@@ -179,12 +179,12 @@ impl<'a> Context<'a> {
     }
 
     fn process_intra_doc_links<'e>(&self, mut event: md::Event<'e>) -> md::Event<'e> {
-        if let md::Event::Start(md::Tag::Link { dest_url, .. }) = &mut event {
-            if let Ok(link) = IntraDocLink::from_str(dest_url) {
-                *dest_url = self
-                    .def_path_url(&link.name, &link.kind, &link.def_path)
-                    .into();
-            }
+        if let md::Event::Start(md::Tag::Link { dest_url, .. }) = &mut event
+            && let Ok(link) = IntraDocLink::from_str(dest_url)
+        {
+            *dest_url = self
+                .def_path_url(&link.name, &link.kind, &link.def_path)
+                .into();
         }
         event
     }

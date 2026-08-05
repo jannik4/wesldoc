@@ -220,6 +220,7 @@ pub enum AddressSpace {
     Uniform,
     Storage { load: bool, store: bool },
     Handle,
+    Immediate,
     PushConstant,
 }
 
@@ -238,6 +239,7 @@ impl fmt::Display for AddressSpace {
                 }
             }
             AddressSpace::Handle => write!(f, ""),
+            AddressSpace::Immediate => write!(f, "<immediate>"),
             AddressSpace::PushConstant => write!(f, "<push_constant>"),
         }
     }

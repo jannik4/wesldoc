@@ -42,6 +42,7 @@ impl Map<AddressSpace> for (syntax::AddressSpace, Option<syntax::AccessMode>) {
                 },
             },
             syntax::AddressSpace::Handle => AddressSpace::Handle,
+            syntax::AddressSpace::Immediate => AddressSpace::Immediate,
         }
     }
 }

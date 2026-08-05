@@ -35,6 +35,7 @@ fn collect_from_global_directive(directive: &GlobalDirective, features: &mut Ind
 fn collect_from_global_declaration(decl: &GlobalDeclaration, features: &mut IndexSet<String>) {
     match decl {
         GlobalDeclaration::Void => (),
+        GlobalDeclaration::Compound(_) => panic!("compound should have been flattened"),
         GlobalDeclaration::Declaration(declaration) => {
             collect_from_attributes(&declaration.attributes, features);
         }

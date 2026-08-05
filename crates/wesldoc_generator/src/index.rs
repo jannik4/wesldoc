@@ -22,10 +22,11 @@ fn get_packages(base_path: &Path) -> Result<Vec<String>> {
     for entry in fs::read_dir(base_path)? {
         let entry = entry?;
         let path = entry.path();
-        if path.is_dir() && fs::exists(path.join("common.js"))? {
-            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                packages.push(name.to_string());
-            }
+        if path.is_dir()
+            && fs::exists(path.join("common.js"))?
+            && let Some(name) = path.file_name().and_then(|n| n.to_str())
+        {
+            packages.push(name.to_string());
         }
     }
 

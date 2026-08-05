@@ -126,6 +126,9 @@ fn compile_module(
 
         match decl.node() {
             syntax::GlobalDeclaration::Void => (),
+            syntax::GlobalDeclaration::Compound(_) => {
+                panic!("compound should have been flattened")
+            }
             syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
                 syntax::DeclarationKind::Const => {
                     module

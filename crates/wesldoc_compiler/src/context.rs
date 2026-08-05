@@ -2,6 +2,7 @@ use crate::map::map;
 use std::collections::HashMap;
 use wesl::{CompileResult, Mangler, ModulePath, SourceMap as _, syntax};
 use wesldoc_ast::{DefinitionPath, Ident, ItemKind, Version};
+use wgsl_parse::SyntaxNode;
 
 pub struct Context<'a> {
     compiled: &'a CompileResult,
@@ -37,6 +38,9 @@ impl Context<'_> {
             .filter_map(|decl| {
                 let (ident, kind) = match decl.node() {
                     syntax::GlobalDeclaration::Void => return None,
+                    syntax::GlobalDeclaration::Compound(_) => {
+                        panic!("compound should have been flattened")
+                    }
                     syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
                         syntax::DeclarationKind::Const => (&declaration.ident, ItemKind::Constant),
                         syntax::DeclarationKind::Override => {
@@ -105,6 +109,9 @@ impl Context<'_> {
     pub fn as_local(&self, decl: &syntax::GlobalDeclaration) -> Option<Ident> {
         let decl = match decl {
             syntax::GlobalDeclaration::Void => return None,
+            syntax::GlobalDeclaration::Compound(_) => {
+                panic!("compound should have been flattened")
+            }
             syntax::GlobalDeclaration::Declaration(declaration) => &declaration.ident,
             syntax::GlobalDeclaration::TypeAlias(type_alias) => &type_alias.ident,
             syntax::GlobalDeclaration::Struct(struct_) => &struct_.ident,
@@ -125,6 +132,9 @@ impl Context<'_> {
     pub fn as_export(&self, decl: &syntax::GlobalDeclaration) -> Option<(ModulePath, &Ident)> {
         let decl = match decl {
             syntax::GlobalDeclaration::Void => return None,
+            syntax::GlobalDeclaration::Compound(_) => {
+                panic!("compound should have been flattened")
+            }
             syntax::GlobalDeclaration::Declaration(declaration) => &declaration.ident,
             syntax::GlobalDeclaration::TypeAlias(type_alias) => &type_alias.ident,
             syntax::GlobalDeclaration::Struct(struct_) => &struct_.ident,
@@ -238,6 +248,9 @@ fn mangled_item(
         if f(ident.name().as_str()) {
             return match decl.node() {
                 syntax::GlobalDeclaration::Void => None,
+                syntax::GlobalDeclaration::Compound(_) => {
+                    panic!("compound should have been flattened")
+                }
                 syntax::GlobalDeclaration::Declaration(declaration) => match declaration.kind {
                     syntax::DeclarationKind::Const => Some(ItemKind::Constant),
                     syntax::DeclarationKind::Override => None,
