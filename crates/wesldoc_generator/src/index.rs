@@ -29,6 +29,9 @@ fn get_packages(base_path: &Path) -> Result<Vec<String>> {
         }
     }
 
+    // Sort packages alphabetically for stable output
+    packages.sort();
+
     Ok(packages)
 }
 
