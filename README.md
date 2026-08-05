@@ -4,7 +4,6 @@
 [![Build Status](https://github.com/jannik4/wesldoc/workflows/CI/badge.svg)](https://github.com/jannik4/wesldoc/actions)
 [![Pages Status](https://github.com/jannik4/wesldoc/workflows/pages/badge.svg)](https://github.com/jannik4/wesldoc/actions)
 [![dependency status](https://deps.rs/repo/github/jannik4/wesldoc/status.svg?path=crates%2Fwesldoc)](https://deps.rs/repo/github/jannik4/wesldoc?path=crates%2Fwesldoc) <!-- TODO: deps.rs does not support glob members in workspaces, so point to the "top" crate (https://github.com/deps-rs/deps.rs/issues/15) -->
-[![Lines of Code](https://tokei.rs/b1/github/jannik4/wesldoc)](https://github.com/jannik4/wesldoc).
 
 Generate documentation for [WESL](https://github.com/wgsl-tooling-wg/wesl-spec) projects.
 
