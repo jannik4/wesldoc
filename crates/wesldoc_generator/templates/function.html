@@ -13,8 +13,8 @@
 {% endif %}
 <pre class="code-block">
 
-{%- let ws_pre %}
-{%- let ws_post %}
+{%- decl ws_pre %}
+{%- decl ws_post %}
 {%- if self::show_function_inline(function) %}
 {%- let ws_pre = "" %}
 {%- let ws_post = "" %}

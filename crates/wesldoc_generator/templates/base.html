@@ -1,4 +1,4 @@
-{% let this_version %}
+{% decl this_version %}
 {% if ctx.build_as_latest %}
 {% let this_version = "latest".to_string() %}
 {% else %}
