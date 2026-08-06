@@ -51,6 +51,12 @@ fn build_attribute(attr: &syntax::Attribute, ctx: &Context) -> Option<Attribute>
                 .as_ref()
                 .map(|args| args.iter().map(|arg| build_expression(arg, ctx)).collect()),
         },
+        syntax::Attribute::Task => Attribute::Task,
+        syntax::Attribute::Payload(expr) => Attribute::Payload(build_expression(expr, ctx)),
+        syntax::Attribute::Mesh(expr) => Attribute::Mesh(build_expression(expr, ctx)),
+        syntax::Attribute::EarlyDepthTest(conservative_depth) => {
+            Attribute::EarlyDepthTest(conservative_depth.as_ref().map(map))
+        }
 
         // Conditional attributes are handled separately
         syntax::Attribute::If(_) | syntax::Attribute::Elif(_) | syntax::Attribute::Else => {

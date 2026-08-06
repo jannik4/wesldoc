@@ -222,6 +222,7 @@ pub enum AddressSpace {
     Handle,
     Immediate,
     PushConstant,
+    TaskPayload,
 }
 
 impl fmt::Display for AddressSpace {
@@ -241,6 +242,7 @@ impl fmt::Display for AddressSpace {
             AddressSpace::Handle => write!(f, ""),
             AddressSpace::Immediate => write!(f, "<immediate>"),
             AddressSpace::PushConstant => write!(f, "<push_constant>"),
+            AddressSpace::TaskPayload => write!(f, "<task_payload>"),
         }
     }
 }
@@ -262,6 +264,9 @@ pub enum Literal {
     U32(u32),
     F32(f32),
     F16(f32),
+    I64(i64),
+    U64(u64),
+    F64(f64),
 }
 
 impl fmt::Display for Literal {
@@ -274,6 +279,9 @@ impl fmt::Display for Literal {
             Literal::U32(value) => write!(f, "{value}"),
             Literal::F32(value) => write!(f, "{value}"),
             Literal::F16(value) => write!(f, "{value}"),
+            Literal::I64(value) => write!(f, "{value}"),
+            Literal::U64(value) => write!(f, "{value}"),
+            Literal::F64(value) => write!(f, "{value}"),
         }
     }
 }
@@ -438,6 +446,10 @@ pub enum Attribute {
     Vertex,
     Fragment,
     Compute,
+    Task,
+    Payload(Expression),
+    Mesh(Expression),
+    EarlyDepthTest(Option<ConservativeDepth>),
     Custom {
         name: String,
         arguments: Option<Vec<Expression>>,
@@ -464,6 +476,10 @@ impl Attribute {
             Attribute::Vertex => "vertex",
             Attribute::Fragment => "fragment",
             Attribute::Compute => "compute",
+            Attribute::Task => "task",
+            Attribute::Payload(_) => "payload",
+            Attribute::Mesh(_) => "mesh",
+            Attribute::EarlyDepthTest(_) => "early_depth_test",
             Attribute::Custom { name, .. } => name,
         }
     }
@@ -486,6 +502,19 @@ pub enum BuiltinValue {
     NumWorkgroups,
     SubgroupInvocationId,
     SubgroupSize,
+    SubgroupId,
+    NumSubgroups,
+    PrimitiveIndex,
+    Barycentric,
+    BarycentricNoPerspective,
+    ViewIndex,
+    MeshTaskSize,
+    Vertices,
+    Primitives,
+    VertexCount,
+    PrimitiveCount,
+    TriangleIndices,
+    CullPrimitive,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -510,6 +539,13 @@ pub enum InterpolationSampling {
     Sample,
     First,
     Either,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ConservativeDepth {
+    GreaterEqual,
+    LessEqual,
+    Unchanged,
 }
 
 #[derive(Debug, Clone)]

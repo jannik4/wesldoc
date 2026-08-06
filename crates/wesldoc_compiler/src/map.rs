@@ -17,6 +17,8 @@ impl Map<Ident> for syntax::Ident {
 
 impl Map<AddressSpace> for (syntax::AddressSpace, Option<syntax::AccessMode>) {
     fn map(&self) -> AddressSpace {
+        // TODO: How to handle atomic?
+
         let (address_space, access_mode) = self;
         match address_space {
             syntax::AddressSpace::Function => AddressSpace::Function,
@@ -36,6 +38,7 @@ impl Map<AddressSpace> for (syntax::AddressSpace, Option<syntax::AccessMode>) {
                     load: true,
                     store: true,
                 },
+                Some(syntax::AccessMode::Atomic) => unreachable!(), // TODO: ???
                 None => AddressSpace::Storage {
                     load: true,
                     store: false,
@@ -43,6 +46,7 @@ impl Map<AddressSpace> for (syntax::AddressSpace, Option<syntax::AccessMode>) {
             },
             syntax::AddressSpace::Handle => AddressSpace::Handle,
             syntax::AddressSpace::Immediate => AddressSpace::Immediate,
+            syntax::AddressSpace::TaskPayload => AddressSpace::TaskPayload,
         }
     }
 }
@@ -57,6 +61,9 @@ impl Map<Literal> for syntax::LiteralExpression {
             syntax::LiteralExpression::U32(value) => Literal::U32(value),
             syntax::LiteralExpression::F32(value) => Literal::F32(value),
             syntax::LiteralExpression::F16(value) => Literal::F16(value),
+            syntax::LiteralExpression::I64(value) => Literal::I64(value),
+            syntax::LiteralExpression::U64(value) => Literal::U64(value),
+            syntax::LiteralExpression::F64(value) => Literal::F64(value),
         }
     }
 }
@@ -79,6 +86,21 @@ impl Map<BuiltinValue> for syntax::BuiltinValue {
             syntax::BuiltinValue::NumWorkgroups => BuiltinValue::NumWorkgroups,
             syntax::BuiltinValue::SubgroupInvocationId => BuiltinValue::SubgroupInvocationId,
             syntax::BuiltinValue::SubgroupSize => BuiltinValue::SubgroupSize,
+            syntax::BuiltinValue::SubgroupId => BuiltinValue::SubgroupId,
+            syntax::BuiltinValue::NumSubgroups => BuiltinValue::NumSubgroups,
+            syntax::BuiltinValue::PrimitiveIndex => BuiltinValue::PrimitiveIndex,
+            syntax::BuiltinValue::Barycentric => BuiltinValue::Barycentric,
+            syntax::BuiltinValue::BarycentricNoPerspective => {
+                BuiltinValue::BarycentricNoPerspective
+            }
+            syntax::BuiltinValue::ViewIndex => BuiltinValue::ViewIndex,
+            syntax::BuiltinValue::MeshTaskSize => BuiltinValue::MeshTaskSize,
+            syntax::BuiltinValue::Vertices => BuiltinValue::Vertices,
+            syntax::BuiltinValue::Primitives => BuiltinValue::Primitives,
+            syntax::BuiltinValue::VertexCount => BuiltinValue::VertexCount,
+            syntax::BuiltinValue::PrimitiveCount => BuiltinValue::PrimitiveCount,
+            syntax::BuiltinValue::TriangleIndices => BuiltinValue::TriangleIndices,
+            syntax::BuiltinValue::CullPrimitive => BuiltinValue::CullPrimitive,
         }
     }
 }
@@ -112,6 +134,16 @@ impl Map<InterpolationSampling> for syntax::InterpolationSampling {
             syntax::InterpolationSampling::Sample => InterpolationSampling::Sample,
             syntax::InterpolationSampling::First => InterpolationSampling::First,
             syntax::InterpolationSampling::Either => InterpolationSampling::Either,
+        }
+    }
+}
+
+impl Map<ConservativeDepth> for syntax::ConservativeDepth {
+    fn map(&self) -> ConservativeDepth {
+        match self {
+            syntax::ConservativeDepth::GreaterEqual => ConservativeDepth::GreaterEqual,
+            syntax::ConservativeDepth::LessEqual => ConservativeDepth::LessEqual,
+            syntax::ConservativeDepth::Unchanged => ConservativeDepth::Unchanged,
         }
     }
 }

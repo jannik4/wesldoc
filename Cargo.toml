@@ -18,5 +18,7 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 
 [workspace.dependencies]
-wesl = { git = "https://github.com/jannik4/wesl-rs", rev = "2b63d5e69efd03f394c03242a81db086198602fa" }
+wesl = { git = "https://github.com/jannik4/wesl-rs", rev = "2b63d5e69efd03f394c03242a81db086198602fa", features = [
+    "naga-ext",
+] }
 wgsl-parse = { git = "https://github.com/jannik4/wesl-rs", rev = "2b63d5e69efd03f394c03242a81db086198602fa" }

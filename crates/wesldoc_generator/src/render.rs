@@ -1,9 +1,9 @@
 use crate::context::Context;
 use askama::Template;
 use wesldoc_ast::{
-    Attribute, BuiltinValue, Constant, DiagnosticSeverity, Expression, Function, GlobalVariable,
-    InterpolationSampling, InterpolationType, ItemKind, Override, Struct, TypeAlias,
-    TypeExpression,
+    Attribute, BuiltinValue, ConservativeDepth, Constant, DiagnosticSeverity, Expression, Function,
+    GlobalVariable, InterpolationSampling, InterpolationType, ItemKind, Override, Struct,
+    TypeAlias, TypeExpression,
 };
 
 #[derive(Template)]
@@ -133,6 +133,19 @@ fn builtin_str(builtin: &BuiltinValue) -> &'static str {
         BuiltinValue::NumWorkgroups => "num_workgroups",
         BuiltinValue::SubgroupInvocationId => "subgroup_invocation_id",
         BuiltinValue::SubgroupSize => "subgroup_size",
+        BuiltinValue::SubgroupId => "subgroup_id",
+        BuiltinValue::NumSubgroups => "num_subgroups",
+        BuiltinValue::PrimitiveIndex => "primitive_index",
+        BuiltinValue::Barycentric => "barycentric",
+        BuiltinValue::BarycentricNoPerspective => "barycentric_no_perspective",
+        BuiltinValue::ViewIndex => "view_index",
+        BuiltinValue::MeshTaskSize => "mesh_task_size",
+        BuiltinValue::Vertices => "vertices",
+        BuiltinValue::Primitives => "primitives",
+        BuiltinValue::VertexCount => "vertex_count",
+        BuiltinValue::PrimitiveCount => "primitive_count",
+        BuiltinValue::TriangleIndices => "triangle_indices",
+        BuiltinValue::CullPrimitive => "cull_primitive",
     }
 }
 
@@ -160,5 +173,13 @@ fn sampling_str(sampling: &InterpolationSampling) -> &'static str {
         InterpolationSampling::Sample => "sample",
         InterpolationSampling::First => "first",
         InterpolationSampling::Either => "either",
+    }
+}
+
+fn conservative_depth_str(conservative_depth: &ConservativeDepth) -> &'static str {
+    match conservative_depth {
+        ConservativeDepth::GreaterEqual => "greater_equal",
+        ConservativeDepth::LessEqual => "less_equal",
+        ConservativeDepth::Unchanged => "unchanged",
     }
 }
