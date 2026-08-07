@@ -87,5 +87,5 @@ fn latest_known_edition() -> String {
 }
 
 fn default_root() -> PathBuf {
-    "shaders".into()
+    "src".into()
 }
