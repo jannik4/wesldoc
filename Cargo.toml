@@ -1,12 +1,7 @@
 [workspace]
 resolver = "2"
 members = ["crates/*", "snapshot_tests"]
-# TODO: Use glob when supported (https://github.com/rust-lang/cargo/issues/6009)
-exclude = [
-    "example_packages/math_utils",
-    "example_packages/pbr",
-    "example_packages/primitives",
-]
+exclude = ["example_packages/"]
 
 [workspace.package]
 version = "0.1.0"
