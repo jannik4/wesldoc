@@ -31,17 +31,13 @@ pub struct Args {
 
 impl Args {
     pub fn run(self) -> Result<()> {
-        // Check Cargo.toml/wesl.toml exist
+        // Check Cargo.toml exist
         if !self.package.join("Cargo.toml").is_file() {
             return Err("Cargo.toml not found".into());
         }
-        if !self.package.join("wesl.toml").is_file() {
-            return Err("wesl.toml not found".into());
-        }
 
-        // Parse wesl.toml and validate
-        let wesl_toml = toml::from_slice::<WeslToml>(&fs::read(self.package.join("wesl.toml"))?)?;
-        wesl_toml.validate()?;
+        // Load wesl.toml
+        let wesl_toml = load_wesl_toml(self.package.join("wesl.toml"))?;
 
         // Resolve cargo dependencies
         let cargo_metadata = CargoMetadata::resolve(&self.package)?;
@@ -259,9 +255,7 @@ impl Package {
         // Handle path dependencies
         if let Some(dep_path) = dependency.and_then(|d| d.path.as_ref()) {
             let dep_path = cargo_metadata.base_path.join(dep_path);
-            let dep_wesl_toml =
-                toml::from_slice::<WeslToml>(&fs::read(dep_path.join("wesl.toml"))?)?;
-            dep_wesl_toml.validate()?;
+            let dep_wesl_toml = load_wesl_toml(dep_path.join("wesl.toml"))?;
 
             return Ok(Package {
                 local_name: dependency_key.clone(),
@@ -288,8 +282,7 @@ impl Package {
             .to_path_buf()
             .into_std_path_buf();
 
-        let dep_wesl_toml = toml::from_slice::<WeslToml>(&fs::read(crate_path.join("wesl.toml"))?)?;
-        dep_wesl_toml.validate()?;
+        let dep_wesl_toml = load_wesl_toml(crate_path.join("wesl.toml"))?;
 
         Ok(Package::new(
             dependency_key,
@@ -307,4 +300,15 @@ fn name_from_path(path: &Path) -> Result<String> {
         .unwrap()
         .to_string_lossy()
         .replace('-', "_"))
+}
+
+fn load_wesl_toml(path: impl AsRef<Path>) -> Result<WeslToml> {
+    let path = path.as_ref();
+    let wesl_toml = if path.is_file() {
+        toml::from_slice::<WeslToml>(&fs::read(path)?)?
+    } else {
+        WeslToml::default()
+    };
+    wesl_toml.validate()?;
+    Ok(wesl_toml)
 }

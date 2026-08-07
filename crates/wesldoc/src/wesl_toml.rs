@@ -34,6 +34,20 @@ impl WeslToml {
     }
 }
 
+impl Default for WeslToml {
+    fn default() -> Self {
+        Self {
+            package: WeslTomlPackage {
+                edition: latest_known_edition(),
+                root: default_root(),
+                package_manager: None,
+                dependencies: Some(DependenciesAuto::Auto),
+            },
+            dependencies: HashMap::new(),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize)]
 pub struct WeslTomlPackage {
     #[serde(default = "latest_known_edition")]
