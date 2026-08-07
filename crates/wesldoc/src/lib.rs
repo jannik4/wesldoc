@@ -5,7 +5,6 @@ use self::{
     resolver::DocsResolver,
     wesl_toml::{DependenciesAuto, WeslToml, WeslTomlDependency},
 };
-use clap::Parser;
 use std::{
     collections::HashMap,
     fs,
@@ -14,6 +13,8 @@ use std::{
 use wesl::{CompileOptions, Feature, Features, ManglerKind, ModulePath, Wesl, syntax::PathOrigin};
 use wesldoc_ast::Version;
 use wesldoc_compiler::{WeslModule, WeslPackage};
+
+pub use clap::Parser;
 
 pub type Error = Box<dyn std::error::Error>;
 pub type Result<T, E = Error> = std::result::Result<T, E>;

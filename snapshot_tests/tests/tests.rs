@@ -1,15 +1,14 @@
-use clap::Parser;
 use dirsnap::Assert;
-use wesldoc::{Args, Result};
+use wesldoc::{Args, Parser, Result};
 
 #[test]
 fn example_packages() -> Result<()> {
     snapshot_test(
         "example_packages",
         &[
-            "../../example_packages/primitives",
-            "../../example_packages/math_utils",
-            "../../example_packages/pbr",
+            "../example_packages/primitives",
+            "../example_packages/math_utils",
+            "../example_packages/pbr",
         ],
     )
 }
