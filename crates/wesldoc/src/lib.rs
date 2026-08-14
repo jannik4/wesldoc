@@ -5,6 +5,7 @@ use self::{
     resolver::DocsResolver,
     wesl_toml::{DependenciesAuto, WeslToml, WeslTomlDependency},
 };
+use anyhow::{Context, Result, bail};
 use std::{
     collections::HashMap,
     fs,
@@ -15,9 +16,6 @@ use wesldoc_ast::Version;
 use wesldoc_compiler::{WeslModule, WeslPackage};
 
 pub use clap::Parser;
-
-pub type Error = Box<dyn std::error::Error>;
-pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -34,7 +32,7 @@ impl Args {
     pub fn run(self) -> Result<()> {
         // Check Cargo.toml exist
         if !self.package.join("Cargo.toml").is_file() {
-            return Err("Cargo.toml not found".into());
+            bail!("Cargo.toml not found");
         }
 
         // Load wesl.toml
@@ -164,7 +162,7 @@ fn compile_submodules(
                                 .unwrap_or(name);
                             Ok(name)
                         }
-                        _ => Err("unexpected path component".into()),
+                        _ => bail!("unexpected path component"),
                     })
                     .collect::<Result<_>>()?,
             })?;
@@ -198,13 +196,13 @@ impl CargoMetadata {
         let metadata = cargo_metadata::MetadataCommand::new()
             .manifest_path(base_path.join("Cargo.toml"))
             .exec()?;
-        let root_package = metadata.root_package().ok_or("no root package")?.clone();
-        let resolve = metadata.resolve.as_ref().ok_or("no resolve")?;
+        let root_package = metadata.root_package().context("no root package")?.clone();
+        let resolve = metadata.resolve.as_ref().context("no resolve")?;
         let root_node = resolve
             .nodes
             .iter()
             .find(|node| node.id == root_package.id)
-            .ok_or("no root node")?;
+            .context("no root node")?;
         let resolved_dependencies = root_node
             .deps
             .iter()
@@ -269,7 +267,7 @@ impl Package {
         let dep_pkg_id = cargo_metadata
             .resolved_dependencies
             .get(dep_name)
-            .ok_or(format!("dependency '{dep_name}' not found in Cargo.toml"))?;
+            .with_context(|| format!("dependency '{dep_name}' not found in Cargo.toml"))?;
         let metadata_package = cargo_metadata
             .metadata
             .packages

@@ -23,11 +23,14 @@ use self::{
     map::map,
 };
 use std::collections::HashMap;
+use thiserror::Error;
 use wesl::{CompileResult, ModulePath, syntax};
 use wesldoc_ast::*;
 
-pub type Error = Box<dyn std::error::Error>;
 pub type Result<T, E = Error> = std::result::Result<T, E>;
+
+#[derive(Debug, Error)]
+pub enum Error {}
 
 pub struct WeslPackage {
     pub version: Version,

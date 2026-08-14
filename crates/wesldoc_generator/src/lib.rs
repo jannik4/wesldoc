@@ -13,10 +13,18 @@ use std::{
     fs::{self, File},
     path::Path,
 };
+use thiserror::Error;
 use wesldoc_ast::{ItemKind, Version, WeslDocs};
 
-pub type Error = Box<dyn std::error::Error>;
 pub type Result<T, E = Error> = std::result::Result<T, E>;
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error("io error")]
+    Io(#[from] std::io::Error),
+    #[error("serialization error")]
+    Template(#[from] serde_json::Error),
+}
 
 pub fn generate(docs: &WeslDocs, base_path: &Path) -> Result<()> {
     // Write static files

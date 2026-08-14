@@ -108,6 +108,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.104"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
+
+[[package]]
 name = "ascii-canvas"
 version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1342,6 +1348,7 @@ checksum = "67b1b7a3b5fe4f1376887184045fcf45c69e92af734b7aaddc05fb777b6fbd03"
 name = "snapshot_tests"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "dirsnap",
  "tempfile",
  "wesldoc",
@@ -1449,18 +1456,18 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "2.0.19"
+version = "2.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09a43598840e33d5b0331f38c5e30d13bb11c11210a4b58f0d9b18a5a5eefcd9"
+checksum = "ec86235f5fcc2a73650310756d2ac5b138a5780bbbdfae3eeccec992c435ba4f"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "2.0.19"
+version = "2.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43cbfe0cf76104d42a574802844187e84a305e531ed54455f11fbde0f10541cd"
+checksum = "bc04cd3e1236dd4a98afca4569f2deb3f120e5422a4023be2cb683f8486292af"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1636,6 +1643,7 @@ dependencies = [
 name = "wesldoc"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "cargo_metadata",
  "clap",
  "env_logger",
@@ -1661,6 +1669,7 @@ name = "wesldoc_compiler"
 version = "0.1.0"
 dependencies = [
  "log",
+ "thiserror",
  "wesl",
  "wesldoc_ast",
  "wgsl-parse",
@@ -1675,6 +1684,7 @@ dependencies = [
  "include_dir",
  "serde",
  "serde_json",
+ "thiserror",
  "wesldoc_ast",
 ]
 

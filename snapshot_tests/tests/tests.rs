@@ -1,5 +1,6 @@
+use anyhow::Result;
 use dirsnap::Assert;
-use wesldoc::{Args, Parser, Result};
+use wesldoc::{Args, Parser};
 
 #[test]
 fn example_packages() -> Result<()> {

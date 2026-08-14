@@ -1,4 +1,4 @@
-use crate::Result;
+use anyhow::{Result, bail};
 use serde::Deserialize;
 use std::{collections::HashMap, path::PathBuf};
 
@@ -12,22 +12,20 @@ pub struct WeslToml {
 impl WeslToml {
     pub fn validate(&self) -> Result<()> {
         if self.package.edition != "unstable_2025" {
-            return Err("only edition 'unstable_2025' is supported".into());
+            bail!("only edition 'unstable_2025' is supported");
         }
 
         match self.package.package_manager {
             Some(WeslTomlPackageManager::Cargo) | None => (),
             Some(WeslTomlPackageManager::Npm) => {
-                return Err("npm package manager is not supported yet".into());
+                bail!("npm package manager is not supported yet");
             }
         }
 
         if self.package.dependencies == Some(DependenciesAuto::Auto)
             && !self.dependencies.is_empty()
         {
-            return Err(
-                "cannot have both 'dependencies = \"auto\"' and explicit dependencies".into(),
-            );
+            bail!("cannot have both 'dependencies = \"auto\"' and explicit dependencies");
         }
 
         Ok(())
