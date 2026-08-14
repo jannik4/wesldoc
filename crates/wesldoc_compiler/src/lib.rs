@@ -6,6 +6,7 @@ mod build_type;
 mod calculate_span;
 mod collect_features;
 mod context;
+mod error_sink;
 mod extract_comments;
 mod map;
 mod post_process;
@@ -19,6 +20,7 @@ use self::{
     calculate_span::calculate_span,
     collect_features::collect_features,
     context::{Context, ResolveTarget},
+    error_sink::ErrorSink,
     extract_comments::{extract_comments_inner, extract_comments_outer},
     map::map,
 };
@@ -30,7 +32,32 @@ use wesldoc_ast::*;
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Error)]
-pub enum Error {}
+pub enum Error {
+    #[error("package has missing documentation")]
+    MissingDocumentation,
+}
+
+impl From<FatalError> for Error {
+    fn from(e: FatalError) -> Self {
+        match e {}
+    }
+}
+
+#[derive(Debug, Error)]
+enum FatalError {}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum MissingDocumentation {
+    #[default]
+    Allow,
+    Warn,
+    Deny,
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct CompileOptions {
+    pub missing_documentation: MissingDocumentation,
+}
 
 pub struct WeslPackage {
     pub version: Version,
@@ -44,11 +71,19 @@ pub struct WeslModule {
     pub submodules: Vec<WeslModule>,
 }
 
-pub fn compile(package: &WeslPackage) -> Result<WeslDocs> {
+pub fn compile(package: &WeslPackage, options: &CompileOptions) -> Result<WeslDocs> {
+    let error_sink = ErrorSink::default();
     let mut docs = WeslDocs {
         version: package.version.clone(),
-        root: compile_module(&package.root, &[], &package.dependencies)?,
+        root: compile_module(
+            &package.root,
+            &[],
+            &package.dependencies,
+            options,
+            &error_sink,
+        )?,
     };
+    error_sink.into_result()?;
 
     post_process::post_process(&mut docs);
 
@@ -59,7 +94,9 @@ fn compile_module(
     wesl_module: &WeslModule,
     path: &[String],
     dependencies: &HashMap<String, (String, Version)>,
-) -> Result<Module> {
+    compile_options: &CompileOptions,
+    error_sink: &ErrorSink,
+) -> Result<Module, FatalError> {
     let mut module = Module::empty(wesl_module.name.clone());
     module.modules = wesl_module
         .submodules
@@ -67,9 +104,9 @@ fn compile_module(
         .map(|m| {
             let mut path = path.to_vec();
             path.push(m.name.clone());
-            compile_module(m, &path, dependencies)
+            compile_module(m, &path, dependencies, compile_options, error_sink)
         })
-        .collect::<Result<Vec<_>>>()?;
+        .collect::<Result<Vec<_>, FatalError>>()?;
 
     let Some((imports, compiled)) = &wesl_module.compiled else {
         return Ok(module);
@@ -82,6 +119,8 @@ fn compile_module(
             components: path.to_vec(),
         },
         dependencies,
+        compile_options,
+        error_sink,
     );
 
     // Set source
@@ -94,6 +133,7 @@ fn compile_module(
         .source
         .as_ref()
         .and_then(|source| build_inner_doc_comment(&extract_comments_inner(source), &ctx));
+    validate_module_doc_comment(&module, &ctx);
 
     // Collect translate time features
     module.translate_time_features = collect_features(&ctx);
@@ -126,6 +166,7 @@ fn compile_module(
             .and_then(|(span, source)| {
                 build_outer_doc_comment(&extract_comments_outer(span, source), ctx)
             });
+        validate_item_doc_comment(&comment, decl.span(), ctx);
 
         match decl.node() {
             syntax::GlobalDeclaration::Void => (),
@@ -242,14 +283,16 @@ fn compile_module(
                                         &member.attributes,
                                     ),
                                     comment: {
-                                        calculate_span(member.span().range(), ctx)
+                                        let comment = calculate_span(member.span().range(), ctx)
                                             .and_then(|span| Some((span, ctx.get_source()?)))
                                             .and_then(|(span, source)| {
                                                 build_outer_doc_comment(
                                                     &extract_comments_outer(span, source),
                                                     ctx,
                                                 )
-                                            })
+                                            });
+                                        validate_item_doc_comment(&comment, member.span(), ctx);
+                                        comment
                                     },
                                 })
                                 .collect()
@@ -300,4 +343,82 @@ fn compile_module(
     }
 
     Ok(module)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum Severity {
+    Warn,
+    Error,
+}
+
+impl Severity {
+    fn to_miette_severity(self) -> miette::Severity {
+        match self {
+            Severity::Warn => miette::Severity::Warning,
+            Severity::Error => miette::Severity::Error,
+        }
+    }
+}
+
+fn validate_module_doc_comment(module: &Module, ctx: &Context) {
+    if module.comment.is_some() {
+        return;
+    }
+    let severity = match ctx.compile_options().missing_documentation {
+        MissingDocumentation::Allow => return,
+        MissingDocumentation::Warn => Severity::Warn,
+        MissingDocumentation::Deny => Severity::Error,
+    };
+    let mut report = miette::miette!(
+        severity = severity.to_miette_severity(),
+        "missing module documentation for module `{}`",
+        module.name
+    );
+    if let Some(source) = ctx.get_source() {
+        report = report.with_source_code(source.to_string());
+    }
+    match severity {
+        Severity::Warn => {
+            log::warn!("{report:?}");
+        }
+        Severity::Error => {
+            log::error!("{report:?}");
+            ctx.error_sink().report(Error::MissingDocumentation);
+        }
+    }
+}
+
+fn validate_item_doc_comment(
+    comment: &Option<DocComment>,
+    span: wesl::syntax::Span,
+    ctx: &Context,
+) {
+    if comment.is_some() {
+        return;
+    }
+    let severity = match ctx.compile_options().missing_documentation {
+        MissingDocumentation::Allow => return,
+        MissingDocumentation::Warn => Severity::Warn,
+        MissingDocumentation::Deny => Severity::Error,
+    };
+    let mut report = miette::miette!(
+        labels = vec![miette::LabeledSpan::at(
+            span.range(),
+            "missing documentation"
+        )],
+        severity = severity.to_miette_severity(),
+        "missing item documentation"
+    );
+    if let Some(source) = ctx.get_source() {
+        report = report.with_source_code(source.to_string());
+    }
+    match severity {
+        Severity::Warn => {
+            log::warn!("{report:?}");
+        }
+        Severity::Error => {
+            log::error!("{report:?}");
+            ctx.error_sink().report(Error::MissingDocumentation);
+        }
+    }
 }

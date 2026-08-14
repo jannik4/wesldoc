@@ -6,6 +6,7 @@ use self::{
     wesl_toml::{DependenciesAuto, WeslToml, WeslTomlDependency},
 };
 use anyhow::{Context, Result, bail};
+use clap::ValueEnum;
 use std::{
     collections::HashMap,
     fs,
@@ -13,7 +14,7 @@ use std::{
 };
 use wesl::{CompileOptions, Feature, Features, ManglerKind, ModulePath, Wesl, syntax::PathOrigin};
 use wesldoc_ast::Version;
-use wesldoc_compiler::{WeslModule, WeslPackage};
+use wesldoc_compiler::{MissingDocumentation, WeslModule, WeslPackage};
 
 pub use clap::Parser;
 
@@ -26,6 +27,10 @@ pub struct Args {
     /// The path to the output directory.
     #[arg(short, long, default_value = "target/wesldoc")]
     output: PathBuf,
+
+    /// The missing documentation behavior.
+    #[arg(long, value_enum, default_value = "allow")]
+    missing_docs: MissingDocsArg,
 }
 
 impl Args {
@@ -66,12 +71,38 @@ impl Args {
         let wesl_package = compile_package(package, resolver)?;
 
         // Compile to docs
-        let docs = wesldoc_compiler::compile(&wesl_package)?;
+        let docs = wesldoc_compiler::compile(
+            &wesl_package,
+            &wesldoc_compiler::CompileOptions {
+                missing_documentation: self.missing_docs.into(),
+            },
+        )
+        .with_context(|| format!("failed to compile package '{}'", wesl_package.root.name))?;
 
         // Generate docs
         wesldoc_generator::generate(&docs, &self.output)?;
 
         Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+enum MissingDocsArg {
+    /// Allow missing documentation.
+    Allow,
+    /// Warn on missing documentation.
+    Warn,
+    /// Error on missing documentation.
+    Deny,
+}
+
+impl From<MissingDocsArg> for MissingDocumentation {
+    fn from(arg: MissingDocsArg) -> Self {
+        match arg {
+            MissingDocsArg::Allow => MissingDocumentation::Allow,
+            MissingDocsArg::Warn => MissingDocumentation::Warn,
+            MissingDocsArg::Deny => MissingDocumentation::Deny,
+        }
     }
 }
 
