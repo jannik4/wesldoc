@@ -1,4 +1,4 @@
-use crate::{CompileOptions, error_sink::ErrorSink, map::map};
+use crate::{CompileOptions, compile_state::CompileState, map::map};
 use std::collections::HashMap;
 use wesl::{CompileResult, Mangler, ModulePath, SourceMap as _, syntax};
 use wesldoc_ast::{DefinitionPath, Ident, ItemKind, Version};
@@ -15,7 +15,7 @@ pub struct Context<'a> {
     local_path: ModulePath,
 
     compile_options: &'a CompileOptions,
-    error_sink: &'a ErrorSink,
+    compile_state: &'a CompileState,
 }
 
 impl Context<'_> {
@@ -26,7 +26,7 @@ impl Context<'_> {
         dependencies: &'a HashMap<String, (String, Version)>,
 
         compile_options: &'a CompileOptions,
-        error_sink: &'a ErrorSink,
+        compile_state: &'a CompileState,
     ) -> Context<'a> {
         // Warn if the source map is not found
         if compiled.sourcemap.is_none() {
@@ -96,7 +96,7 @@ impl Context<'_> {
             },
 
             compile_options,
-            error_sink,
+            compile_state,
         }
     }
 
@@ -109,7 +109,7 @@ impl Context<'_> {
             local: self.local.clone(),
             local_path: self.local_path.clone(),
             compile_options: self.compile_options,
-            error_sink: self.error_sink,
+            compile_state: self.compile_state,
         }
     }
 
@@ -121,8 +121,8 @@ impl Context<'_> {
         self.compile_options
     }
 
-    pub fn error_sink(&self) -> &ErrorSink {
-        self.error_sink
+    pub fn compile_state(&self) -> &CompileState {
+        self.compile_state
     }
 
     pub fn as_local(&self, decl: &syntax::GlobalDeclaration) -> Option<Ident> {

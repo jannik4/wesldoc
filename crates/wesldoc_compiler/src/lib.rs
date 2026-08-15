@@ -5,8 +5,8 @@ mod build_expression;
 mod build_type;
 mod calculate_span;
 mod collect_features;
+mod compile_state;
 mod context;
-mod error_sink;
 mod extract_comments;
 mod map;
 mod post_process;
@@ -19,8 +19,8 @@ use self::{
     build_type::build_type,
     calculate_span::calculate_span,
     collect_features::collect_features,
+    compile_state::{CompileState, CompileStats},
     context::{Context, ResolveTarget},
-    error_sink::ErrorSink,
     extract_comments::{extract_comments_inner, extract_comments_outer},
     map::map,
 };
@@ -71,8 +71,11 @@ pub struct WeslModule {
     pub submodules: Vec<WeslModule>,
 }
 
-pub fn compile(package: &WeslPackage, options: &CompileOptions) -> Result<WeslDocs> {
-    let error_sink = ErrorSink::default();
+pub fn compile(
+    package: &WeslPackage,
+    options: &CompileOptions,
+) -> Result<(WeslDocs, CompileStats)> {
+    let compile_state = CompileState::default();
     let mut docs = WeslDocs {
         version: package.version.clone(),
         root: compile_module(
@@ -80,14 +83,14 @@ pub fn compile(package: &WeslPackage, options: &CompileOptions) -> Result<WeslDo
             &[],
             &package.dependencies,
             options,
-            &error_sink,
+            &compile_state,
         )?,
     };
-    error_sink.into_result()?;
+    let compile_stats = compile_state.into_result()?;
 
     post_process::post_process(&mut docs);
 
-    Ok(docs)
+    Ok((docs, compile_stats))
 }
 
 fn compile_module(
@@ -95,7 +98,7 @@ fn compile_module(
     path: &[String],
     dependencies: &HashMap<String, (String, Version)>,
     compile_options: &CompileOptions,
-    error_sink: &ErrorSink,
+    compile_state: &CompileState,
 ) -> Result<Module, FatalError> {
     let mut module = Module::empty(wesl_module.name.clone());
     module.modules = wesl_module
@@ -104,7 +107,7 @@ fn compile_module(
         .map(|m| {
             let mut path = path.to_vec();
             path.push(m.name.clone());
-            compile_module(m, &path, dependencies, compile_options, error_sink)
+            compile_module(m, &path, dependencies, compile_options, compile_state)
         })
         .collect::<Result<Vec<_>, FatalError>>()?;
 
@@ -120,7 +123,7 @@ fn compile_module(
         },
         dependencies,
         compile_options,
-        error_sink,
+        compile_state,
     );
 
     // Set source
@@ -361,7 +364,9 @@ impl Severity {
 }
 
 fn validate_module_doc_comment(module: &Module, ctx: &Context) {
-    if module.comment.is_some() {
+    let is_documented = module.comment.is_some();
+    ctx.compile_state().track_documented(is_documented);
+    if is_documented {
         return;
     }
     let severity = match ctx.compile_options().missing_documentation {
@@ -383,7 +388,8 @@ fn validate_module_doc_comment(module: &Module, ctx: &Context) {
         }
         Severity::Error => {
             log::error!("{report:?}");
-            ctx.error_sink().report(Error::MissingDocumentation);
+            ctx.compile_state()
+                .report_error(Error::MissingDocumentation);
         }
     }
 }
@@ -393,7 +399,9 @@ fn validate_item_doc_comment(
     span: wesl::syntax::Span,
     ctx: &Context,
 ) {
-    if comment.is_some() {
+    let is_documented = comment.is_some();
+    ctx.compile_state().track_documented(is_documented);
+    if is_documented {
         return;
     }
     let severity = match ctx.compile_options().missing_documentation {
@@ -418,7 +426,8 @@ fn validate_item_doc_comment(
         }
         Severity::Error => {
             log::error!("{report:?}");
-            ctx.error_sink().report(Error::MissingDocumentation);
+            ctx.compile_state()
+                .report_error(Error::MissingDocumentation);
         }
     }
 }

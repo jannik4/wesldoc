@@ -31,6 +31,10 @@ pub struct Args {
     /// The missing documentation behavior.
     #[arg(long, value_enum, default_value = "allow")]
     missing_docs: MissingDocsArg,
+
+    /// Whether to print documentation statistics after compilation.
+    #[arg(long, default_value = "false")]
+    statistics: bool,
 }
 
 impl Args {
@@ -71,13 +75,16 @@ impl Args {
         let wesl_package = compile_package(package, resolver)?;
 
         // Compile to docs
-        let docs = wesldoc_compiler::compile(
+        let (docs, compile_stats) = wesldoc_compiler::compile(
             &wesl_package,
             &wesldoc_compiler::CompileOptions {
                 missing_documentation: self.missing_docs.into(),
             },
         )
         .with_context(|| format!("failed to compile package '{}'", wesl_package.root.name))?;
+        if self.statistics {
+            println!("Documented: {:.2}%", compile_stats.documented_percentage());
+        }
 
         // Generate docs
         wesldoc_generator::generate(&docs, &self.output)?;
