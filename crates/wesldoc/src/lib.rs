@@ -83,7 +83,10 @@ impl Args {
         )
         .with_context(|| format!("failed to compile package '{}'", wesl_package.root.name))?;
         if self.statistics {
-            println!("Documented: {:.2}%", compile_stats.documented_percentage());
+            println!(
+                "Documentation Coverage: {:.2}%",
+                compile_stats.documented_percentage()
+            );
         }
 
         // Generate docs
