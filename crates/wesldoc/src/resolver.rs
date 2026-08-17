@@ -1,4 +1,7 @@
-use crate::{CargoMetadata, Package};
+use crate::{
+    Package,
+    cargo::{CargoMetadata, CargoPackage},
+};
 use std::{borrow::Cow, cell::RefCell, collections::HashMap};
 use wesl::{
     FileResolver, ModulePath, ResolveError, Resolver,
@@ -19,6 +22,7 @@ enum Dependencies {
     Auto {
         dependencies: RefCell<HashMap<String, (Package, FileResolver)>>,
         cargo_metadata: Box<CargoMetadata>,
+        this_cargo_package: Box<CargoPackage>,
     },
 }
 
@@ -40,12 +44,17 @@ impl DocsResolver {
         }
     }
 
-    pub fn new_auto(this: &Package, cargo_metadata: CargoMetadata) -> Self {
+    pub fn new_auto(
+        this: &Package,
+        cargo_metadata: CargoMetadata,
+        cargo_package: CargoPackage,
+    ) -> Self {
         Self {
             this: FileResolver::new(&this.root),
             dependencies: Dependencies::Auto {
                 dependencies: RefCell::new(HashMap::new()),
                 cargo_metadata: Box::new(cargo_metadata),
+                this_cargo_package: Box::new(cargo_package),
             },
 
             root_file_imports: RefCell::new(None),
@@ -97,6 +106,7 @@ impl DocsResolver {
                     Dependencies::Auto {
                         dependencies,
                         cargo_metadata,
+                        this_cargo_package,
                     } => {
                         let mut dependencies = dependencies.borrow_mut();
                         if let Some((_, resolver)) = dependencies.get(package) {
@@ -104,9 +114,15 @@ impl DocsResolver {
                         }
 
                         // Dependency not used yet, try to find it
-                        let dep = Package::new_dependency(package, None, cargo_metadata).map_err(
-                            |err| ResolveError::ModuleNotFound(path.clone(), err.to_string()),
-                        )?;
+                        let dep = Package::new_dependency(
+                            this_cargo_package,
+                            package,
+                            None,
+                            cargo_metadata,
+                        )
+                        .map_err(|err| {
+                            ResolveError::ModuleNotFound(path.clone(), err.to_string())
+                        })?;
                         let resolver = FileResolver::new(&dep.root);
 
                         let res = f(&resolver, &path_absolute);

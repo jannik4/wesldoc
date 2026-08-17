@@ -1,7 +1,9 @@
+mod cargo;
 mod resolver;
 mod wesl_toml;
 
 use self::{
+    cargo::{CargoMetadata, CargoPackage},
     resolver::DocsResolver,
     wesl_toml::{DependenciesAuto, WeslToml, WeslTomlDependency},
 };
@@ -48,23 +50,25 @@ impl Args {
         let wesl_toml = load_wesl_toml(self.package.join("wesl.toml"))?;
 
         // Resolve cargo dependencies
-        let cargo_metadata = CargoMetadata::resolve(&self.package)?;
+        let (cargo_metadata, cargo_root_package) = CargoMetadata::resolve(&self.package)?;
 
         // Create package and resolver
-        let package = Package::new(
-            cargo_metadata.root_package.name.to_string(),
-            &self.package,
-            &cargo_metadata.root_package,
-            &wesl_toml,
-        );
+        let package = Package::from_cargo_package(&cargo_root_package, None)?;
         let resolver = match wesl_toml.package.dependencies {
-            Some(DependenciesAuto::Auto) => DocsResolver::new_auto(&package, cargo_metadata),
+            Some(DependenciesAuto::Auto) => {
+                DocsResolver::new_auto(&package, cargo_metadata, cargo_root_package)
+            }
             None => {
                 let dependencies = wesl_toml
                     .dependencies
                     .iter()
                     .map(|(dep_key, dep)| {
-                        Package::new_dependency(dep_key, Some(dep), &cargo_metadata)
+                        Package::new_dependency(
+                            &cargo_root_package,
+                            dep_key,
+                            Some(dep),
+                            &cargo_metadata,
+                        )
                     })
                     .collect::<Result<Vec<_>>>()?;
                 DocsResolver::new_explicit(&package, dependencies)
@@ -224,65 +228,37 @@ fn compile_submodules(
     Ok(submodules.into_values().collect())
 }
 
-struct CargoMetadata {
-    base_path: PathBuf,
-    metadata: cargo_metadata::Metadata,
-    root_package: cargo_metadata::Package,
-    resolved_dependencies: HashMap<String, cargo_metadata::PackageId>,
-}
-
-impl CargoMetadata {
-    fn resolve(base_path: impl Into<PathBuf>) -> Result<Self> {
-        let base_path = base_path.into();
-        let metadata = cargo_metadata::MetadataCommand::new()
-            .manifest_path(base_path.join("Cargo.toml"))
-            .exec()?;
-        let root_package = metadata.root_package().context("no root package")?.clone();
-        let resolve = metadata.resolve.as_ref().context("no resolve")?;
-        let root_node = resolve
-            .nodes
-            .iter()
-            .find(|node| node.id == root_package.id)
-            .context("no root node")?;
-        let resolved_dependencies = root_node
-            .deps
-            .iter()
-            .map(|dep| (dep.name.clone(), dep.pkg.clone()))
-            .collect::<HashMap<_, _>>();
-
-        Ok(Self {
-            base_path,
-            metadata,
-            root_package,
-            resolved_dependencies,
-        })
-    }
-}
-
 #[derive(Debug, Clone)]
 struct Package {
     local_name: String,
     package_name: String,
-    root: PathBuf,
     version: Version,
+    root: PathBuf,
 }
 
 impl Package {
-    fn new(
-        local_name: String,
-        base_path: impl AsRef<Path>,
-        metadata_package: &cargo_metadata::Package,
-        wesl_toml: &WeslToml,
-    ) -> Self {
-        Self {
+    fn from_cargo_package(
+        cargo_package: &CargoPackage,
+        local_name: Option<String>,
+    ) -> Result<Self> {
+        let wesl_toml = load_wesl_toml(cargo_package.crate_path().join("wesl.toml"))?;
+
+        let local_name = local_name.unwrap_or_else(|| cargo_package.name());
+        let package_name = cargo_package.name();
+        let version = cargo_package.version();
+        let root = cargo_package.crate_path().join(&wesl_toml.package.root);
+
+        Ok(Self {
             local_name,
-            package_name: metadata_package.name.to_string(),
-            root: base_path.as_ref().join(&wesl_toml.package.root),
-            version: metadata_package.version.clone(),
-        }
+            package_name,
+            version,
+            root,
+        })
     }
 
     fn new_dependency(
+        this_cargo_package: &CargoPackage,
+
         dependency_key: impl Into<String>,
         dependency: Option<&WeslTomlDependency>,
         cargo_metadata: &CargoMetadata,
@@ -294,7 +270,7 @@ impl Package {
 
         // Handle path dependencies
         if let Some(dep_path) = dependency.and_then(|d| d.path.as_ref()) {
-            let dep_path = cargo_metadata.base_path.join(dep_path);
+            let dep_path = this_cargo_package.crate_path().join(dep_path);
             let dep_wesl_toml = load_wesl_toml(dep_path.join("wesl.toml"))?;
 
             return Ok(Package {
@@ -305,31 +281,13 @@ impl Package {
             });
         }
 
-        let dep_pkg_id = cargo_metadata
-            .resolved_dependencies
-            .get(dep_name)
+        let dep_pkg_id = this_cargo_package
+            .dep(dep_name)
             .with_context(|| format!("dependency '{dep_name}' not found in Cargo.toml"))?;
-        let metadata_package = cargo_metadata
-            .metadata
-            .packages
-            .iter()
-            .find(|pkg| &pkg.id == dep_pkg_id)
-            .unwrap();
-        let crate_path = metadata_package
-            .manifest_path
-            .parent()
-            .unwrap()
-            .to_path_buf()
-            .into_std_path_buf();
-
-        let dep_wesl_toml = load_wesl_toml(crate_path.join("wesl.toml"))?;
-
-        Ok(Package::new(
-            dependency_key,
-            &crate_path,
-            metadata_package,
-            &dep_wesl_toml,
-        ))
+        let dep_pkg = cargo_metadata
+            .package(dep_pkg_id)
+            .context("invalid dependency")?;
+        Package::from_cargo_package(dep_pkg, Some(dependency_key))
     }
 }
 
