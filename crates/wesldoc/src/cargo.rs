@@ -72,7 +72,7 @@ impl CargoPackage {
     }
 
     pub fn crate_path(&self) -> PathBuf {
-        self.package.manifest_path.as_std_path().join("..")
+        self.package.manifest_path.as_std_path().parent().unwrap().to_path_buf()
     }
 
     pub fn dep(&self, name: &str) -> Option<&PackageId> {
