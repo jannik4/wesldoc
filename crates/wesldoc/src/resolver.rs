@@ -75,7 +75,10 @@ impl DocsResolver {
     }
 
     pub fn take_root_file_imports(&self) -> Vec<ImportStatement> {
-        self.root_file_imports.borrow_mut().take().unwrap()
+        self.root_file_imports
+            .borrow_mut()
+            .take()
+            .unwrap_or_default()
     }
 
     fn resolve<T>(
