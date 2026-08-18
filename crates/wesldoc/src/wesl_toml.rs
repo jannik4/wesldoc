@@ -2,7 +2,7 @@ use anyhow::{Result, bail};
 use serde::Deserialize;
 use std::{collections::HashMap, path::PathBuf};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct WeslToml {
     pub package: WeslTomlPackage,
     #[serde(default)]
@@ -46,7 +46,7 @@ impl Default for WeslToml {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct WeslTomlPackage {
     #[serde(default = "latest_known_edition")]
     pub edition: String,
@@ -72,7 +72,7 @@ pub enum DependenciesAuto {
     Auto,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct WeslTomlDependency {
     #[serde(default)]
     pub package: Option<String>,

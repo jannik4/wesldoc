@@ -7,9 +7,10 @@ fn example_packages() -> Result<()> {
     snapshot_test(
         "example_packages",
         &[
-            "../example_packages/primitives",
-            "../example_packages/math_utils",
             "../example_packages/pbr",
+            // not needed, as they are deps of pbr:
+            // "../example_packages/primitives",
+            // "../example_packages/math_utils",
         ],
     )
 }

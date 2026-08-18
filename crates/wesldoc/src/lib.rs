@@ -13,6 +13,7 @@ use std::{
     collections::HashMap,
     fs,
     path::{Component, Path, PathBuf},
+    rc::Rc,
 };
 use wesl::{CompileOptions, Feature, Features, ManglerKind, ModulePath, Wesl, syntax::PathOrigin};
 use wesldoc_ast::Version;
@@ -25,6 +26,15 @@ pub use clap::Parser;
 pub struct Args {
     /// The path to the package to generate docs for.
     package: PathBuf,
+
+    /// Don't build documentation for dependencies.
+    #[arg(long, default_value = "false")]
+    no_deps: bool,
+
+    /// The maximum depth of dependencies to document. If not specified, all dependencies will be
+    /// documented. `--no-deps` will override this option and no dependencies will be documented.
+    #[arg(long)]
+    max_dependency_depth: Option<usize>,
 
     /// The path to the output directory.
     #[arg(short, long, default_value = "target/wesldoc")]
@@ -46,55 +56,71 @@ impl Args {
             bail!("Cargo.toml not found");
         }
 
-        // Load wesl.toml
-        let wesl_toml = load_wesl_toml(self.package.join("wesl.toml"))?;
-
         // Resolve cargo dependencies
-        let (cargo_metadata, cargo_root_package) = CargoMetadata::resolve(&self.package)?;
+        let cargo_metadata = Rc::new(CargoMetadata::resolve(&self.package)?);
 
-        // Create package and resolver
-        let package = Package::from_cargo_package(&cargo_root_package, None)?;
-        let resolver = match wesl_toml.package.dependencies {
-            Some(DependenciesAuto::Auto) => {
-                DocsResolver::new_auto(&package, cargo_metadata, cargo_root_package)
-            }
-            None => {
-                let dependencies = wesl_toml
-                    .dependencies
-                    .iter()
-                    .map(|(dep_key, dep)| {
-                        Package::new_dependency(
-                            &cargo_root_package,
-                            dep_key,
-                            Some(dep),
-                            &cargo_metadata,
-                        )
-                    })
-                    .collect::<Result<Vec<_>>>()?;
-                DocsResolver::new_explicit(&package, dependencies)
-            }
+        // Doc packages
+        let max_depth = match self.no_deps {
+            true => 0,
+            false => self.max_dependency_depth.unwrap_or(usize::MAX),
         };
-
-        // Compile to wesl
-        let wesl_package = compile_package(package, resolver)?;
-
-        // Compile to docs
-        let (docs, compile_stats) = wesldoc_compiler::compile(
-            &wesl_package,
-            &wesldoc_compiler::CompileOptions {
-                missing_documentation: self.missing_docs.into(),
-            },
-        )
-        .with_context(|| format!("failed to compile package '{}'", wesl_package.root.name))?;
-        if self.statistics {
+        for cargo_package in cargo_metadata.iter_packages(max_depth) {
             println!(
-                "Documentation Coverage: {:.2}%",
-                compile_stats.documented_percentage()
+                "Documenting package: {} v{}",
+                cargo_package.name(),
+                cargo_package.version()
             );
-        }
 
-        // Generate docs
-        wesldoc_generator::generate(&docs, &self.output)?;
+            // Create package and resolver
+            let package = Package::from_cargo_package(cargo_package, None)?;
+            let resolver = match package.wesl_toml.package.dependencies {
+                Some(DependenciesAuto::Auto) => DocsResolver::new_auto(
+                    &package,
+                    Rc::clone(&cargo_metadata),
+                    cargo_package.clone(),
+                ),
+                None => {
+                    let dependencies = package
+                        .wesl_toml
+                        .dependencies
+                        .iter()
+                        .map(|(dep_key, dep)| {
+                            Package::new_dependency(
+                                cargo_package,
+                                dep_key,
+                                Some(dep),
+                                &cargo_metadata,
+                            )
+                        })
+                        .collect::<Result<Vec<_>>>()?;
+                    DocsResolver::new_explicit(&package, dependencies)
+                }
+            };
+
+            // Compile to wesl
+            let Some(wesl_package) = compile_package(package, resolver)? else {
+                println!("No wesl files found, skipping package");
+                continue;
+            };
+
+            // Compile to docs
+            let (docs, compile_stats) = wesldoc_compiler::compile(
+                &wesl_package,
+                &wesldoc_compiler::CompileOptions {
+                    missing_documentation: self.missing_docs.into(),
+                },
+            )
+            .with_context(|| format!("failed to compile package '{}'", wesl_package.root.name))?;
+            if self.statistics {
+                println!(
+                    "Documentation Coverage: {:.2}%",
+                    compile_stats.documented_percentage()
+                );
+            }
+
+            // Generate docs
+            wesldoc_generator::generate(&docs, &self.output)?;
+        }
 
         Ok(())
     }
@@ -120,7 +146,7 @@ impl From<MissingDocsArg> for MissingDocumentation {
     }
 }
 
-fn compile_package(package: Package, resolver: DocsResolver) -> Result<WeslPackage> {
+fn compile_package(package: Package, resolver: DocsResolver) -> Result<Option<WeslPackage>> {
     let wesl = {
         let mut wesl = Wesl::new_barebones().set_custom_resolver(resolver);
         wesl.set_mangler(ManglerKind::Escape)
@@ -150,6 +176,9 @@ fn compile_package(package: Package, resolver: DocsResolver) -> Result<WeslPacka
         compiled: None,
         submodules: compile_submodules(&wesl, &package.root, &package.root)?,
     };
+    if !package.has_wesl_toml_file && root.submodules.is_empty() {
+        return Ok(None);
+    }
 
     // Get resolved dependencies
     let dependencies = wesl
@@ -159,11 +188,11 @@ fn compile_package(package: Package, resolver: DocsResolver) -> Result<WeslPacka
         .map(|dep| (dep.local_name, (dep.package_name, dep.version)))
         .collect();
 
-    Ok(WeslPackage {
+    Ok(Some(WeslPackage {
         version: package.version,
         dependencies,
         root,
-    })
+    }))
 }
 
 fn compile_submodules(
@@ -172,6 +201,10 @@ fn compile_submodules(
     root: &Path,
 ) -> Result<Vec<WeslModule>> {
     let mut submodules = HashMap::new();
+
+    if !dir.is_dir() {
+        return Ok(Vec::new());
+    }
 
     for entry in fs::read_dir(dir)? {
         let entry = entry?;
@@ -225,7 +258,10 @@ fn compile_submodules(
         }
     }
 
-    Ok(submodules.into_values().collect())
+    Ok(submodules
+        .into_values()
+        .filter(|module| module.compiled.is_some() || !module.submodules.is_empty())
+        .collect())
 }
 
 #[derive(Debug, Clone)]
@@ -233,6 +269,8 @@ struct Package {
     local_name: String,
     package_name: String,
     version: Version,
+    wesl_toml: WeslToml,
+    has_wesl_toml_file: bool,
     root: PathBuf,
 }
 
@@ -241,7 +279,8 @@ impl Package {
         cargo_package: &CargoPackage,
         local_name: Option<String>,
     ) -> Result<Self> {
-        let wesl_toml = load_wesl_toml(cargo_package.crate_path().join("wesl.toml"))?;
+        let (wesl_toml, has_wesl_toml_file) =
+            load_wesl_toml(cargo_package.crate_path().join("wesl.toml"))?;
 
         let local_name = local_name.unwrap_or_else(|| cargo_package.name());
         let package_name = cargo_package.name();
@@ -252,6 +291,8 @@ impl Package {
             local_name,
             package_name,
             version,
+            wesl_toml,
+            has_wesl_toml_file,
             root,
         })
     }
@@ -271,12 +312,15 @@ impl Package {
         // Handle path dependencies
         if let Some(dep_path) = dependency.and_then(|d| d.path.as_ref()) {
             let dep_path = this_cargo_package.crate_path().join(dep_path);
-            let dep_wesl_toml = load_wesl_toml(dep_path.join("wesl.toml"))?;
+            let (dep_wesl_toml, dep_has_wesl_toml_file) =
+                load_wesl_toml(dep_path.join("wesl.toml"))?;
 
             return Ok(Package {
                 local_name: dependency_key.clone(),
                 package_name: dep_name.clone(),
                 root: dep_path.join(&dep_wesl_toml.package.root),
+                wesl_toml: dep_wesl_toml,
+                has_wesl_toml_file: dep_has_wesl_toml_file,
                 version: Version::new(0, 0, 0), // TODO: path dependencies don't have versions
             });
         }
@@ -300,13 +344,13 @@ fn name_from_path(path: &Path) -> Result<String> {
         .replace('-', "_"))
 }
 
-fn load_wesl_toml(path: impl AsRef<Path>) -> Result<WeslToml> {
+fn load_wesl_toml(path: impl AsRef<Path>) -> Result<(WeslToml, bool)> {
     let path = path.as_ref();
-    let wesl_toml = if path.is_file() {
-        toml::from_slice::<WeslToml>(&fs::read(path)?)?
+    let (wesl_toml, has_wesl_toml_file) = if path.is_file() {
+        (toml::from_slice::<WeslToml>(&fs::read(path)?)?, true)
     } else {
-        WeslToml::default()
+        (WeslToml::default(), false)
     };
     wesl_toml.validate()?;
-    Ok(wesl_toml)
+    Ok((wesl_toml, has_wesl_toml_file))
 }

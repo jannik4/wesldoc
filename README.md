@@ -38,8 +38,6 @@ wesldoc ./path/to/my_wesl_project
 
 Check `wesldoc --help` for more options.
 
-> **Note**: Dependencies are resolved using the `wesl.toml` file in the root of the project. Currently the dependencies are not built recursively, this will be addressed in the future.
-
 > **Note**: Currently only `cargo` is supported as package manager. Support for other package managers may be added in the future.
 
 ### Use as a library

@@ -2,7 +2,7 @@ use crate::{
     Package,
     cargo::{CargoMetadata, CargoPackage},
 };
-use std::{borrow::Cow, cell::RefCell, collections::HashMap};
+use std::{borrow::Cow, cell::RefCell, collections::HashMap, rc::Rc};
 use wesl::{
     FileResolver, ModulePath, ResolveError, Resolver,
     syntax::{ImportStatement, PathOrigin, TranslationUnit},
@@ -21,7 +21,7 @@ enum Dependencies {
     },
     Auto {
         dependencies: RefCell<HashMap<String, (Package, FileResolver)>>,
-        cargo_metadata: Box<CargoMetadata>,
+        cargo_metadata: Rc<CargoMetadata>,
         this_cargo_package: Box<CargoPackage>,
     },
 }
@@ -46,14 +46,14 @@ impl DocsResolver {
 
     pub fn new_auto(
         this: &Package,
-        cargo_metadata: CargoMetadata,
+        cargo_metadata: Rc<CargoMetadata>,
         cargo_package: CargoPackage,
     ) -> Self {
         Self {
             this: FileResolver::new(&this.root),
             dependencies: Dependencies::Auto {
                 dependencies: RefCell::new(HashMap::new()),
-                cargo_metadata: Box::new(cargo_metadata),
+                cargo_metadata,
                 this_cargo_package: Box::new(cargo_package),
             },
 
