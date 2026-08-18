@@ -14,6 +14,6 @@ publish = false
 
 [dev-dependencies]
 wesldoc = { path = "../crates/wesldoc" }
-dirsnap = "0.2.0"
+dirsnap = "0.2.1"
 tempfile = "3.27.0"
 anyhow = "1.0.104"
