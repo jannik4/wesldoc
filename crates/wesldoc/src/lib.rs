@@ -71,8 +71,14 @@ impl Args {
                 cargo_package.version()
             );
 
-            // Create package and resolver
+            // Package from cargo package and check if it is a wesl package
             let package = Package::from_cargo_package(cargo_package, None)?;
+            if !is_wesl_package(&package)? {
+                println!("No wesl files found, skipping package");
+                continue;
+            }
+
+            // Create resolver
             let resolver = match package.wesl_toml.package.dependencies {
                 Some(DependenciesAuto::Auto) => DocsResolver::new_auto(
                     &package,
@@ -98,10 +104,7 @@ impl Args {
             };
 
             // Compile to wesl
-            let Some(wesl_package) = compile_package(package, resolver)? else {
-                println!("No wesl files found, skipping package");
-                continue;
-            };
+            let wesl_package = compile_package(package, resolver)?;
 
             // Compile to docs
             let (docs, compile_stats) = wesldoc_compiler::compile(
@@ -146,7 +149,33 @@ impl From<MissingDocsArg> for MissingDocumentation {
     }
 }
 
-fn compile_package(package: Package, resolver: DocsResolver) -> Result<Option<WeslPackage>> {
+// Only count as a wesl package if it has a wesl.toml file or at least one .wesl file
+fn is_wesl_package(package: &Package) -> Result<bool> {
+    if package.has_wesl_toml_file {
+        return Ok(true);
+    }
+
+    if !package.root.is_dir() {
+        return Ok(false);
+    }
+    let mut dirs = vec![package.root.clone()];
+    while let Some(dir) = dirs.pop() {
+        for entry in fs::read_dir(dir)? {
+            let entry = entry?;
+            let path = entry.path();
+
+            if path.is_file() && path.extension().is_some_and(|ext| ext == "wesl") {
+                return Ok(true);
+            } else if path.is_dir() {
+                dirs.push(path);
+            }
+        }
+    }
+
+    Ok(false)
+}
+
+fn compile_package(package: Package, resolver: DocsResolver) -> Result<WeslPackage> {
     let wesl = {
         let mut wesl = Wesl::new_barebones().set_custom_resolver(resolver);
         wesl.set_mangler(ManglerKind::Escape)
@@ -171,32 +200,11 @@ fn compile_package(package: Package, resolver: DocsResolver) -> Result<Option<We
     };
 
     // Compile root and submodules
-    // Note: Collect compile errors and don't fail immediately, as we might discard the whole
-    // package if it has no wesl files and therefore don't care about the errors.
-    let mut has_wesl_files = false;
-    let mut errors = Vec::new();
     let root = WeslModule {
         name: package.package_name,
         compiled: None,
-        submodules: compile_submodules(
-            &wesl,
-            &package.root,
-            &package.root,
-            &mut has_wesl_files,
-            &mut errors,
-        )?,
+        submodules: compile_submodules(&wesl, &package.root, &package.root)?,
     };
-
-    // Only count as a package if it has a wesl.toml file or at least one .wesl file
-    if !package.has_wesl_toml_file && !has_wesl_files {
-        return Ok(None);
-    }
-
-    // Check for errors
-    // TODO: report all errors?
-    if let Some(err) = errors.into_iter().next() {
-        return Err(err.into());
-    }
 
     // Get resolved dependencies
     let dependencies = wesl
@@ -206,19 +214,17 @@ fn compile_package(package: Package, resolver: DocsResolver) -> Result<Option<We
         .map(|dep| (dep.local_name, (dep.package_name, dep.version)))
         .collect();
 
-    Ok(Some(WeslPackage {
+    Ok(WeslPackage {
         version: package.version,
         dependencies,
         root,
-    }))
+    })
 }
 
 fn compile_submodules(
     wesl: &Wesl<DocsResolver>,
     dir: &Path,
     root: &Path,
-    has_wesl_files: &mut bool,
-    errors: &mut Vec<wesl::Error>,
 ) -> Result<Vec<WeslModule>> {
     let mut submodules = HashMap::new();
 
@@ -237,8 +243,6 @@ fn compile_submodules(
                 .extension()
                 .is_some_and(|ext| ext == "wesl" || ext == "wgsl")
         {
-            *has_wesl_files |= path.extension().is_some_and(|ext| ext == "wesl");
-
             let sub = submodules
                 .entry(name)
                 .or_insert_with_key(|name| WeslModule {
@@ -265,12 +269,9 @@ fn compile_submodules(
                         _ => bail!("unexpected path component"),
                     })
                     .collect::<Result<_>>()?,
-            });
+            })?;
             let root_file_imports = wesl.resolver().take_root_file_imports();
-            match compile_result {
-                Ok(compile_result) => sub.compiled = Some((root_file_imports, compile_result)),
-                Err(err) => errors.push(err),
-            }
+            sub.compiled = Some((root_file_imports, compile_result))
         } else if path.is_dir() {
             let sub = submodules
                 .entry(name)
@@ -279,7 +280,7 @@ fn compile_submodules(
                     compiled: None,
                     submodules: Vec::new(),
                 });
-            sub.submodules = compile_submodules(wesl, &path, root, has_wesl_files, errors)?;
+            sub.submodules = compile_submodules(wesl, &path, root)?;
         }
     }
 
