@@ -1,23 +1,22 @@
 mod cargo;
-mod resolver;
+// TODO: Remove and delete: mod resolver;
 mod wesl_toml;
 
 use self::{
     cargo::{CargoMetadata, CargoPackage},
-    resolver::DocsResolver,
     wesl_toml::{DependenciesAuto, WeslToml, WeslTomlDependency},
 };
 use anyhow::{Context, Result, bail};
 use clap::ValueEnum;
 use std::{
-    collections::HashMap,
+    collections::{HashMap, hash_map::Entry},
     fs,
-    path::{Component, Path, PathBuf},
-    rc::Rc,
+    path::{Path, PathBuf},
+    sync::Arc,
 };
-use wesl::{CompileOptions, Feature, Features, ManglerKind, ModulePath, Wesl, syntax::PathOrigin};
-use wesldoc_ast::Version;
-use wesldoc_compiler::{MissingDocumentation, WeslModule, WeslPackage};
+use wesldoc_ast::{Conditional, DefinitionPath, ItemKind, Version};
+use wesldoc_compiler::{MissingDocumentation, ResolvedItem, Resolver, ResolverResult, WeslModule};
+use wgsl_parse::{SyntaxNode, syntax};
 
 pub use clap::Parser;
 
@@ -57,63 +56,68 @@ impl Args {
         }
 
         // Resolve cargo dependencies
-        let cargo_metadata = Rc::new(CargoMetadata::resolve(&self.package)?);
+        let cargo_metadata = Arc::new(CargoMetadata::resolve(&self.package)?);
+
+        // Cache
+        let mut cache = Cache::new(Arc::clone(&cargo_metadata));
 
         // Doc packages
         let max_depth = match self.no_deps {
             true => 0,
             false => self.max_dependency_depth.unwrap_or(usize::MAX),
         };
+        let mut wesl_package_found = false;
         for cargo_package in cargo_metadata.iter_packages(max_depth) {
-            println!(
-                "Documenting package: {} v{}",
-                cargo_package.name(),
-                cargo_package.version()
-            );
-
             // Package from cargo package and check if it is a wesl package
-            let package = Package::from_cargo_package(cargo_package, None)?;
+            let package = Package::from_cargo_package(cargo_package)?;
             if !is_wesl_package(&package)? {
-                println!("No wesl files found, skipping package");
                 continue;
             }
+            wesl_package_found = true;
 
-            // Create resolver
-            let resolver = match package.wesl_toml.package.dependencies {
-                Some(DependenciesAuto::Auto) => DocsResolver::new_auto(
-                    &package,
-                    Rc::clone(&cargo_metadata),
-                    cargo_package.clone(),
-                ),
-                None => {
-                    let dependencies = package
+            println!(
+                "Documenting package: {} v{}",
+                package.package_name, package.version
+            );
+
+            // ...
+            let wesl_module = cache
+                .get(package.id.clone())?
+                .context("expected wesl package")?;
+            let dependencies = match package.wesl_toml.package.dependencies {
+                Some(DependenciesAuto::Auto) => Dependencies::Auto {
+                    dependencies: HashMap::new(),
+                },
+                None => Dependencies::Explicit {
+                    dependencies: package
                         .wesl_toml
                         .dependencies
                         .iter()
                         .map(|(dep_key, dep)| {
-                            Package::new_dependency(
-                                cargo_package,
-                                dep_key,
-                                Some(dep),
-                                &cargo_metadata,
-                            )
+                            Ok((
+                                dep_key.clone(),
+                                Package::new_dependency(
+                                    cargo_package,
+                                    dep_key,
+                                    Some(dep),
+                                    &cargo_metadata,
+                                )?,
+                            ))
                         })
-                        .collect::<Result<Vec<_>>>()?;
-                    DocsResolver::new_explicit(&package, dependencies)
-                }
+                        .collect::<Result<_>>()?,
+                },
             };
-
-            // Compile to wesl
-            let wesl_package = compile_package(package, resolver)?;
+            let resolver = CompilePackageResolver::new(&mut cache, package, dependencies);
 
             // Compile to docs
             let (docs, compile_stats) = wesldoc_compiler::compile(
-                &wesl_package,
+                resolver,
+                &wesl_module,
                 &wesldoc_compiler::CompileOptions {
                     missing_documentation: self.missing_docs.into(),
                 },
             )
-            .with_context(|| format!("failed to compile package '{}'", wesl_package.root.name))?;
+            .with_context(|| format!("failed to compile package '{}'", wesl_module.name))?;
             if self.statistics {
                 println!(
                     "Documentation Coverage: {:.2}%",
@@ -123,6 +127,10 @@ impl Args {
 
             // Generate docs
             wesldoc_generator::generate(&docs, &self.output)?;
+        }
+
+        if !wesl_package_found {
+            bail!("No wesl packages found in the specified path");
         }
 
         Ok(())
@@ -175,151 +183,34 @@ fn is_wesl_package(package: &Package) -> Result<bool> {
     Ok(false)
 }
 
-fn compile_package(package: Package, resolver: DocsResolver) -> Result<WeslPackage> {
-    let wesl = {
-        let mut wesl = Wesl::new_barebones().set_custom_resolver(resolver);
-        wesl.set_mangler(ManglerKind::Escape)
-            .use_sourcemap(true)
-            .set_options(CompileOptions {
-                imports: true,
-                condcomp: true,
-                generics: false,
-                strip: false,
-                lower: false,
-                validate: false,
-                lazy: true,
-                mangle_root: false,
-                keep: None,
-                keep_root: true,
-                features: Features {
-                    default: Feature::Keep,
-                    flags: HashMap::default(),
-                },
-            });
-        wesl
-    };
-
-    // Compile root and submodules
-    let root = WeslModule {
-        name: package.package_name,
-        compiled: None,
-        submodules: compile_submodules(&wesl, &package.root, &package.root)?,
-    };
-
-    // Get resolved dependencies
-    let dependencies = wesl
-        .resolver()
-        .resolved_dependencies()
-        .into_iter()
-        .map(|dep| (dep.local_name, (dep.package_name, dep.version)))
-        .collect();
-
-    Ok(WeslPackage {
-        version: package.version,
-        dependencies,
-        root,
-    })
-}
-
-fn compile_submodules(
-    wesl: &Wesl<DocsResolver>,
-    dir: &Path,
-    root: &Path,
-) -> Result<Vec<WeslModule>> {
-    let mut submodules = HashMap::new();
-
-    if !dir.is_dir() {
-        return Ok(Vec::new());
-    }
-
-    for entry in fs::read_dir(dir)? {
-        let entry = entry?;
-        let path = entry.path();
-
-        let name = name_from_path(&path)?;
-
-        if path.is_file()
-            && path
-                .extension()
-                .is_some_and(|ext| ext == "wesl" || ext == "wgsl")
-        {
-            let sub = submodules
-                .entry(name)
-                .or_insert_with_key(|name| WeslModule {
-                    name: name.clone(),
-                    compiled: None,
-                    submodules: Vec::new(),
-                });
-
-            let compile_result = wesl.compile(&ModulePath {
-                origin: PathOrigin::Absolute,
-                components: path
-                    .strip_prefix(root)?
-                    .components()
-                    .map(|part| match part {
-                        Component::Normal(name) => {
-                            let name = name.to_string_lossy().to_string();
-                            let name = name
-                                .strip_suffix(".wesl")
-                                .or_else(|| name.strip_suffix(".wgsl"))
-                                .map(|s| s.to_string())
-                                .unwrap_or(name);
-                            Ok(name)
-                        }
-                        _ => bail!("unexpected path component"),
-                    })
-                    .collect::<Result<_>>()?,
-            })?;
-            let root_file_imports = wesl.resolver().take_root_file_imports();
-            sub.compiled = Some((root_file_imports, compile_result))
-        } else if path.is_dir() {
-            let sub = submodules
-                .entry(name)
-                .or_insert_with_key(|name| WeslModule {
-                    name: name.clone(),
-                    compiled: None,
-                    submodules: Vec::new(),
-                });
-            sub.submodules = compile_submodules(wesl, &path, root)?;
-        }
-    }
-
-    Ok(submodules
-        .into_values()
-        .filter(|module| module.compiled.is_some() || !module.submodules.is_empty())
-        .collect())
-}
-
 #[derive(Debug, Clone)]
 struct Package {
-    local_name: String,
     package_name: String,
     version: Version,
     wesl_toml: WeslToml,
     has_wesl_toml_file: bool,
     root: PathBuf,
+
+    id: PackageId,
 }
 
 impl Package {
-    fn from_cargo_package(
-        cargo_package: &CargoPackage,
-        local_name: Option<String>,
-    ) -> Result<Self> {
+    fn from_cargo_package(cargo_package: &CargoPackage) -> Result<Self> {
         let (wesl_toml, has_wesl_toml_file) =
             load_wesl_toml(cargo_package.crate_path().join("wesl.toml"))?;
 
-        let local_name = local_name.unwrap_or_else(|| cargo_package.name());
         let package_name = cargo_package.name();
         let version = cargo_package.version();
         let root = cargo_package.crate_path().join(&wesl_toml.package.root);
 
         Ok(Self {
-            local_name,
             package_name,
             version,
             wesl_toml,
             has_wesl_toml_file,
             root,
+
+            id: cargo_package.id().clone(),
         })
     }
 
@@ -337,17 +228,21 @@ impl Package {
 
         // Handle path dependencies
         if let Some(dep_path) = dependency.and_then(|d| d.path.as_ref()) {
-            let dep_path = this_cargo_package.crate_path().join(dep_path);
+            let dep_path = this_cargo_package
+                .crate_path()
+                .join(dep_path)
+                .canonicalize()?;
             let (dep_wesl_toml, dep_has_wesl_toml_file) =
                 load_wesl_toml(dep_path.join("wesl.toml"))?;
 
             return Ok(Package {
-                local_name: dependency_key.clone(),
                 package_name: dep_name.clone(),
                 root: dep_path.join(&dep_wesl_toml.package.root),
                 wesl_toml: dep_wesl_toml,
                 has_wesl_toml_file: dep_has_wesl_toml_file,
                 version: Version::new(0, 0, 0), // TODO: path dependencies don't have versions
+
+                id: PackageId::Path(dep_path),
             });
         }
 
@@ -357,7 +252,7 @@ impl Package {
         let dep_pkg = cargo_metadata
             .package(dep_pkg_id)
             .context("invalid dependency")?;
-        Package::from_cargo_package(dep_pkg, Some(dependency_key))
+        Package::from_cargo_package(dep_pkg)
     }
 }
 
@@ -379,4 +274,409 @@ fn load_wesl_toml(path: impl AsRef<Path>) -> Result<(WeslToml, bool)> {
     };
     wesl_toml.validate()?;
     Ok((wesl_toml, has_wesl_toml_file))
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+enum PackageId {
+    Cargo(cargo_metadata::PackageId),
+    Path(PathBuf),
+}
+
+struct Cache {
+    packages: HashMap<PackageId, Arc<WeslModule>>,
+    cargo_metadata: Arc<CargoMetadata>,
+}
+
+impl Cache {
+    fn new(cargo_metadata: Arc<CargoMetadata>) -> Self {
+        Self {
+            packages: HashMap::new(),
+            cargo_metadata,
+        }
+    }
+
+    fn get(&mut self, package_id: PackageId) -> Result<Option<Arc<WeslModule>>> {
+        match self.packages.entry(package_id) {
+            Entry::Occupied(pkg) => Ok(Some(Arc::clone(pkg.get()))),
+            Entry::Vacant(entry) => {
+                let package = match entry.key() {
+                    PackageId::Cargo(package_id) => {
+                        let cargo_package = match self.cargo_metadata.package(package_id) {
+                            Some(pkg) => pkg,
+                            None => return Ok(None),
+                        };
+                        Package::from_cargo_package(cargo_package)?
+                    }
+                    PackageId::Path(_path_buf) => todo!(),
+                };
+                let wesl_module = Arc::new(compile_package(package)?);
+                entry.insert(Arc::clone(&wesl_module));
+                Ok(Some(wesl_module))
+            }
+        }
+    }
+}
+
+struct CompilePackageResolver<'a> {
+    cache: &'a mut Cache,
+    package: Package,
+    dependencies: Dependencies,
+}
+
+impl<'a> CompilePackageResolver<'a> {
+    fn new(cache: &'a mut Cache, package: Package, dependencies: Dependencies) -> Self {
+        Self {
+            cache,
+            package,
+            dependencies,
+        }
+    }
+
+    fn resolve_in(
+        &mut self,
+        package: Package,
+        path: &[String],
+        name: &str,
+        results: &mut Vec<ResolvedItem>,
+        condition: Conditional,
+    ) {
+        // TODO: handle error?
+        let Some(wesl_package) = self.cache.get(package.id.clone()).ok().flatten() else {
+            return;
+        };
+
+        // Navigate to the module specified by the path
+        let mut module = &*wesl_package;
+        for component in path {
+            let Some(submodule) = module.submodules.iter().find(|m| m.name == *component) else {
+                return;
+            };
+            module = submodule;
+        }
+        let Some((syntax, _)) = &module.code else {
+            return;
+        };
+
+        // TODO: Lookup name in exported imports (also in just imports if we resolve from the same module)
+
+        // Lookup name in global declarations
+        for decl in &syntax.global_declarations {
+            let Some((decl_name, decl_kind)) = decl_info(decl) else {
+                continue;
+            };
+            if *decl_name.name() != name {
+                continue;
+            }
+            let decl_condition = Conditional::True; // TODO: ... get from decl
+
+            // TODO: and-ify with condition
+            results.push(ResolvedItem {
+                kind: decl_kind,
+                def_path: if package.id == self.package.id {
+                    DefinitionPath::Absolute(path.to_vec())
+                } else {
+                    //
+                    todo!()
+                },
+                conditional: Conditional::And(
+                    Box::new(condition.clone()),
+                    Box::new(decl_condition),
+                ),
+            });
+        }
+    }
+}
+
+impl Resolver for CompilePackageResolver<'_> {
+    fn resolve_item(
+        &mut self,
+        path_from: &[String],
+        item: &syntax::ModulePath,
+    ) -> Vec<ResolvedItem> {
+        let mut results = Vec::new();
+
+        if item.origin != syntax::PathOrigin::Relative(0) {
+            return results; // TODO: ...
+        }
+        if item.components.len() != 1 {
+            return results; // TODO: ...
+        }
+
+        self.resolve_in(
+            self.package.clone(), // TODO: do not clone!
+            path_from,
+            &item.components[0],
+            &mut results,
+            Conditional::True,
+        );
+
+        results
+    }
+
+    fn finish(self) -> ResolverResult {
+        ResolverResult {
+            version: self.package.version,
+            dependencies: self
+                .dependencies
+                .into_iter()
+                .map(|package| (package.package_name, package.version))
+                .collect(),
+        }
+    }
+}
+
+// local_name -> package
+enum Dependencies {
+    Explicit {
+        dependencies: HashMap<String, Package>,
+    },
+    Auto {
+        dependencies: HashMap<String, Package>,
+    },
+}
+
+impl Dependencies {
+    fn into_iter(self) -> impl Iterator<Item = Package> {
+        match self {
+            Dependencies::Explicit { dependencies } => dependencies.into_values(),
+            Dependencies::Auto { dependencies } => dependencies.into_values(),
+        }
+    }
+}
+
+fn compile_package(package: Package) -> Result<WeslModule> {
+    Ok(WeslModule {
+        name: package.package_name,
+        code: None,
+        submodules: compile_submodules(&package.root)?,
+    })
+}
+
+fn compile_submodules(dir: &Path) -> Result<Vec<WeslModule>> {
+    let mut submodules = HashMap::new();
+
+    if !dir.is_dir() {
+        return Ok(Vec::new());
+    }
+
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        let name = name_from_path(&path)?;
+
+        if path.is_file()
+            && path
+                .extension()
+                .is_some_and(|ext| ext == "wesl" || ext == "wgsl")
+        {
+            let sub = submodules
+                .entry(name)
+                .or_insert_with_key(|name| WeslModule {
+                    name: name.clone(),
+                    code: None,
+                    submodules: Vec::new(),
+                });
+
+            let source = fs::read_to_string(&path)?;
+            let syntax = parse_and_preprocess_wesl(&source)?;
+
+            sub.code = Some((syntax, source))
+        } else if path.is_dir() {
+            let sub = submodules
+                .entry(name)
+                .or_insert_with_key(|name| WeslModule {
+                    name: name.clone(),
+                    code: None,
+                    submodules: Vec::new(),
+                });
+            sub.submodules = compile_submodules(&path)?;
+        }
+    }
+
+    Ok(submodules
+        .into_values()
+        .filter(|module| module.code.is_some() || !module.submodules.is_empty())
+        .collect())
+}
+
+fn parse_and_preprocess_wesl(source: &str) -> Result<syntax::TranslationUnit> {
+    fn flatten_compound(
+        decls: impl IntoIterator<Item = syntax::GlobalDeclarationNode>,
+        parent: Conditional,
+    ) -> Vec<syntax::GlobalDeclarationNode> {
+        use wesldoc_compiler::build_conditional::{ConditionalScope, build_conditional};
+
+        let mut res = Vec::new();
+
+        let conditional_scope = &mut ConditionalScope::default();
+
+        for decl in decls {
+            let span = decl.span();
+            let mut decl = decl.into_inner();
+            let attributes = decl.attributes();
+            match decl {
+                syntax::GlobalDeclaration::Compound(compound) => {
+                    let cond = build_conditional(conditional_scope, &compound.attributes)
+                        .unwrap_or(Conditional::True);
+                    let parent = Conditional::And(Box::new(parent.clone()), Box::new(cond));
+                    res.extend(flatten_compound(compound.body, parent));
+                }
+                _ => {
+                    // TODO: ???
+                    if !conditional_scope.is_empty()
+                        && attributes
+                            .iter()
+                            .find(|attr| {
+                                matches!(
+                                    &***attr,
+                                    syntax::Attribute::Elif(_) | syntax::Attribute::Else
+                                )
+                            })
+                            .is_some()
+                    {
+                        println!("warning: mixing of compound and non-compound conditionals");
+                    }
+
+                    conditional_scope.clear();
+
+                    let mut has_cond_attr = false;
+                    for attr in decl.attributes_mut() {
+                        match &mut **attr {
+                            syntax::Attribute::If(expr) | syntax::Attribute::Elif(expr) => {
+                                has_cond_attr = true;
+                                *expr = syntax::Spanned::new(
+                                    syntax::Expression::Binary(syntax::BinaryExpression {
+                                        operator: syntax::BinaryOperator::ShortCircuitAnd,
+                                        left: syntax::Spanned::new(
+                                            conditional_to_expr(parent.clone()),
+                                            syntax::Span::default(), // TODO: ???
+                                        ),
+                                        right: expr.clone(),
+                                    }),
+                                    syntax::Span::default(), // TODO: ???
+                                );
+                            }
+                            e @ syntax::Attribute::Else => {
+                                has_cond_attr = true;
+                                *e = syntax::Attribute::Elif(syntax::Spanned::new(
+                                    conditional_to_expr(parent.clone()),
+                                    syntax::Span::default(), // TODO: ???
+                                ));
+                            }
+                            _ => (),
+                        }
+                    }
+                    if !has_cond_attr {
+                        let attr_if = syntax::AttributeNode::new(
+                            syntax::Attribute::If(syntax::Spanned::new(
+                                conditional_to_expr(parent.clone()),
+                                syntax::Span::default(), // TODO: ???
+                            )),
+                            syntax::Span::default(), // TODO: ???
+                        );
+                        match &mut decl {
+                            syntax::GlobalDeclaration::Void => (),
+                            syntax::GlobalDeclaration::Declaration(declaration) => {
+                                declaration.attributes.push(attr_if);
+                            }
+                            syntax::GlobalDeclaration::TypeAlias(type_alias) => {
+                                type_alias.attributes.push(attr_if);
+                            }
+                            syntax::GlobalDeclaration::Struct(s) => {
+                                s.attributes.push(attr_if);
+                            }
+                            syntax::GlobalDeclaration::Function(function) => {
+                                function.attributes.push(attr_if);
+                            }
+                            syntax::GlobalDeclaration::ConstAssert(const_assert) => {
+                                const_assert.attributes.push(attr_if);
+                            }
+                            syntax::GlobalDeclaration::Compound(_) => unreachable!(),
+                        }
+                    }
+
+                    res.push(syntax::GlobalDeclarationNode::new(decl, span));
+                }
+            }
+        }
+
+        res
+    }
+
+    let mut syntax = wgsl_parse::parse_str(source)?;
+    syntax.global_declarations = flatten_compound(syntax.global_declarations, Conditional::True);
+
+    Ok(syntax)
+}
+
+fn decl_info(decl: &syntax::GlobalDeclaration) -> Option<(&syntax::Ident, ItemKind)> {
+    match decl {
+        syntax::GlobalDeclaration::Void => None,
+        syntax::GlobalDeclaration::Declaration(declaration) => Some((
+            &declaration.ident,
+            match declaration.kind {
+                syntax::DeclarationKind::Const => ItemKind::Constant,
+                syntax::DeclarationKind::Override => ItemKind::Override,
+                syntax::DeclarationKind::Let => return None,
+                syntax::DeclarationKind::Var(_) => ItemKind::GlobalVariable,
+            },
+        )),
+        syntax::GlobalDeclaration::TypeAlias(type_alias) => {
+            Some((&type_alias.ident, ItemKind::TypeAlias))
+        }
+        syntax::GlobalDeclaration::Struct(s) => Some((&s.ident, ItemKind::Struct)),
+        syntax::GlobalDeclaration::Function(function) => {
+            Some((&function.ident, ItemKind::Function))
+        }
+        syntax::GlobalDeclaration::ConstAssert(_) => None,
+        syntax::GlobalDeclaration::Compound(_) => None,
+    }
+}
+
+fn conditional_to_expr(cond: Conditional) -> syntax::Expression {
+    match cond {
+        Conditional::False => syntax::Expression::Literal(syntax::LiteralExpression::Bool(false)),
+        Conditional::True => syntax::Expression::Literal(syntax::LiteralExpression::Bool(true)),
+        Conditional::Feature(ident) => {
+            syntax::Expression::TypeOrIdentifier(syntax::TypeExpression {
+                path: None,
+                ident: syntax::Ident::new(ident.to_string()),
+                template_args: None,
+            })
+        }
+        Conditional::Not(conditional) => syntax::Expression::Unary(syntax::UnaryExpression {
+            operator: syntax::UnaryOperator::LogicalNegation,
+            operand: syntax::Spanned::new(
+                conditional_to_expr(*conditional),
+                syntax::Span::default(), // TODO: ???
+            ),
+        }),
+        Conditional::And(left, right) => {
+            syntax::Expression::Binary(syntax::BinaryExpression {
+                operator: syntax::BinaryOperator::ShortCircuitAnd,
+                left: syntax::Spanned::new(
+                    conditional_to_expr(*left),
+                    syntax::Span::default(), // TODO: ???
+                ),
+                right: syntax::Spanned::new(
+                    conditional_to_expr(*right),
+                    syntax::Span::default(), // TODO: ???
+                ),
+            })
+        }
+        Conditional::Or(left, right) => {
+            syntax::Expression::Binary(syntax::BinaryExpression {
+                operator: syntax::BinaryOperator::ShortCircuitOr,
+                left: syntax::Spanned::new(
+                    conditional_to_expr(*left),
+                    syntax::Span::default(), // TODO: ???
+                ),
+                right: syntax::Spanned::new(
+                    conditional_to_expr(*right),
+                    syntax::Span::default(), // TODO: ???
+                ),
+            })
+        }
+    }
 }

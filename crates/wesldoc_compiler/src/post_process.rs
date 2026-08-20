@@ -35,6 +35,12 @@ fn post_process_items<T: ItemInstance>(items: &mut IndexMap<Ident, Item<T>>) {
 
     // Post process each item
     for item in items.values_mut() {
+        for instance in &mut item.instances {
+            let cond_opt = instance.conditional_mut();
+            if let Some(cond) = cond_opt {
+                *cond_opt = simplify_conditional(cond.clone());
+            }
+        }
         item.conditional = item_conditional(item);
     }
 }
@@ -106,6 +112,55 @@ fn evaluate_conditional(cond: &Conditional, features: &IndexMap<Ident, bool>) ->
         }
         Conditional::Or(left, right) => {
             evaluate_conditional(left, features) || evaluate_conditional(right, features)
+        }
+    }
+}
+
+fn simplify_conditional(cond: Conditional) -> Option<Conditional> {
+    match cond {
+        Conditional::False => Some(Conditional::False),
+        Conditional::True => None,
+        Conditional::Feature(ident) => Some(Conditional::Feature(ident)),
+        Conditional::Not(inner) => match simplify_conditional(*inner) {
+            Some(Conditional::False) => None,
+            None => Some(Conditional::False),
+            Some(inner) => Some(Conditional::Not(Box::new(inner))),
+        },
+        Conditional::And(left, right) => {
+            let left = simplify_conditional(*left);
+            let right = simplify_conditional(*right);
+
+            let left = match left {
+                Some(Conditional::False) => return Some(Conditional::False),
+                None => return right,
+                Some(left) => left,
+            };
+
+            let right = match right {
+                Some(Conditional::False) => return Some(Conditional::False),
+                None => return Some(left),
+                Some(right) => right,
+            };
+
+            Some(Conditional::And(Box::new(left), Box::new(right)))
+        }
+        Conditional::Or(left, right) => {
+            let left = simplify_conditional(*left);
+            let right = simplify_conditional(*right);
+
+            let left = match left {
+                Some(Conditional::False) => return right,
+                None => return None,
+                Some(left) => left,
+            };
+
+            let right = match right {
+                Some(Conditional::False) => return Some(left),
+                None => return None,
+                Some(right) => right,
+            };
+
+            Some(Conditional::Or(Box::new(left), Box::new(right)))
         }
     }
 }

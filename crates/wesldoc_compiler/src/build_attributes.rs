@@ -1,6 +1,6 @@
 use crate::{Context, build_expression, map};
-use wesl::syntax;
 use wesldoc_ast::*;
+use wgsl_parse::syntax;
 
 pub fn build_attributes(attributes: &[syntax::AttributeNode], ctx: &Context) -> Vec<Attribute> {
     attributes
@@ -64,6 +64,6 @@ fn build_attribute(attr: &syntax::Attribute, ctx: &Context) -> Option<Attribute>
         }
 
         // Ignore for now
-        wesl::syntax::Attribute::Publish => return None, // TODO: handle publish attribute
+        wgsl_parse::syntax::Attribute::Publish => return None, // TODO: handle publish attribute
     })
 }

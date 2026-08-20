@@ -3,12 +3,10 @@ use std::ops::Range;
 use wesldoc_ast::*;
 
 pub fn calculate_span(range: Range<usize>, ctx: &Context) -> Option<Span> {
-    let source = ctx.get_source()?;
-
     let mut span_line_start = None;
     let mut span_line_end = None;
     let mut position = 0;
-    for (idx, line) in source.split_inclusive('\n').enumerate() {
+    for (idx, line) in ctx.source().split_inclusive('\n').enumerate() {
         let line_end = position + line.len();
 
         if span_line_start.is_none() && line_end > range.start {

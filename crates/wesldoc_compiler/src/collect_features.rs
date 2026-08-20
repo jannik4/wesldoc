@@ -1,17 +1,14 @@
 use crate::Context;
-use wesl::syntax::*;
 use wesldoc_ast::IndexSet;
+use wgsl_parse::syntax::*;
 
 pub fn collect_features(ctx: &Context) -> IndexSet<String> {
     let mut features = IndexSet::new();
 
-    for directive in &ctx.compiled().syntax.global_directives {
+    for directive in &ctx.syntax().global_directives {
         collect_from_global_directive(directive, &mut features);
     }
-    for decl in &ctx.compiled().syntax.global_declarations {
-        if ctx.as_local(decl).is_none() {
-            continue;
-        }
+    for decl in &ctx.syntax().global_declarations {
         collect_from_global_declaration(decl, &mut features);
     }
 

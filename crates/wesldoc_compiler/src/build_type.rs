@@ -1,11 +1,17 @@
-use crate::{Context, ResolveTarget, build_expression};
-use wesl::syntax;
+use crate::{Context, build_expression};
 use wesldoc_ast::*;
+use wgsl_parse::syntax;
 
 pub fn build_type(ty: &syntax::TypeExpression, ctx: &Context) -> TypeExpression {
     let name = ty.ident.name().clone();
 
-    match ctx.resolve_reference(ResolveTarget::MaybeMangled(&name)) {
+    // TODO: ...
+    let item_resolve = syntax::ModulePath {
+        origin: syntax::PathOrigin::Relative(0),
+        components: vec![name.clone()],
+    };
+
+    match ctx.resolve_item(&item_resolve) {
         Some((name, kind, def_path)) => TypeExpression::Referenced {
             name,
             kind,

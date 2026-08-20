@@ -1,14 +1,19 @@
 use crate::map;
-use wesl::syntax;
 use wesldoc_ast::*;
+use wgsl_parse::syntax;
 
+#[derive(Debug, Default)]
 pub struct ConditionalScope {
     prev: Vec<Conditional>,
 }
 
 impl ConditionalScope {
-    pub fn new() -> Self {
-        ConditionalScope { prev: Vec::new() }
+    pub fn is_empty(&self) -> bool {
+        self.prev.is_empty()
+    }
+
+    pub fn clear(&mut self) {
+        self.prev.clear();
     }
 }
 

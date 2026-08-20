@@ -1817,6 +1817,7 @@ dependencies = [
  "wesldoc_ast",
  "wesldoc_compiler",
  "wesldoc_generator",
+ "wgsl-parse",
 ]
 
 [[package]]
@@ -1835,7 +1836,6 @@ dependencies = [
  "log",
  "miette",
  "thiserror",
- "wesl",
  "wesldoc_ast",
  "wgsl-parse",
 ]

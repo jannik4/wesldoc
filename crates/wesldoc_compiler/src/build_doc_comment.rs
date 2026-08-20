@@ -1,5 +1,6 @@
-use crate::{Context, ResolveTarget};
+use crate::Context;
 use wesldoc_ast::*;
+use wgsl_parse::syntax;
 
 pub fn build_inner_doc_comment(raw_comment: &str, ctx: &Context) -> Option<DocComment> {
     build_doc_comment(raw_comment, "//!", ctx)
@@ -137,9 +138,13 @@ fn raise_heading_level(level: md::HeadingLevel) -> md::HeadingLevel {
 fn resolve_intra_doc_links(events: &mut [md::Event], ctx: &Context) {
     for event in events {
         if let md::Event::Start(md::Tag::Link { dest_url, .. }) = event {
-            if let Some((name, kind, def_path)) =
-                ctx.resolve_reference(ResolveTarget::Name(dest_url.as_ref()))
-            {
+            // TODO: ...
+            let item_resolve = syntax::ModulePath {
+                origin: syntax::PathOrigin::Relative(0),
+                components: vec![dest_url.to_string()],
+            };
+
+            if let Some((name, kind, def_path)) = ctx.resolve_item(&item_resolve) {
                 *dest_url = IntraDocLink {
                     def_path,
                     kind,
