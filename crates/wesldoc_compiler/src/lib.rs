@@ -36,7 +36,7 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 pub struct ResolvedItem {
     pub kind: ItemKind,
     pub def_path: DefinitionPath,
-    pub conditional: Conditional,
+    pub conditional: Option<Conditional>,
 }
 
 pub struct ResolverResult {

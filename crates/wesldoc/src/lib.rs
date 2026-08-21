@@ -336,6 +336,7 @@ impl<'a> CompilePackageResolver<'a> {
         }
     }
 
+    // TODO: detect infinite loops!!! (e.g. keep track of visited (package.id, path), break on cycle)
     fn resolve_in(
         &mut self,
         package: Package,
@@ -401,9 +402,82 @@ impl<'a> CompilePackageResolver<'a> {
 
                         // Resolve
                         match import_path.origin {
-                            syntax::PathOrigin::Absolute => (),    // TODO: ...
-                            syntax::PathOrigin::Relative(_) => (), // TODO: ...
-                            syntax::PathOrigin::Package(_) => (),  // TODO: ...
+                            syntax::PathOrigin::Absolute => {
+                                let path = &import_path.components;
+                                self.resolve_in(
+                                    package.clone(), // TODO: do not clone!
+                                    false,
+                                    path,
+                                    name,
+                                    results,
+                                    condition,
+                                );
+                            }
+                            syntax::PathOrigin::Relative(n) => {
+                                let to_keep = path.len().saturating_sub(n);
+                                let path = path
+                                    .iter()
+                                    .take(to_keep)
+                                    .chain(&import_path.components)
+                                    .cloned()
+                                    .collect::<Vec<_>>();
+                                self.resolve_in(
+                                    package.clone(), // TODO: do not clone!
+                                    false,
+                                    &path,
+                                    name,
+                                    results,
+                                    condition,
+                                );
+                            }
+                            syntax::PathOrigin::Package(package_name) => {
+                                let package = match &mut self.dependencies {
+                                    Dependencies::Explicit { dependencies } => {
+                                        match dependencies.get(&package_name) {
+                                            Some(pkg) => pkg.clone(),
+                                            None => {
+                                                println!(
+                                                    "Warning: dependency '{}' not found",
+                                                    package_name
+                                                );
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                    Dependencies::Auto { dependencies } => {
+                                        match dependencies.entry(package_name.clone()) {
+                                            Entry::Occupied(entry) => entry.get().clone(),
+                                            Entry::Vacant(entry) => {
+                                                let PackageId::Cargo(package_id) = &package.id
+                                                else {
+                                                    continue;
+                                                };
+                                                let Some(this_cargo_package) =
+                                                    self.cache.cargo_metadata.package(package_id)
+                                                else {
+                                                    continue;
+                                                };
+
+                                                // TODO: handle error?
+                                                match Package::new_dependency(
+                                                    this_cargo_package,
+                                                    package_name,
+                                                    None,
+                                                    &self.cache.cargo_metadata,
+                                                ) {
+                                                    Ok(pkg) => {
+                                                        entry.insert(pkg.clone());
+                                                        pkg
+                                                    }
+                                                    Err(_) => continue,
+                                                }
+                                            }
+                                        }
+                                    }
+                                };
+                                let path = &import_path.components;
+                                self.resolve_in(package, false, path, name, results, condition);
+                            }
                         }
                     }
                     syntax::ImportContent::Collection(imports) => {
@@ -438,10 +512,10 @@ impl<'a> CompilePackageResolver<'a> {
                         path.to_vec(),
                     )
                 },
-                conditional: Conditional::And(
+                conditional: Some(Conditional::And(
                     Box::new(condition.clone()),
                     Box::new(decl_condition),
-                ),
+                )),
             });
         }
     }
