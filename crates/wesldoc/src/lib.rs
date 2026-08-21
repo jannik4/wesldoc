@@ -336,6 +336,24 @@ impl<'a> CompilePackageResolver<'a> {
         }
     }
 
+    fn get_syntax(
+        &mut self,
+        package_id: PackageId,
+        path: &[String],
+    ) -> Option<syntax::TranslationUnit> {
+        let wesl_package = self.cache.get(package_id).ok().flatten()?;
+
+        // Navigate to the module specified by the path
+        let mut module = &*wesl_package;
+        for component in path {
+            let submodule = module.submodules.iter().find(|m| m.name == *component)?;
+            module = submodule;
+        }
+        let (syntax, _) = module.code.as_ref()?;
+
+        Some(syntax.clone()) // TODO: do not clone!
+    }
+
     // TODO: detect infinite loops!!! (e.g. keep track of visited (package.id, path), break on cycle)
     fn resolve_in(
         &mut self,
@@ -346,20 +364,7 @@ impl<'a> CompilePackageResolver<'a> {
         results: &mut Vec<ResolvedItem>,
         condition: Conditional,
     ) {
-        // TODO: handle error?
-        let Some(wesl_package) = self.cache.get(package.id.clone()).ok().flatten() else {
-            return;
-        };
-
-        // Navigate to the module specified by the path
-        let mut module = &*wesl_package;
-        for component in path {
-            let Some(submodule) = module.submodules.iter().find(|m| m.name == *component) else {
-                return;
-            };
-            module = submodule;
-        }
-        let Some((syntax, _)) = &module.code else {
+        let Some(syntax) = self.get_syntax(package.id.clone(), path) else {
             return;
         };
 
@@ -369,125 +374,15 @@ impl<'a> CompilePackageResolver<'a> {
             if !include_imports && !is_export {
                 continue;
             }
-            let Some(import_path) = &import.path else {
-                // TODO: Handle this
-                continue;
-            };
-            let import_condition =
-                conditional_from_attributes(import.attributes()).unwrap_or(Conditional::True);
 
-            let mut to_resolve = vec![(import_path.clone(), &import.content)];
-            while let Some((import_path, content)) = to_resolve.pop() {
-                match content {
-                    syntax::ImportContent::Item(import_item) => {
-                        // Check name
-                        match &import_item.rename {
-                            Some(rename) => {
-                                if *rename.name() != name {
-                                    continue;
-                                }
-                            }
-                            None => {
-                                if *import_item.ident.name() != name {
-                                    continue;
-                                }
-                            }
-                        }
-
-                        // And condition with import's conditional
-                        let condition = Conditional::And(
-                            Box::new(condition.clone()),
-                            Box::new(import_condition.clone()),
-                        );
-
-                        // Resolve
-                        match import_path.origin {
-                            syntax::PathOrigin::Absolute => {
-                                let path = &import_path.components;
-                                self.resolve_in(
-                                    package.clone(), // TODO: do not clone!
-                                    false,
-                                    path,
-                                    name,
-                                    results,
-                                    condition,
-                                );
-                            }
-                            syntax::PathOrigin::Relative(n) => {
-                                let to_keep = path.len().saturating_sub(n);
-                                let path = path
-                                    .iter()
-                                    .take(to_keep)
-                                    .chain(&import_path.components)
-                                    .cloned()
-                                    .collect::<Vec<_>>();
-                                self.resolve_in(
-                                    package.clone(), // TODO: do not clone!
-                                    false,
-                                    &path,
-                                    name,
-                                    results,
-                                    condition,
-                                );
-                            }
-                            syntax::PathOrigin::Package(package_name) => {
-                                let package = match &mut self.dependencies {
-                                    Dependencies::Explicit { dependencies } => {
-                                        match dependencies.get(&package_name) {
-                                            Some(pkg) => pkg.clone(),
-                                            None => {
-                                                println!(
-                                                    "Warning: dependency '{}' not found",
-                                                    package_name
-                                                );
-                                                continue;
-                                            }
-                                        }
-                                    }
-                                    Dependencies::Auto { dependencies } => {
-                                        match dependencies.entry(package_name.clone()) {
-                                            Entry::Occupied(entry) => entry.get().clone(),
-                                            Entry::Vacant(entry) => {
-                                                let PackageId::Cargo(package_id) = &package.id
-                                                else {
-                                                    continue;
-                                                };
-                                                let Some(this_cargo_package) =
-                                                    self.cache.cargo_metadata.package(package_id)
-                                                else {
-                                                    continue;
-                                                };
-
-                                                // TODO: handle error?
-                                                match Package::new_dependency(
-                                                    this_cargo_package,
-                                                    package_name,
-                                                    None,
-                                                    &self.cache.cargo_metadata,
-                                                ) {
-                                                    Ok(pkg) => {
-                                                        entry.insert(pkg.clone());
-                                                        pkg
-                                                    }
-                                                    Err(_) => continue,
-                                                }
-                                            }
-                                        }
-                                    }
-                                };
-                                let path = &import_path.components;
-                                self.resolve_in(package, false, path, name, results, condition);
-                            }
-                        }
-                    }
-                    syntax::ImportContent::Collection(imports) => {
-                        for import in imports {
-                            let import_path = import_path.clone().join(import.path.iter().cloned());
-                            to_resolve.push((import_path, &import.content));
-                        }
-                    }
-                }
-            }
+            self.resolve_import(
+                &package,
+                import,
+                path,
+                &[name.to_string()],
+                results,
+                condition.clone(),
+            );
         }
 
         // Lookup name in global declarations
@@ -517,6 +412,141 @@ impl<'a> CompilePackageResolver<'a> {
                     Box::new(decl_condition),
                 )),
             });
+        }
+    }
+
+    fn resolve_import(
+        &mut self,
+        package: &Package,
+        import: &syntax::ImportStatement,
+        path: &[String],
+        item_path_and_name: &[String],
+        results: &mut Vec<ResolvedItem>,
+        condition: Conditional,
+    ) {
+        let Some(import_path) = &import.path else {
+            // TODO: Handle this
+            return;
+        };
+        let import_condition =
+            conditional_from_attributes(import.attributes()).unwrap_or(Conditional::True);
+
+        let mut to_resolve = vec![(import_path.clone(), &import.content)];
+        while let Some((mut import_path, content)) = to_resolve.pop() {
+            match content {
+                syntax::ImportContent::Item(import_item) => {
+                    // Check name
+                    match &import_item.rename {
+                        Some(rename) => {
+                            if *rename.name() != item_path_and_name[0] {
+                                continue;
+                            }
+                        }
+                        None => {
+                            if *import_item.ident.name() != item_path_and_name[0] {
+                                continue;
+                            }
+                        }
+                    }
+
+                    import_path
+                        .components
+                        .extend_from_slice(&item_path_and_name[..item_path_and_name.len() - 1]);
+                    let name = item_path_and_name.last().unwrap();
+
+                    // And condition with import's conditional
+                    let condition = Conditional::And(
+                        Box::new(condition.clone()),
+                        Box::new(import_condition.clone()),
+                    );
+
+                    // Resolve
+                    match import_path.origin {
+                        syntax::PathOrigin::Absolute => {
+                            let path = &import_path.components;
+                            self.resolve_in(
+                                package.clone(), // TODO: do not clone!
+                                false,
+                                path,
+                                name,
+                                results,
+                                condition,
+                            );
+                        }
+                        syntax::PathOrigin::Relative(n) => {
+                            let to_keep = path.len().saturating_sub(n);
+                            let path = path
+                                .iter()
+                                .take(to_keep)
+                                .chain(&import_path.components)
+                                .cloned()
+                                .collect::<Vec<_>>();
+
+                            self.resolve_in(
+                                package.clone(), // TODO: do not clone!
+                                false,
+                                &path,
+                                name,
+                                results,
+                                condition,
+                            );
+                        }
+                        syntax::PathOrigin::Package(package_name) => {
+                            let package = match &mut self.dependencies {
+                                Dependencies::Explicit { dependencies } => {
+                                    match dependencies.get(&package_name) {
+                                        Some(pkg) => pkg.clone(),
+                                        None => {
+                                            println!(
+                                                "Warning: dependency '{}' not found",
+                                                package_name
+                                            );
+                                            continue;
+                                        }
+                                    }
+                                }
+                                Dependencies::Auto { dependencies } => {
+                                    match dependencies.entry(package_name.clone()) {
+                                        Entry::Occupied(entry) => entry.get().clone(),
+                                        Entry::Vacant(entry) => {
+                                            let PackageId::Cargo(package_id) = &package.id else {
+                                                continue;
+                                            };
+                                            let Some(this_cargo_package) =
+                                                self.cache.cargo_metadata.package(package_id)
+                                            else {
+                                                continue;
+                                            };
+
+                                            // TODO: handle error?
+                                            match Package::new_dependency(
+                                                this_cargo_package,
+                                                package_name,
+                                                None,
+                                                &self.cache.cargo_metadata,
+                                            ) {
+                                                Ok(pkg) => {
+                                                    entry.insert(pkg.clone());
+                                                    pkg
+                                                }
+                                                Err(_) => continue,
+                                            }
+                                        }
+                                    }
+                                }
+                            };
+                            let path = &import_path.components;
+                            self.resolve_in(package, false, path, name, results, condition);
+                        }
+                    }
+                }
+                syntax::ImportContent::Collection(imports) => {
+                    for import in imports {
+                        let import_path = import_path.clone().join(import.path.iter().cloned());
+                        to_resolve.push((import_path, &import.content));
+                    }
+                }
+            }
         }
     }
 }
@@ -557,8 +587,28 @@ impl Resolver for CompilePackageResolver<'_> {
                 );
             }
             syntax::PathOrigin::Package(pkg) => {
-                dbg!((pkg, item_name));
-                // TODO: ...
+                // Resolve as pkg as suffix as one of the imports
+                if let Some(syntax) = self.get_syntax(self.package.id.clone(), path_from) {
+                    for import in &syntax.imports {
+                        let item_path_and_name = [pkg.clone()]
+                            .into_iter()
+                            .chain(item_path.components.iter().cloned())
+                            .chain([item_name.to_string()])
+                            .collect::<Vec<_>>();
+                        self.resolve_import(
+                            &self.package.clone(), // TODO: do not clone!
+                            import,
+                            path_from,
+                            &item_path_and_name,
+                            &mut results,
+                            Conditional::True,
+                        );
+                    }
+                }
+
+                // TODO: resolve as pkg as dependency
+                // TODO: if one of the imports (or the "sum" of the imports) is "unconditional"
+                //       this should not be considered, as this shadows any dependency usage?
             }
         }
 
