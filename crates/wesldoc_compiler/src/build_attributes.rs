@@ -1,4 +1,4 @@
-use crate::{Context, build_expression, map};
+use crate::{ATTRIBUTE_CONDITIONAL, Context, build_expression, map};
 use wesldoc_ast::*;
 use wgsl_parse::syntax;
 
@@ -44,13 +44,20 @@ fn build_attribute(attr: &syntax::Attribute, ctx: &Context) -> Option<Attribute>
         syntax::Attribute::Vertex => Attribute::Vertex,
         syntax::Attribute::Fragment => Attribute::Fragment,
         syntax::Attribute::Compute => Attribute::Compute,
-        syntax::Attribute::Custom(custom_attribute) => Attribute::Custom {
-            name: custom_attribute.name.clone(),
-            arguments: custom_attribute
-                .arguments
-                .as_ref()
-                .map(|args| args.iter().map(|arg| build_expression(arg, ctx)).collect()),
-        },
+        syntax::Attribute::Custom(custom_attribute) => {
+            // Conditional attributes are handled separately
+            if custom_attribute.name == ATTRIBUTE_CONDITIONAL {
+                return None;
+            }
+
+            Attribute::Custom {
+                name: custom_attribute.name.clone(),
+                arguments: custom_attribute
+                    .arguments
+                    .as_ref()
+                    .map(|args| args.iter().map(|arg| build_expression(arg, ctx)).collect()),
+            }
+        }
         syntax::Attribute::Task => Attribute::Task,
         syntax::Attribute::Payload(expr) => Attribute::Payload(build_expression(expr, ctx)),
         syntax::Attribute::Mesh(expr) => Attribute::Mesh(build_expression(expr, ctx)),

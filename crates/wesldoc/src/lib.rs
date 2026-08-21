@@ -1,5 +1,6 @@
 mod cargo;
 // TODO: Remove and delete: mod resolver;
+mod preprocess;
 mod wesl_toml;
 
 use self::{
@@ -16,7 +17,7 @@ use std::{
 };
 use wesldoc_ast::{Conditional, DefinitionPath, ItemKind, Version};
 use wesldoc_compiler::{MissingDocumentation, ResolvedItem, Resolver, ResolverResult, WeslModule};
-use wgsl_parse::{SyntaxNode, syntax};
+use wgsl_parse::syntax;
 
 pub use clap::Parser;
 
@@ -369,7 +370,6 @@ impl<'a> CompilePackageResolver<'a> {
             }
             let decl_condition = Conditional::True; // TODO: ... get from decl
 
-            // TODO: and-ify with condition
             results.push(ResolvedItem {
                 kind: decl_kind,
                 def_path: if package.id == self.package.id {
@@ -479,7 +479,7 @@ fn compile_submodules(dir: &Path) -> Result<Vec<WeslModule>> {
                 });
 
             let source = fs::read_to_string(&path)?;
-            let syntax = parse_and_preprocess_wesl(&source)?;
+            let syntax = self::preprocess::preprocess(wgsl_parse::parse_str(&source)?)?;
 
             sub.code = Some((syntax, source))
         } else if path.is_dir() {
@@ -498,116 +498,6 @@ fn compile_submodules(dir: &Path) -> Result<Vec<WeslModule>> {
         .into_values()
         .filter(|module| module.code.is_some() || !module.submodules.is_empty())
         .collect())
-}
-
-fn parse_and_preprocess_wesl(source: &str) -> Result<syntax::TranslationUnit> {
-    fn flatten_compound(
-        decls: impl IntoIterator<Item = syntax::GlobalDeclarationNode>,
-        parent: Conditional,
-    ) -> Vec<syntax::GlobalDeclarationNode> {
-        use wesldoc_compiler::build_conditional::{ConditionalScope, build_conditional};
-
-        let mut res = Vec::new();
-
-        let conditional_scope = &mut ConditionalScope::default();
-
-        for decl in decls {
-            let span = decl.span();
-            let mut decl = decl.into_inner();
-            let attributes = decl.attributes();
-            match decl {
-                syntax::GlobalDeclaration::Compound(compound) => {
-                    let cond = build_conditional(conditional_scope, &compound.attributes)
-                        .unwrap_or(Conditional::True);
-                    let parent = Conditional::And(Box::new(parent.clone()), Box::new(cond));
-                    res.extend(flatten_compound(compound.body, parent));
-                }
-                _ => {
-                    // TODO: ???
-                    if !conditional_scope.is_empty()
-                        && attributes
-                            .iter()
-                            .find(|attr| {
-                                matches!(
-                                    &***attr,
-                                    syntax::Attribute::Elif(_) | syntax::Attribute::Else
-                                )
-                            })
-                            .is_some()
-                    {
-                        println!("warning: mixing of compound and non-compound conditionals");
-                    }
-
-                    conditional_scope.clear();
-
-                    let mut has_cond_attr = false;
-                    for attr in decl.attributes_mut() {
-                        match &mut **attr {
-                            syntax::Attribute::If(expr) | syntax::Attribute::Elif(expr) => {
-                                has_cond_attr = true;
-                                *expr = syntax::Spanned::new(
-                                    syntax::Expression::Binary(syntax::BinaryExpression {
-                                        operator: syntax::BinaryOperator::ShortCircuitAnd,
-                                        left: syntax::Spanned::new(
-                                            conditional_to_expr(parent.clone()),
-                                            syntax::Span::default(), // TODO: ???
-                                        ),
-                                        right: expr.clone(),
-                                    }),
-                                    syntax::Span::default(), // TODO: ???
-                                );
-                            }
-                            e @ syntax::Attribute::Else => {
-                                has_cond_attr = true;
-                                *e = syntax::Attribute::Elif(syntax::Spanned::new(
-                                    conditional_to_expr(parent.clone()),
-                                    syntax::Span::default(), // TODO: ???
-                                ));
-                            }
-                            _ => (),
-                        }
-                    }
-                    if !has_cond_attr {
-                        let attr_if = syntax::AttributeNode::new(
-                            syntax::Attribute::If(syntax::Spanned::new(
-                                conditional_to_expr(parent.clone()),
-                                syntax::Span::default(), // TODO: ???
-                            )),
-                            syntax::Span::default(), // TODO: ???
-                        );
-                        match &mut decl {
-                            syntax::GlobalDeclaration::Void => (),
-                            syntax::GlobalDeclaration::Declaration(declaration) => {
-                                declaration.attributes.push(attr_if);
-                            }
-                            syntax::GlobalDeclaration::TypeAlias(type_alias) => {
-                                type_alias.attributes.push(attr_if);
-                            }
-                            syntax::GlobalDeclaration::Struct(s) => {
-                                s.attributes.push(attr_if);
-                            }
-                            syntax::GlobalDeclaration::Function(function) => {
-                                function.attributes.push(attr_if);
-                            }
-                            syntax::GlobalDeclaration::ConstAssert(const_assert) => {
-                                const_assert.attributes.push(attr_if);
-                            }
-                            syntax::GlobalDeclaration::Compound(_) => unreachable!(),
-                        }
-                    }
-
-                    res.push(syntax::GlobalDeclarationNode::new(decl, span));
-                }
-            }
-        }
-
-        res
-    }
-
-    let mut syntax = wgsl_parse::parse_str(source)?;
-    syntax.global_declarations = flatten_compound(syntax.global_declarations, Conditional::True);
-
-    Ok(syntax)
 }
 
 fn decl_info(decl: &syntax::GlobalDeclaration) -> Option<(&syntax::Ident, ItemKind)> {

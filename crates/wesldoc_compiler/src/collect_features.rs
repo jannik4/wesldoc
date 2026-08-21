@@ -1,4 +1,4 @@
-use crate::Context;
+use crate::{ATTRIBUTE_CONDITIONAL, Context};
 use wesldoc_ast::IndexSet;
 use wgsl_parse::syntax::*;
 
@@ -32,7 +32,11 @@ fn collect_from_global_directive(directive: &GlobalDirective, features: &mut Ind
 fn collect_from_global_declaration(decl: &GlobalDeclaration, features: &mut IndexSet<String>) {
     match decl {
         GlobalDeclaration::Void => (),
-        GlobalDeclaration::Compound(_) => panic!("compound should have been flattened"),
+        GlobalDeclaration::Compound(compound) => {
+            for decl in &compound.body {
+                collect_from_global_declaration(decl, features);
+            }
+        }
         GlobalDeclaration::Declaration(declaration) => {
             collect_from_attributes(&declaration.attributes, features);
         }
@@ -61,10 +65,19 @@ fn collect_from_global_declaration(decl: &GlobalDeclaration, features: &mut Inde
 
 fn collect_from_attributes(attributes: &Attributes, features: &mut IndexSet<String>) {
     for attr in attributes {
-        match attr.node() {
-            Attribute::If(spanned) => collect_from_cond(spanned.node(), features),
-            Attribute::Elif(spanned) => collect_from_cond(spanned.node(), features),
-            _ => (),
+        // Attribute::If(spanned) => collect_from_cond(spanned.node(), features),
+        // Attribute::Elif(spanned) => collect_from_cond(spanned.node(), features),
+        if let Attribute::Custom(CustomAttribute { name, arguments }) = attr.node() {
+            if name != ATTRIBUTE_CONDITIONAL {
+                continue;
+            }
+            let Some(args) = arguments.as_ref() else {
+                continue;
+            };
+            if args.len() != 1 {
+                continue;
+            }
+            collect_from_cond(&args[0], features);
         }
     }
 }

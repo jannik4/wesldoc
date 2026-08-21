@@ -14,7 +14,7 @@ pub mod build_conditional;
 
 use self::{
     build_attributes::build_attributes,
-    build_conditional::{ConditionalScope, build_conditional},
+    build_conditional::conditional_from_attributes,
     build_doc_comment::{build_inner_doc_comment, build_outer_doc_comment},
     build_expression::build_expression,
     build_type::build_type,
@@ -28,6 +28,8 @@ use self::{
 use thiserror::Error;
 use wesldoc_ast::*;
 use wgsl_parse::syntax::{self, ModulePath, TranslationUnit};
+
+pub const ATTRIBUTE_CONDITIONAL: &str = "cfg";
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -147,8 +149,17 @@ fn compile_module(
     // TODO: Compile re-exports (collect from imports)
 
     // Compile locally defined global declarations
-    let conditional_scope = &mut ConditionalScope::default();
-    for decl in &syntax.global_declarations {
+    compile_decls(&syntax.global_declarations, ctx, &mut module)?;
+
+    Ok(module)
+}
+
+fn compile_decls(
+    decls: &[syntax::GlobalDeclarationNode],
+    ctx: &Context,
+    module: &mut Module,
+) -> Result<(), FatalError> {
+    for decl in decls {
         let span = calculate_span(decl.span().range(), ctx);
         let comment = span.and_then(|span| {
             build_outer_doc_comment(&extract_comments_outer(span, ctx.source()), ctx)
@@ -157,8 +168,8 @@ fn compile_module(
 
         match decl.node() {
             syntax::GlobalDeclaration::Void => (),
-            syntax::GlobalDeclaration::Compound(_) => {
-                panic!("compound should have been flattened")
+            syntax::GlobalDeclaration::Compound(compound) => {
+                compile_decls(&compound.body, ctx, module)?;
             }
             syntax::GlobalDeclaration::Declaration(declaration) => {
                 let name = map(&declaration.ident);
@@ -178,10 +189,7 @@ fn compile_module(
                                     .map(|expr| build_expression(expr, ctx))
                                     .unwrap_or(Expression::NotExpanded(None)),
                                 attributes: build_attributes(&declaration.attributes, ctx),
-                                conditional: build_conditional(
-                                    conditional_scope,
-                                    &declaration.attributes,
-                                ),
+                                conditional: conditional_from_attributes(&declaration.attributes),
                                 comment,
                                 span,
                             });
@@ -200,10 +208,7 @@ fn compile_module(
                                     .as_ref()
                                     .map(|expr| build_expression(expr, ctx)),
                                 attributes: build_attributes(&declaration.attributes, ctx),
-                                conditional: build_conditional(
-                                    conditional_scope,
-                                    &declaration.attributes,
-                                ),
+                                conditional: conditional_from_attributes(&declaration.attributes),
                                 comment,
                                 span,
                             });
@@ -226,10 +231,7 @@ fn compile_module(
                                     .as_ref()
                                     .map(|expr| build_expression(expr, ctx)),
                                 attributes: build_attributes(&declaration.attributes, ctx),
-                                conditional: build_conditional(
-                                    conditional_scope,
-                                    &declaration.attributes,
-                                ),
+                                conditional: conditional_from_attributes(&declaration.attributes),
                                 comment,
                                 span,
                             });
@@ -247,7 +249,7 @@ fn compile_module(
                         name,
                         ty: build_type(&type_alias.ty, ctx),
                         attributes: build_attributes(&type_alias.attributes, ctx),
-                        conditional: build_conditional(conditional_scope, &type_alias.attributes),
+                        conditional: conditional_from_attributes(&type_alias.attributes),
                         comment,
                         span,
                     });
@@ -262,7 +264,6 @@ fn compile_module(
                     .push(Struct {
                         name,
                         members: {
-                            let mut conditional_scope = ConditionalScope::default();
                             struct_
                                 .members
                                 .iter()
@@ -270,10 +271,7 @@ fn compile_module(
                                     name: map(&member.ident),
                                     ty: build_type(&member.ty, ctx),
                                     attributes: build_attributes(&member.attributes, ctx),
-                                    conditional: build_conditional(
-                                        &mut conditional_scope,
-                                        &member.attributes,
-                                    ),
+                                    conditional: conditional_from_attributes(&member.attributes),
                                     comment: {
                                         let comment = calculate_span(member.span().range(), ctx)
                                             .and_then(|span| {
@@ -289,7 +287,7 @@ fn compile_module(
                                 .collect()
                         },
                         attributes: build_attributes(&struct_.attributes, ctx),
-                        conditional: build_conditional(conditional_scope, &struct_.attributes),
+                        conditional: conditional_from_attributes(&struct_.attributes),
                         comment,
                         span,
                     });
@@ -304,7 +302,6 @@ fn compile_module(
                     .push(Function {
                         name,
                         parameters: {
-                            let mut conditional_scope = ConditionalScope::default();
                             function
                                 .parameters
                                 .iter()
@@ -312,10 +309,7 @@ fn compile_module(
                                     name: map(&param.ident),
                                     ty: build_type(&param.ty, ctx),
                                     attributes: build_attributes(&param.attributes, ctx),
-                                    conditional: build_conditional(
-                                        &mut conditional_scope,
-                                        &param.attributes,
-                                    ),
+                                    conditional: conditional_from_attributes(&param.attributes),
                                 })
                                 .collect()
                         },
@@ -325,7 +319,7 @@ fn compile_module(
                             .map(|ret| build_type(ret, ctx)),
                         attributes: build_attributes(&function.attributes, ctx),
                         return_attributes: build_attributes(&function.return_attributes, ctx),
-                        conditional: build_conditional(conditional_scope, &function.attributes),
+                        conditional: conditional_from_attributes(&function.attributes),
                         comment,
                         span,
                     });
@@ -334,7 +328,7 @@ fn compile_module(
         }
     }
 
-    Ok(module)
+    Ok(())
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
