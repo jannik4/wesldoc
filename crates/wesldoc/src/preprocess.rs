@@ -4,12 +4,35 @@ use wgsl_parse::{SyntaxNode, syntax::*};
 
 pub fn preprocess(mut syntax: TranslationUnit) -> Result<TranslationUnit> {
     syntax.remove_voids();
-    build_conditionals(&mut syntax.global_declarations, None);
+    build_conditionals(&mut syntax);
 
     Ok(syntax)
 }
 
-fn build_conditionals<'a>(
+fn build_conditionals(syntax: &mut TranslationUnit) {
+    build_conditionals_imports(&mut syntax.imports);
+    // TODO: directives
+    build_conditionals_decls(&mut syntax.global_declarations, None);
+}
+
+fn build_conditionals_imports<'a>(imports: impl IntoIterator<Item = &'a mut ImportStatement>) {
+    let conditional_scope = &mut ConditionalScope::default();
+
+    for import in imports {
+        let cond = build_conditional(conditional_scope, import.attributes());
+        if let Some(cond) = cond {
+            let attr = Attribute::Custom(CustomAttribute {
+                name: ATTRIBUTE_CONDITIONAL.to_string(),
+                arguments: Some(vec![cond]),
+            });
+            import
+                .attributes
+                .push(AttributeNode::new(attr, Span::default()));
+        }
+    }
+}
+
+fn build_conditionals_decls<'a>(
     decls: impl IntoIterator<Item = &'a mut GlobalDeclarationNode>,
     parent: Option<ExpressionNode>,
 ) {
@@ -35,7 +58,7 @@ fn build_conditionals<'a>(
         match &mut **decl {
             // Recursively build conditionals for compound declarations
             GlobalDeclaration::Compound(compound) => {
-                build_conditionals(&mut compound.body, cond.clone());
+                build_conditionals_decls(&mut compound.body, cond.clone());
             }
             // Handle struct members
             GlobalDeclaration::Struct(struct_) => {

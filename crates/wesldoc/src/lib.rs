@@ -16,8 +16,11 @@ use std::{
     sync::Arc,
 };
 use wesldoc_ast::{Conditional, DefinitionPath, ItemKind, Version};
-use wesldoc_compiler::{MissingDocumentation, ResolvedItem, Resolver, ResolverResult, WeslModule};
-use wgsl_parse::syntax;
+use wesldoc_compiler::{
+    MissingDocumentation, ResolvedItem, Resolver, ResolverResult, WeslModule,
+    build_conditional::conditional_from_attributes,
+};
+use wgsl_parse::{SyntaxNode, syntax};
 
 pub use clap::Parser;
 
@@ -336,6 +339,7 @@ impl<'a> CompilePackageResolver<'a> {
     fn resolve_in(
         &mut self,
         package: Package,
+        is_same_module: bool,
         path: &[String],
         name: &str,
         results: &mut Vec<ResolvedItem>,
@@ -358,7 +362,16 @@ impl<'a> CompilePackageResolver<'a> {
             return;
         };
 
-        // TODO: Lookup name in exported imports (also in just imports if we resolve from the same module)
+        // Lookup name in imports/exports
+        for import in &syntax.imports {
+            let is_export = false; // TODO: ...
+            if !is_same_module && !is_export {
+                continue;
+            }
+
+            // TODO: check for name then andify condition with import's conditional
+            // -> then recursively call resolve_in with new path and new condition
+        }
 
         // Lookup name in global declarations
         for decl in &syntax.global_declarations {
@@ -368,7 +381,8 @@ impl<'a> CompilePackageResolver<'a> {
             if *decl_name.name() != name {
                 continue;
             }
-            let decl_condition = Conditional::True; // TODO: ... get from decl
+            let decl_condition =
+                conditional_from_attributes(decl.attributes()).unwrap_or(Conditional::True);
 
             results.push(ResolvedItem {
                 kind: decl_kind,
@@ -401,9 +415,11 @@ impl Resolver for CompilePackageResolver<'_> {
         if item.components.len() != 1 {
             return results; // TODO: ...
         }
+        let is_same_module = true; // TODO: only for rel(0) and comp.len == 1
 
         self.resolve_in(
             self.package.clone(), // TODO: do not clone!
+            is_same_module,
             path_from,
             &item.components[0],
             &mut results,
