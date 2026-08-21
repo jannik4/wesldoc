@@ -525,14 +525,15 @@ impl Resolver for CompilePackageResolver<'_> {
     fn resolve_item(
         &mut self,
         path_from: &[String],
-        item: &syntax::ModulePath,
+        item_path: &syntax::ModulePath,
+        item_name: &str,
     ) -> Vec<ResolvedItem> {
         let mut results = Vec::new();
 
-        if item.origin != syntax::PathOrigin::Relative(0) {
+        if item_path.origin != syntax::PathOrigin::Relative(0) {
             return results; // TODO: ...
         }
-        if item.components.len() != 1 {
+        if !item_path.components.is_empty() {
             return results; // TODO: ...
         }
         let is_same_module = true; // TODO: only for rel(0) and comp.len == 1
@@ -541,7 +542,7 @@ impl Resolver for CompilePackageResolver<'_> {
             self.package.clone(), // TODO: do not clone!
             is_same_module,
             path_from,
-            &item.components[0],
+            item_name,
             &mut results,
             Conditional::True,
         );

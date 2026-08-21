@@ -53,14 +53,21 @@ impl Context<'_> {
         self.compile_state
     }
 
-    pub fn resolve_item(&self, item: &ModulePath) -> Option<(Ident, ItemKind, DefinitionPath)> {
-        let items = self.resolver.lock().unwrap().resolve_item(self.path, item);
+    pub fn resolve_item(
+        &self,
+        path: &ModulePath,
+        name: &str,
+    ) -> Option<(Ident, ItemKind, DefinitionPath)> {
+        let items = self
+            .resolver
+            .lock()
+            .unwrap()
+            .resolve_item(self.path, path, name);
 
         // TODO: ...
-        let name = item.components.last()?.clone();
         items
             .first()
-            .map(|item| (Ident(name), item.kind, item.def_path.clone()))
+            .map(|item| (Ident(name.to_string()), item.kind, item.def_path.clone()))
     }
 
     // pub fn resolve_reference(

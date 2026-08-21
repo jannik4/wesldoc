@@ -8,10 +8,10 @@ pub fn build_type(ty: &syntax::TypeExpression, ctx: &Context) -> TypeExpression 
     // TODO: ...
     let item_resolve = syntax::ModulePath {
         origin: syntax::PathOrigin::Relative(0),
-        components: vec![name.clone()],
+        components: Vec::new(),
     };
 
-    match ctx.resolve_item(&item_resolve) {
+    match ctx.resolve_item(&item_resolve, &name) {
         Some((name, kind, def_path)) => TypeExpression::Referenced {
             name,
             kind,

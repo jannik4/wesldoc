@@ -141,10 +141,10 @@ fn resolve_intra_doc_links(events: &mut [md::Event], ctx: &Context) {
             // TODO: ...
             let item_resolve = syntax::ModulePath {
                 origin: syntax::PathOrigin::Relative(0),
-                components: vec![dest_url.to_string()],
+                components: Vec::new(),
             };
 
-            if let Some((name, kind, def_path)) = ctx.resolve_item(&item_resolve) {
+            if let Some((name, kind, def_path)) = ctx.resolve_item(&item_resolve, dest_url) {
                 *dest_url = IntraDocLink {
                     def_path,
                     kind,

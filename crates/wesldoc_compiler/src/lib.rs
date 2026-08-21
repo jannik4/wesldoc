@@ -45,7 +45,12 @@ pub struct ResolverResult {
 }
 
 pub trait Resolver {
-    fn resolve_item(&mut self, path_from: &[String], item: &ModulePath) -> Vec<ResolvedItem>;
+    fn resolve_item(
+        &mut self,
+        path_from: &[String],
+        item_path: &ModulePath,
+        item_name: &str,
+    ) -> Vec<ResolvedItem>;
     fn finish(self) -> ResolverResult;
 }
 
