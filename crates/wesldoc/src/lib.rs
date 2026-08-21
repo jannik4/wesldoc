@@ -364,13 +364,56 @@ impl<'a> CompilePackageResolver<'a> {
 
         // Lookup name in imports/exports
         for import in &syntax.imports {
-            let is_export = false; // TODO: ...
+            let is_export = import.attributes.iter().any(|attr| attr.is_publish());
             if !is_same_module && !is_export {
                 continue;
             }
+            let Some(import_path) = &import.path else {
+                // TODO: Handle this
+                continue;
+            };
+            let import_condition =
+                conditional_from_attributes(import.attributes()).unwrap_or(Conditional::True);
 
-            // TODO: check for name then andify condition with import's conditional
-            // -> then recursively call resolve_in with new path and new condition
+            let mut to_resolve = vec![(import_path.clone(), &import.content)];
+            while let Some((import_path, content)) = to_resolve.pop() {
+                match content {
+                    syntax::ImportContent::Item(import_item) => {
+                        // Check name
+                        match &import_item.rename {
+                            Some(rename) => {
+                                if *rename.name() != name {
+                                    continue;
+                                }
+                            }
+                            None => {
+                                if *import_item.ident.name() != name {
+                                    continue;
+                                }
+                            }
+                        }
+
+                        // And condition with import's conditional
+                        let condition = Conditional::And(
+                            Box::new(condition.clone()),
+                            Box::new(import_condition.clone()),
+                        );
+
+                        // Resolve
+                        match import_path.origin {
+                            syntax::PathOrigin::Absolute => (),    // TODO: ...
+                            syntax::PathOrigin::Relative(_) => (), // TODO: ...
+                            syntax::PathOrigin::Package(_) => (),  // TODO: ...
+                        }
+                    }
+                    syntax::ImportContent::Collection(imports) => {
+                        for import in imports {
+                            let import_path = import_path.clone().join(import.path.iter().cloned());
+                            to_resolve.push((import_path, &import.content));
+                        }
+                    }
+                }
+            }
         }
 
         // Lookup name in global declarations
@@ -389,8 +432,11 @@ impl<'a> CompilePackageResolver<'a> {
                 def_path: if package.id == self.package.id {
                     DefinitionPath::Absolute(path.to_vec())
                 } else {
-                    //
-                    todo!()
+                    DefinitionPath::Package(
+                        package.package_name.clone(),
+                        package.version.clone(),
+                        path.to_vec(),
+                    )
                 },
                 conditional: Conditional::And(
                     Box::new(condition.clone()),

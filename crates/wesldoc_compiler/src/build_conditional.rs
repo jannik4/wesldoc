@@ -19,7 +19,7 @@ pub fn conditional_from_attributes(attributes: &[syntax::AttributeNode]) -> Opti
     })
 }
 
-pub fn conditional_from_expr(expr: &syntax::Expression) -> Option<Conditional> {
+fn conditional_from_expr(expr: &syntax::Expression) -> Option<Conditional> {
     match expr {
         syntax::Expression::Literal(lit) => match lit {
             syntax::LiteralExpression::Bool(true) => Some(Conditional::True),
