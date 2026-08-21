@@ -5,13 +5,12 @@ use wgsl_parse::syntax;
 pub fn build_type(ty: &syntax::TypeExpression, ctx: &Context) -> TypeExpression {
     let name = ty.ident.name().clone();
 
-    // TODO: ...
-    let item_resolve = syntax::ModulePath {
+    let path = ty.path.clone().unwrap_or_else(|| syntax::ModulePath {
         origin: syntax::PathOrigin::Relative(0),
         components: Vec::new(),
-    };
+    });
 
-    match ctx.resolve_item(&item_resolve, &name) {
+    match ctx.resolve_item(&path, &name) {
         Some((name, kind, def_path)) => TypeExpression::Referenced {
             name,
             kind,

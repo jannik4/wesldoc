@@ -340,7 +340,7 @@ impl<'a> CompilePackageResolver<'a> {
     fn resolve_in(
         &mut self,
         package: Package,
-        is_same_module: bool,
+        include_imports: bool,
         path: &[String],
         name: &str,
         results: &mut Vec<ResolvedItem>,
@@ -366,7 +366,7 @@ impl<'a> CompilePackageResolver<'a> {
         // Lookup name in imports/exports
         for import in &syntax.imports {
             let is_export = import.attributes.iter().any(|attr| attr.is_publish());
-            if !is_same_module && !is_export {
+            if !include_imports && !is_export {
                 continue;
             }
             let Some(import_path) = &import.path else {
@@ -530,22 +530,37 @@ impl Resolver for CompilePackageResolver<'_> {
     ) -> Vec<ResolvedItem> {
         let mut results = Vec::new();
 
-        if item_path.origin != syntax::PathOrigin::Relative(0) {
-            return results; // TODO: ...
-        }
-        if !item_path.components.is_empty() {
-            return results; // TODO: ...
-        }
-        let is_same_module = true; // TODO: only for rel(0) and comp.len == 1
+        match &item_path.origin {
+            syntax::PathOrigin::Absolute => {
+                self.resolve_in(
+                    self.package.clone(), // TODO: do not clone!
+                    false,
+                    &item_path.components,
+                    item_name,
+                    &mut results,
+                    Conditional::True,
+                );
+            }
+            syntax::PathOrigin::Relative(n) => {
+                let include_imports = *n == 0 && item_path.components.is_empty();
 
-        self.resolve_in(
-            self.package.clone(), // TODO: do not clone!
-            is_same_module,
-            path_from,
-            item_name,
-            &mut results,
-            Conditional::True,
-        );
+                let to_keep = path_from.len().saturating_sub(*n);
+                let path = path_from.iter().take(to_keep).cloned().collect::<Vec<_>>();
+
+                self.resolve_in(
+                    self.package.clone(), // TODO: do not clone!
+                    include_imports,
+                    &path,
+                    item_name,
+                    &mut results,
+                    Conditional::True,
+                );
+            }
+            syntax::PathOrigin::Package(pkg) => {
+                dbg!((pkg, item_name));
+                // TODO: ...
+            }
+        }
 
         results
     }
