@@ -25,6 +25,7 @@ use self::{
     extract_comments::{extract_comments_inner, extract_comments_outer},
     map::map,
 };
+use std::sync::Arc;
 use thiserror::Error;
 use wesldoc_ast::*;
 use wgsl_parse::syntax::{self, ModulePath, TranslationUnit};
@@ -84,7 +85,7 @@ pub struct CompileOptions {
 
 pub struct WeslModule {
     pub name: String,
-    pub code: Option<(TranslationUnit, String)>,
+    pub code: Option<(Arc<TranslationUnit>, String)>,
     pub submodules: Vec<WeslModule>,
 }
 

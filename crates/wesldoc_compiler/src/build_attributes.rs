@@ -70,7 +70,7 @@ fn build_attribute(attr: &syntax::Attribute, ctx: &Context) -> Option<Attribute>
             return None;
         }
 
-        // Ignore for now
-        wgsl_parse::syntax::Attribute::Publish => return None, // TODO: handle publish attribute
+        // Publish attribute is handled separately
+        wgsl_parse::syntax::Attribute::Publish => return None,
     })
 }
