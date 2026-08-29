@@ -37,6 +37,7 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 pub struct ResolvedItem {
     pub kind: ItemKind,
     pub def_path: DefinitionPath,
+    pub name: Ident,
     pub conditional: Option<Conditional>,
 }
 
@@ -46,12 +47,7 @@ pub struct ResolverResult {
 }
 
 pub trait Resolver {
-    fn resolve_item(
-        &mut self,
-        path_from: &[String],
-        item_path: &ModulePath,
-        item_name: &str,
-    ) -> Vec<ResolvedItem>;
+    fn resolve_item(&mut self, path_from: &[String], item_path: &ModulePath) -> Vec<ResolvedItem>;
     fn finish(self) -> ResolverResult;
 }
 

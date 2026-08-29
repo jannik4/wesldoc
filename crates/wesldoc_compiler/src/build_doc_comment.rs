@@ -134,27 +134,67 @@ fn raise_heading_level(level: md::HeadingLevel) -> md::HeadingLevel {
     }
 }
 
-// TODO: Only works for items in scope as this just looks up the name in the source map
 fn resolve_intra_doc_links(events: &mut [md::Event], ctx: &Context) {
     for event in events {
-        if let md::Event::Start(md::Tag::Link { dest_url, .. }) = event {
-            // TODO: ...
-            let item_resolve = syntax::ModulePath {
-                origin: syntax::PathOrigin::Relative(0),
-                components: Vec::new(),
-            };
+        let md::Event::Start(md::Tag::Link { dest_url, .. }) = event else {
+            continue;
+        };
+        let Some(path) = path_from_url(dest_url) else {
+            continue;
+        };
 
-            if let Some((name, kind, def_path)) = ctx.resolve_item(&item_resolve, dest_url) {
-                *dest_url = IntraDocLink {
-                    def_path,
-                    kind,
-                    name,
-                }
-                .to_string()
-                .into();
-            } else {
-                log::warn!("Failed to resolve intra-doc link: {dest_url}");
+        if let Some((name, kind, def_path)) = ctx.resolve_item(&path) {
+            *dest_url = IntraDocLink {
+                def_path,
+                kind,
+                name,
             }
+            .to_string()
+            .into();
+        } else {
+            log::warn!("Failed to resolve intra-doc link: {dest_url}");
         }
+    }
+}
+
+fn path_from_url(url: &str) -> Option<syntax::ModulePath> {
+    let components = url
+        .split("::")
+        .map(|s| s.trim())
+        .map(|s| {
+            if s.is_empty() || s.chars().any(|c| !c.is_ascii_alphanumeric() && c != '_') {
+                Err(())
+            } else {
+                Ok(s)
+            }
+        })
+        .collect::<Result<Vec<_>, _>>()
+        .ok()?;
+
+    match components.as_slice() {
+        [] => None,
+        [name] => Some(syntax::ModulePath {
+            origin: syntax::PathOrigin::Relative(0),
+            components: vec![name.to_string()],
+        }),
+        ["package", components @ ..] => Some(syntax::ModulePath {
+            origin: syntax::PathOrigin::Absolute,
+            components: components.iter().map(|s| s.to_string()).collect(),
+        }),
+        ["super", components @ ..] => {
+            let additional_super = components.iter().take_while(|s| **s == "super").count();
+            Some(syntax::ModulePath {
+                origin: syntax::PathOrigin::Relative(1 + additional_super),
+                components: components
+                    .iter()
+                    .skip(additional_super)
+                    .map(|s| s.to_string())
+                    .collect(),
+            })
+        }
+        [pkg, components @ ..] => Some(syntax::ModulePath {
+            origin: syntax::PathOrigin::Package(pkg.to_string()),
+            components: components.iter().map(|s| s.to_string()).collect(),
+        }),
     }
 }
