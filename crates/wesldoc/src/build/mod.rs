@@ -62,7 +62,7 @@ impl PackageBuild {
                 )
             }
             PackageId::Path(path, name) => (
-                Package::from_path(&path, name.clone())?,
+                Package::from_path(path, name.clone())?,
                 Either::Right(&**path),
             ),
         };

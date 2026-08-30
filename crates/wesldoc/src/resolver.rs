@@ -5,7 +5,10 @@ use crate::{
 };
 use anyhow::Result;
 use either::Either;
-use std::{collections::hash_map::Entry, sync::Arc};
+use std::{
+    collections::{HashSet, hash_map::Entry},
+    sync::Arc,
+};
 use wesldoc_ast::{Conditional, DefinitionPath, Ident, ItemKind};
 use wesldoc_compiler::{
     ResolveItemKind, ResolvedItem, Resolver, build_conditional::conditional_from_attributes,
@@ -56,18 +59,23 @@ impl<'a> CompilePackageResolver<'a> {
         Some(Arc::clone(syntax))
     }
 
-    // TODO(no-comp): detect infinite loops!!! (e.g. keep track of visited (package.id, path), break on cycle)
     #[expect(clippy::too_many_arguments)]
     fn resolve_in(
         &mut self,
         root_package_id: &PackageId,
         package: &Package,
-        include_imports: bool,
         item_path: &[String],
         item_kind: ResolveItemKind,
+        include_imports: bool,
+        visited: &mut HashSet<(PackageId, Vec<String>)>,
         results: &mut Vec<ResolvedItem>,
         condition: Conditional,
     ) {
+        if !visited.insert((package.id.clone(), item_path.to_vec())) {
+            // Already visited this (package.id, item_path), avoid infinite loop
+            return;
+        }
+
         let (prefix_path, name) = {
             match item_kind {
                 ResolveItemKind::Declaration => (),
@@ -112,6 +120,7 @@ impl<'a> CompilePackageResolver<'a> {
                     prefix_path,
                     std::slice::from_ref(name),
                     item_kind,
+                    visited,
                     results,
                     condition.clone(),
                 );
@@ -158,6 +167,7 @@ impl<'a> CompilePackageResolver<'a> {
         path: &[String],
         item_path: &[String],
         item_kind: ResolveItemKind,
+        visited: &mut HashSet<(PackageId, Vec<String>)>,
         results: &mut Vec<ResolvedItem>,
         condition: Conditional,
     ) {
@@ -187,7 +197,10 @@ impl<'a> CompilePackageResolver<'a> {
                         }
                     }
 
-                    import_path.components.extend_from_slice(item_path);
+                    import_path
+                        .components
+                        .push(import_item.ident.name().to_string());
+                    import_path.components.extend_from_slice(&item_path[1..]);
 
                     // And condition with import's conditional
                     let condition = Conditional::And(
@@ -202,9 +215,10 @@ impl<'a> CompilePackageResolver<'a> {
                             self.resolve_in(
                                 root_package_id,
                                 package,
-                                false,
                                 path,
                                 item_kind,
+                                false,
+                                visited,
                                 results,
                                 condition,
                             );
@@ -221,9 +235,10 @@ impl<'a> CompilePackageResolver<'a> {
                             self.resolve_in(
                                 root_package_id,
                                 package,
-                                false,
                                 &path,
                                 item_kind,
+                                false,
+                                visited,
                                 results,
                                 condition,
                             );
@@ -242,9 +257,10 @@ impl<'a> CompilePackageResolver<'a> {
                             self.resolve_in(
                                 root_package_id,
                                 &package,
-                                false,
                                 path,
                                 item_kind,
+                                false,
+                                visited,
                                 results,
                                 condition,
                             );
@@ -338,9 +354,10 @@ impl Resolver for CompilePackageResolver<'_> {
                 self.resolve_in(
                     root_package_id,
                     &package_from,
-                    false,
                     &item_path.components,
                     item_kind,
+                    false,
+                    &mut HashSet::new(),
                     &mut results,
                     Conditional::True,
                 );
@@ -359,9 +376,10 @@ impl Resolver for CompilePackageResolver<'_> {
                 self.resolve_in(
                     root_package_id,
                     &package_from,
-                    include_imports,
                     &path,
                     item_kind,
+                    include_imports,
+                    &mut HashSet::new(),
                     &mut results,
                     Conditional::True,
                 );
@@ -381,15 +399,30 @@ impl Resolver for CompilePackageResolver<'_> {
                             path_from,
                             &item_path,
                             item_kind,
+                            &mut HashSet::new(),
                             &mut results,
                             Conditional::True,
                         );
                     }
                 }
 
-                // TODO(no-comp): resolve using pkg as dependency
-                // TODO(no-comp): if one of the imports (or the "sum" of the imports) is "unconditional"
-                //       this should not be considered, as this shadows any dependency usage?
+                // TODO(no-comp): if one of the imports (or the "sum" of the imports) from above is
+                //                "unconditional" below should not be considered, as this shadows
+                //                any dependency usage?
+
+                // Resolve using pkg as dependency
+                if let Some(dep_pkg) = self.resolve_dependency_package(&package_from.id, pkg) {
+                    self.resolve_in(
+                        root_package_id,
+                        &dep_pkg,
+                        &item_path.components,
+                        item_kind,
+                        false,
+                        &mut HashSet::new(),
+                        &mut results,
+                        Conditional::True,
+                    );
+                }
             }
         }
 
