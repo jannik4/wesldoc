@@ -1,6 +1,6 @@
 use wesldoc_ast::*;
 
-// TODO: resolved items (simplify conditionals, remove if contradiction, ...)
+// TODO(no-comp): resolved items (simplify conditionals, remove if contradiction, ...)
 
 pub fn post_process(docs: &mut WeslDocs) {
     // Post process modules

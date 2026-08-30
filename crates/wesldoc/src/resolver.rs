@@ -90,7 +90,7 @@ impl<'a> CompilePackageResolver<'a> {
         Some(Arc::clone(syntax))
     }
 
-    // TODO: detect infinite loops!!! (e.g. keep track of visited (package.id, path), break on cycle)
+    // TODO(no-comp): detect infinite loops!!! (e.g. keep track of visited (package.id, path), break on cycle)
     fn resolve_in(
         &mut self,
         package: &Package,
@@ -194,7 +194,7 @@ impl<'a> CompilePackageResolver<'a> {
         condition: Conditional,
     ) {
         let Some(import_path) = &import.path else {
-            // TODO: Handle this
+            // TODO(no-comp): Handle this
             // for example see: https://github.com/webgpu-tools/wesl-rs/blob/3c94796ccf329076af6cf158727e5fa55eb3b82a/crates/wesl/src/import.rs#L383-L405
             return;
         };
@@ -271,7 +271,7 @@ impl<'a> CompilePackageResolver<'a> {
                                                 continue;
                                             };
 
-                                            // TODO: handle error?
+                                            // TODO(no-comp): handle error?
                                             match Package::new_dependency(
                                                 this_cargo_package,
                                                 package_name,
@@ -365,8 +365,8 @@ impl Resolver for CompilePackageResolver<'_> {
                     }
                 }
 
-                // TODO: resolve using pkg as dependency
-                // TODO: if one of the imports (or the "sum" of the imports) is "unconditional"
+                // TODO(no-comp): resolve using pkg as dependency
+                // TODO(no-comp): if one of the imports (or the "sum" of the imports) is "unconditional"
                 //       this should not be considered, as this shadows any dependency usage?
             }
         }

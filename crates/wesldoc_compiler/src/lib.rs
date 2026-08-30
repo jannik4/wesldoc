@@ -161,7 +161,7 @@ fn compile_module(
     // Collect translate time features
     module.translate_time_features = collect_features(ctx);
 
-    // TODO: Compile re-exports (collect from imports)
+    // TODO(no-comp): Compile re-exports (collect from imports)
     // --> create a new context then (also new resolver as resolver is currently bound to this package)
 
     // Compile locally defined global declarations
