@@ -30,10 +30,17 @@ use thiserror::Error;
 use wesldoc_ast::*;
 use wgsl_parse::syntax::{self, ModulePath, TranslationUnit};
 
-pub const ATTRIBUTE_CONDITIONAL: &str = "cfg";
+pub const ATTRIBUTE_CONDITIONAL: &str = "computed_cfg";
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ResolveItemKind {
+    Declaration,
+    DeclarationOrModule,
+}
+
+#[derive(Debug, Clone)]
 pub struct ResolvedItem {
     pub kind: ItemKind,
     pub def_path: DefinitionPath,
@@ -41,13 +48,19 @@ pub struct ResolvedItem {
     pub conditional: Option<Conditional>,
 }
 
+#[derive(Debug, Clone)]
 pub struct ResolverResult {
     pub version: Version,
     pub dependencies: Vec<(String, Version)>,
 }
 
 pub trait Resolver {
-    fn resolve_item(&mut self, path_from: &[String], item_path: &ModulePath) -> Vec<ResolvedItem>;
+    fn resolve_item(
+        &mut self,
+        path_from: &[String],
+        item_path: &ModulePath,
+        item_kind: ResolveItemKind,
+    ) -> Vec<ResolvedItem>;
     fn finish(self) -> ResolverResult;
 }
 

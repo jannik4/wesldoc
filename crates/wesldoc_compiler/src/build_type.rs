@@ -1,4 +1,4 @@
-use crate::{Context, build_expression};
+use crate::{Context, ResolveItemKind, build_expression};
 use wesldoc_ast::*;
 use wgsl_parse::syntax;
 
@@ -11,7 +11,7 @@ pub fn build_type(ty: &syntax::TypeExpression, ctx: &Context) -> TypeExpression 
     });
     path.components.push(name.clone());
 
-    match ctx.resolve_item(&path) {
+    match ctx.resolve_item(&path, ResolveItemKind::Declaration) {
         Some((name, kind, def_path)) => TypeExpression::Referenced {
             name,
             kind,

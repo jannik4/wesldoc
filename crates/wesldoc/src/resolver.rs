@@ -9,9 +9,10 @@ use std::{
     collections::{HashMap, hash_map::Entry},
     sync::Arc,
 };
-use wesldoc_ast::{Conditional, DefinitionPath, ItemKind};
+use wesldoc_ast::{Conditional, DefinitionPath, Ident, ItemKind};
 use wesldoc_compiler::{
-    ResolvedItem, Resolver, ResolverResult, build_conditional::conditional_from_attributes,
+    ResolveItemKind, ResolvedItem, Resolver, ResolverResult,
+    build_conditional::conditional_from_attributes,
 };
 use wgsl_parse::{SyntaxNode, syntax};
 
@@ -58,6 +59,19 @@ impl<'a> CompilePackageResolver<'a> {
         })
     }
 
+    fn get_module_name(&mut self, package_id: PackageId, path: &[String]) -> Option<String> {
+        let wesl_package = self.cache.get_or_build(package_id).ok().flatten()?;
+
+        // Navigate to the module specified by the path
+        let mut module = &*wesl_package;
+        for component in path {
+            let submodule = module.submodules.iter().find(|m| m.name == *component)?;
+            module = submodule;
+        }
+
+        Some(module.name.clone())
+    }
+
     fn get_syntax(
         &mut self,
         package_id: PackageId,
@@ -81,12 +95,41 @@ impl<'a> CompilePackageResolver<'a> {
         &mut self,
         package: &Package,
         include_imports: bool,
-        path: &[String],
-        name: &str,
+        item_path: &[String],
+        item_kind: ResolveItemKind,
         results: &mut Vec<ResolvedItem>,
         condition: Conditional,
     ) {
-        let Some(syntax) = self.get_syntax(package.id.clone(), path) else {
+        let (prefix_path, name) = {
+            match item_kind {
+                ResolveItemKind::Declaration => (),
+                ResolveItemKind::DeclarationOrModule => {
+                    if let Some(mod_name) = self.get_module_name(package.id.clone(), item_path) {
+                        results.push(ResolvedItem {
+                            name: Ident(mod_name),
+                            kind: ItemKind::Module,
+                            def_path: if package.id == self.root_package.id {
+                                DefinitionPath::Absolute(item_path.to_vec())
+                            } else {
+                                DefinitionPath::Package(
+                                    package.package_name.clone(),
+                                    package.version.clone(),
+                                    item_path.to_vec(),
+                                )
+                            },
+                            conditional: None, // Modules always exist, so no conditional
+                        });
+                    }
+                }
+            }
+
+            match item_path {
+                [path @ .., name] => (path, name),
+                [] => return, // No name to resolve
+            }
+        };
+
+        let Some(syntax) = self.get_syntax(package.id.clone(), prefix_path) else {
             return;
         };
 
@@ -100,8 +143,9 @@ impl<'a> CompilePackageResolver<'a> {
             self.resolve_import(
                 package,
                 import,
-                path,
-                &[name.to_string()],
+                prefix_path,
+                std::slice::from_ref(name),
+                item_kind,
                 results,
                 condition.clone(),
             );
@@ -112,21 +156,22 @@ impl<'a> CompilePackageResolver<'a> {
             let Some((decl_name, decl_kind)) = decl_info(decl) else {
                 continue;
             };
-            if *decl_name.name() != name {
+            if *decl_name.name() != *name {
                 continue;
             }
             let decl_condition =
                 conditional_from_attributes(decl.attributes()).unwrap_or(Conditional::True);
 
             results.push(ResolvedItem {
+                name: Ident(name.to_string()),
                 kind: decl_kind,
                 def_path: if package.id == self.root_package.id {
-                    DefinitionPath::Absolute(path.to_vec())
+                    DefinitionPath::Absolute(prefix_path.to_vec())
                 } else {
                     DefinitionPath::Package(
                         package.package_name.clone(),
                         package.version.clone(),
-                        path.to_vec(),
+                        prefix_path.to_vec(),
                     )
                 },
                 conditional: Some(Conditional::And(
@@ -137,17 +182,20 @@ impl<'a> CompilePackageResolver<'a> {
         }
     }
 
+    #[expect(clippy::too_many_arguments)]
     fn resolve_import(
         &mut self,
         package: &Package,
         import: &syntax::ImportStatement,
         path: &[String],
-        item_path_and_name: &[String],
+        item_path: &[String],
+        item_kind: ResolveItemKind,
         results: &mut Vec<ResolvedItem>,
         condition: Conditional,
     ) {
         let Some(import_path) = &import.path else {
             // TODO: Handle this
+            // for example see: https://github.com/webgpu-tools/wesl-rs/blob/3c94796ccf329076af6cf158727e5fa55eb3b82a/crates/wesl/src/import.rs#L383-L405
             return;
         };
         let import_condition =
@@ -160,21 +208,18 @@ impl<'a> CompilePackageResolver<'a> {
                     // Check name
                     match &import_item.rename {
                         Some(rename) => {
-                            if *rename.name() != item_path_and_name[0] {
+                            if *rename.name() != item_path[0] {
                                 continue;
                             }
                         }
                         None => {
-                            if *import_item.ident.name() != item_path_and_name[0] {
+                            if *import_item.ident.name() != item_path[0] {
                                 continue;
                             }
                         }
                     }
 
-                    import_path
-                        .components
-                        .extend_from_slice(&item_path_and_name[..item_path_and_name.len() - 1]);
-                    let name = item_path_and_name.last().unwrap();
+                    import_path.components.extend_from_slice(item_path);
 
                     // And condition with import's conditional
                     let condition = Conditional::And(
@@ -186,7 +231,7 @@ impl<'a> CompilePackageResolver<'a> {
                     match import_path.origin {
                         syntax::PathOrigin::Absolute => {
                             let path = &import_path.components;
-                            self.resolve_in(package, false, path, name, results, condition);
+                            self.resolve_in(package, false, path, item_kind, results, condition);
                         }
                         syntax::PathOrigin::Relative(n) => {
                             let to_keep = path.len().saturating_sub(n);
@@ -197,7 +242,7 @@ impl<'a> CompilePackageResolver<'a> {
                                 .cloned()
                                 .collect::<Vec<_>>();
 
-                            self.resolve_in(package, false, &path, name, results, condition);
+                            self.resolve_in(package, false, &path, item_kind, results, condition);
                         }
                         syntax::PathOrigin::Package(package_name) => {
                             let package = match &mut self.dependencies {
@@ -245,7 +290,7 @@ impl<'a> CompilePackageResolver<'a> {
                                 }
                             };
                             let path = &import_path.components;
-                            self.resolve_in(&package, false, path, name, results, condition);
+                            self.resolve_in(&package, false, path, item_kind, results, condition);
                         }
                     }
                 }
@@ -265,7 +310,7 @@ impl Resolver for CompilePackageResolver<'_> {
         &mut self,
         path_from: &[String],
         item_path: &syntax::ModulePath,
-        item_name: &str,
+        item_kind: ResolveItemKind,
     ) -> Vec<ResolvedItem> {
         let mut results = Vec::new();
 
@@ -275,47 +320,52 @@ impl Resolver for CompilePackageResolver<'_> {
                     &Arc::clone(&self.root_package),
                     false,
                     &item_path.components,
-                    item_name,
+                    item_kind,
                     &mut results,
                     Conditional::True,
                 );
             }
             syntax::PathOrigin::Relative(n) => {
-                let include_imports = *n == 0 && item_path.components.is_empty();
+                let include_imports = *n == 0 && item_path.components.len() == 1;
 
                 let to_keep = path_from.len().saturating_sub(*n);
-                let path = path_from.iter().take(to_keep).cloned().collect::<Vec<_>>();
+                let path = path_from
+                    .iter()
+                    .take(to_keep)
+                    .chain(item_path.components.iter())
+                    .cloned()
+                    .collect::<Vec<_>>();
 
                 self.resolve_in(
                     &Arc::clone(&self.root_package),
                     include_imports,
                     &path,
-                    item_name,
+                    item_kind,
                     &mut results,
                     Conditional::True,
                 );
             }
             syntax::PathOrigin::Package(pkg) => {
-                // Resolve as pkg as suffix as one of the imports
+                // Resolve using pkg as suffix as one of the imports, so not really a "package path"
                 if let Some(syntax) = self.get_syntax(self.root_package.id.clone(), path_from) {
                     for import in &syntax.imports {
-                        let item_path_and_name = [pkg.clone()]
+                        let item_path = [pkg.clone()]
                             .into_iter()
                             .chain(item_path.components.iter().cloned())
-                            .chain([item_name.to_string()])
                             .collect::<Vec<_>>();
                         self.resolve_import(
                             &Arc::clone(&self.root_package),
                             import,
                             path_from,
-                            &item_path_and_name,
+                            &item_path,
+                            item_kind,
                             &mut results,
                             Conditional::True,
                         );
                     }
                 }
 
-                // TODO: resolve as pkg as dependency
+                // TODO: resolve using pkg as dependency
                 // TODO: if one of the imports (or the "sum" of the imports) is "unconditional"
                 //       this should not be considered, as this shadows any dependency usage?
             }

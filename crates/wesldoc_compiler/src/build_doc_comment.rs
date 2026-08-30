@@ -1,4 +1,4 @@
-use crate::Context;
+use crate::{Context, ResolveItemKind};
 use wesldoc_ast::*;
 use wgsl_parse::syntax;
 
@@ -139,26 +139,29 @@ fn resolve_intra_doc_links(events: &mut [md::Event], ctx: &Context) {
         let md::Event::Start(md::Tag::Link { dest_url, .. }) = event else {
             continue;
         };
-        let Some(path) = path_from_url(dest_url) else {
-            continue;
-        };
 
-        if let Some((name, kind, def_path)) = ctx.resolve_item(&path) {
-            *dest_url = IntraDocLink {
-                def_path,
-                kind,
-                name,
+        for path in paths_from_url(dest_url) {
+            if let Some((name, kind, def_path)) =
+                ctx.resolve_item(&path, ResolveItemKind::DeclarationOrModule)
+            {
+                *dest_url = IntraDocLink {
+                    def_path,
+                    kind,
+                    name,
+                }
+                .to_string()
+                .into();
+                break;
             }
-            .to_string()
-            .into();
-        } else {
-            log::warn!("Failed to resolve intra-doc link: {dest_url}");
         }
+
+        // TODO: warn if paths_from_url returns one or more paths but none of them resolves?
     }
 }
 
-fn path_from_url(url: &str) -> Option<syntax::ModulePath> {
-    let components = url
+// Module paths this could resolve to. Paths are ordered by precedence from highest to lowest.
+fn paths_from_url(url: &str) -> Vec<syntax::ModulePath> {
+    let Ok(components) = url
         .split("::")
         .map(|s| s.trim())
         .map(|s| {
@@ -169,32 +172,43 @@ fn path_from_url(url: &str) -> Option<syntax::ModulePath> {
             }
         })
         .collect::<Result<Vec<_>, _>>()
-        .ok()?;
+    else {
+        return Vec::new();
+    };
 
     match components.as_slice() {
-        [] => None,
-        [name] => Some(syntax::ModulePath {
-            origin: syntax::PathOrigin::Relative(0),
-            components: vec![name.to_string()],
-        }),
-        ["package", components @ ..] => Some(syntax::ModulePath {
+        [] => Vec::new(),
+        [name] => {
+            // Only one component could be a local module/item or a dependency package
+            vec![
+                syntax::ModulePath {
+                    origin: syntax::PathOrigin::Relative(0),
+                    components: vec![name.to_string()],
+                },
+                syntax::ModulePath {
+                    origin: syntax::PathOrigin::Package(name.to_string()),
+                    components: Vec::new(),
+                },
+            ]
+        }
+        ["package", components @ ..] => vec![syntax::ModulePath {
             origin: syntax::PathOrigin::Absolute,
             components: components.iter().map(|s| s.to_string()).collect(),
-        }),
+        }],
         ["super", components @ ..] => {
             let additional_super = components.iter().take_while(|s| **s == "super").count();
-            Some(syntax::ModulePath {
+            vec![syntax::ModulePath {
                 origin: syntax::PathOrigin::Relative(1 + additional_super),
                 components: components
                     .iter()
                     .skip(additional_super)
                     .map(|s| s.to_string())
                     .collect(),
-            })
+            }]
         }
-        [pkg, components @ ..] => Some(syntax::ModulePath {
+        [pkg, components @ ..] => vec![syntax::ModulePath {
             origin: syntax::PathOrigin::Package(pkg.to_string()),
             components: components.iter().map(|s| s.to_string()).collect(),
-        }),
+        }],
     }
 }
