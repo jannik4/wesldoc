@@ -182,8 +182,8 @@ fn compile_module<T>(
     // Collect translate time features
     module.translate_time_features = collect_features(ctx);
 
-    // TODO(no-comp): Compile re-exports (collect from imports)
-    // --> create a new context then
+    // TODO: Compile re-exports (collect from imports)
+    // --> create a new context for this!
 
     // Compile locally defined global declarations
     compile_decls(&syntax.global_declarations, ctx, &mut module)?;

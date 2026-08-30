@@ -172,7 +172,7 @@ impl<'a> CompilePackageResolver<'a> {
         condition: Conditional,
     ) {
         let Some(import_path) = &import.path else {
-            // TODO(no-comp): Handle this
+            // TODO: Handle no import path
             // for example see: https://github.com/webgpu-tools/wesl-rs/blob/3c94796ccf329076af6cf158727e5fa55eb3b82a/crates/wesl/src/import.rs#L383-L405
             return;
         };
@@ -282,7 +282,7 @@ impl<'a> CompilePackageResolver<'a> {
         package_from: &PackageId,
         dependency_name: &str,
     ) -> Option<Arc<Package>> {
-        // TODO(no-comp): handle error?
+        // TODO: handle error?
         let package = self
             .cache
             .get_or_build(package_from.clone())
@@ -308,20 +308,17 @@ impl<'a> CompilePackageResolver<'a> {
                             PackageId::Path(path, _) => Either::Right(&**path),
                         };
 
-                        // TODO(no-comp): handle error?
-                        match Package::new_dependency(
+                        // TODO: handle error?
+                        let pkg = Package::new_dependency(
                             this_package,
                             dependency_name,
                             None,
                             &self.cargo_metadata,
-                        ) {
-                            Ok(pkg) => {
-                                let pkg = Arc::new(pkg);
-                                entry.insert(Arc::clone(&pkg));
-                                pkg
-                            }
-                            Err(_) => return None,
-                        }
+                        )
+                        .ok()?;
+                        let pkg = Arc::new(pkg);
+                        entry.insert(Arc::clone(&pkg));
+                        pkg
                     }
                 }
             }
@@ -343,7 +340,7 @@ impl Resolver for CompilePackageResolver<'_> {
 
         let root_package_id = package_from;
 
-        // TODO(no-comp): handle error?
+        // TODO: handle error?
         let package_from = match self.cache.get_or_build(package_from.clone()) {
             Ok(Some(pkg)) => Arc::clone(&pkg.package),
             _ => return results,
@@ -406,7 +403,7 @@ impl Resolver for CompilePackageResolver<'_> {
                     }
                 }
 
-                // TODO(no-comp): if one of the imports (or the "sum" of the imports) from above is
+                // TODO: if one of the imports (or the "sum" of the imports) from above is
                 //                "unconditional" below should not be considered, as this shadows
                 //                any dependency usage?
 
@@ -442,7 +439,7 @@ impl Resolver for CompilePackageResolver<'_> {
         &self,
         package_id: &Self::PackageId,
     ) -> Vec<(String, wesldoc_ast::Version)> {
-        // TODO(no-comp): handle error?
+        // TODO: handle error?
         let Some(pkg) = self.cache.get(package_id) else {
             return Vec::new();
         };

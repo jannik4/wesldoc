@@ -67,7 +67,7 @@ impl<'a, T> Context<'a, T> {
                 .unwrap()
                 .resolve_item(self.package_id, self.path, path, item_kind);
 
-        // TODO(no-comp): ...
+        // TODO: Return all items not just the first one!
         items
             .first()
             .map(|item| (item.name.clone(), item.kind, item.def_path.clone()))
