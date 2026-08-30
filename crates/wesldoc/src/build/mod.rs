@@ -38,7 +38,7 @@ impl BuildCache {
                         };
                         Package::from_cargo_package(cargo_package)?
                     }
-                    PackageId::Path(_path_buf) => todo!(),
+                    PackageId::Path(path, name) => Package::from_path(path, name.clone())?,
                 };
                 let wesl_module = Arc::new(build_package(package)?);
                 entry.insert(Arc::clone(&wesl_module));

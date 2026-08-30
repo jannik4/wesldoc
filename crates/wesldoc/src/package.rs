@@ -40,6 +40,21 @@ impl Package {
         })
     }
 
+    pub fn from_path(path: &Path, name: String) -> Result<Self> {
+        let path = path.canonicalize()?;
+        let (wesl_toml, has_wesl_toml_file) = load_wesl_toml(path.join("wesl.toml"))?;
+
+        Ok(Self {
+            package_name: name.clone(),
+            root: path.join(&wesl_toml.package.root),
+            wesl_toml,
+            has_wesl_toml_file,
+            version: Version::new(0, 0, 0), // TODO: path dependencies don't have versions
+
+            id: PackageId::Path(path, name),
+        })
+    }
+
     pub fn new_dependency(
         this_cargo_package: &CargoPackage,
 
@@ -54,22 +69,10 @@ impl Package {
 
         // Handle path dependencies
         if let Some(dep_path) = dependency.and_then(|d| d.path.as_ref()) {
-            let dep_path = this_cargo_package
-                .crate_path()
-                .join(dep_path)
-                .canonicalize()?;
-            let (dep_wesl_toml, dep_has_wesl_toml_file) =
-                load_wesl_toml(dep_path.join("wesl.toml"))?;
-
-            return Ok(Package {
-                package_name: dep_name.clone(),
-                root: dep_path.join(&dep_wesl_toml.package.root),
-                wesl_toml: dep_wesl_toml,
-                has_wesl_toml_file: dep_has_wesl_toml_file,
-                version: Version::new(0, 0, 0), // TODO: path dependencies don't have versions
-
-                id: PackageId::Path(dep_path),
-            });
+            return Self::from_path(
+                &this_cargo_package.crate_path().join(dep_path),
+                dep_name.clone(),
+            );
         }
 
         let dep_pkg_id = this_cargo_package
@@ -122,5 +125,5 @@ fn load_wesl_toml(path: impl AsRef<Path>) -> Result<(WeslToml, bool)> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum PackageId {
     Cargo(cargo_metadata::PackageId),
-    Path(PathBuf),
+    Path(PathBuf, String), // Path and package name
 }
