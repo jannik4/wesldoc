@@ -53,15 +53,15 @@ pub trait Resolver {
 
     fn resolve_item(
         &mut self,
-        package_from: &Self::PackageId,
-        path_from: &[String],
+        caller_package: &Self::PackageId,
+        caller_path: &[String],
         item_path: &ModulePath,
         item_kind: ResolveItemKind,
     ) -> Vec<ResolvedItem>;
 
     fn resolve_dependency(
         &mut self,
-        package_from: &Self::PackageId,
+        caller_package: &Self::PackageId,
         dependency_name: &str,
     ) -> Option<Self::PackageId>;
 

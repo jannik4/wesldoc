@@ -63,7 +63,7 @@ impl<'a> CompilePackageResolver<'a> {
     fn resolve_in(
         &mut self,
         root_package_id: &PackageId,
-        package: &Package,
+        package: &Package, // The package to resolve in
         item_path: &[String],
         item_kind: ResolveItemKind,
         include_imports: bool,
@@ -115,8 +115,8 @@ impl<'a> CompilePackageResolver<'a> {
             if include_imports || is_export {
                 self.resolve_import(
                     root_package_id,
-                    package,
                     import,
+                    package,
                     prefix_path,
                     std::slice::from_ref(name),
                     item_kind,
@@ -162,9 +162,9 @@ impl<'a> CompilePackageResolver<'a> {
     fn resolve_import(
         &mut self,
         root_package_id: &PackageId,
-        package: &Package,
         import: &syntax::ImportStatement,
-        path: &[String],
+        caller_package: &Package,
+        caller_path: &[String],
         item_path: &[String],
         item_kind: ResolveItemKind,
         visited: &mut HashSet<(PackageId, Vec<String>)>,
@@ -214,7 +214,7 @@ impl<'a> CompilePackageResolver<'a> {
                             let path = &import_path.components;
                             self.resolve_in(
                                 root_package_id,
-                                package,
+                                caller_package,
                                 path,
                                 item_kind,
                                 false,
@@ -224,8 +224,8 @@ impl<'a> CompilePackageResolver<'a> {
                             );
                         }
                         syntax::PathOrigin::Relative(n) => {
-                            let to_keep = path.len().saturating_sub(n);
-                            let path = path
+                            let to_keep = caller_path.len().saturating_sub(n);
+                            let path = caller_path
                                 .iter()
                                 .take(to_keep)
                                 .chain(&import_path.components)
@@ -234,7 +234,7 @@ impl<'a> CompilePackageResolver<'a> {
 
                             self.resolve_in(
                                 root_package_id,
-                                package,
+                                caller_package,
                                 &path,
                                 item_kind,
                                 false,
@@ -245,7 +245,7 @@ impl<'a> CompilePackageResolver<'a> {
                         }
                         syntax::PathOrigin::Package(package_name) => {
                             let package = match self
-                                .resolve_dependency_package(&package.id, &package_name)
+                                .resolve_dependency_package(&caller_package.id, &package_name)
                             {
                                 Some(pkg) => pkg,
                                 None => {
@@ -279,13 +279,13 @@ impl<'a> CompilePackageResolver<'a> {
 
     fn resolve_dependency_package(
         &mut self,
-        package_from: &PackageId,
+        caller_package: &PackageId,
         dependency_name: &str,
     ) -> Option<Arc<Package>> {
         // TODO: handle error?
         let package = self
             .cache
-            .get_or_build(package_from.clone())
+            .get_or_build(caller_package.clone())
             .ok()
             .flatten()?;
 
@@ -301,7 +301,7 @@ impl<'a> CompilePackageResolver<'a> {
                 match dependencies.entry(dependency_name.to_string()) {
                     Entry::Occupied(entry) => Arc::clone(entry.get()),
                     Entry::Vacant(entry) => {
-                        let this_package = match &package_from {
+                        let this_package = match &caller_package {
                             PackageId::Cargo(package_id) => {
                                 Either::Left(self.cargo_metadata.package(package_id)?)
                             }
@@ -331,17 +331,17 @@ impl Resolver for CompilePackageResolver<'_> {
 
     fn resolve_item(
         &mut self,
-        package_from: &Self::PackageId,
-        path_from: &[String],
+        caller_package: &Self::PackageId,
+        caller_path: &[String],
         item_path: &syntax::ModulePath,
         item_kind: ResolveItemKind,
     ) -> Vec<ResolvedItem> {
         let mut results = Vec::new();
 
-        let root_package_id = package_from;
+        let root_package_id = caller_package;
 
         // TODO: handle error?
-        let package_from = match self.cache.get_or_build(package_from.clone()) {
+        let caller_package = match self.cache.get_or_build(caller_package.clone()) {
             Ok(Some(pkg)) => Arc::clone(&pkg.package),
             _ => return results,
         };
@@ -350,7 +350,7 @@ impl Resolver for CompilePackageResolver<'_> {
             syntax::PathOrigin::Absolute => {
                 self.resolve_in(
                     root_package_id,
-                    &package_from,
+                    &caller_package,
                     &item_path.components,
                     item_kind,
                     false,
@@ -362,8 +362,8 @@ impl Resolver for CompilePackageResolver<'_> {
             syntax::PathOrigin::Relative(n) => {
                 let include_imports = *n == 0 && item_path.components.len() == 1;
 
-                let to_keep = path_from.len().saturating_sub(*n);
-                let path = path_from
+                let to_keep = caller_path.len().saturating_sub(*n);
+                let path = caller_path
                     .iter()
                     .take(to_keep)
                     .chain(item_path.components.iter())
@@ -372,7 +372,7 @@ impl Resolver for CompilePackageResolver<'_> {
 
                 self.resolve_in(
                     root_package_id,
-                    &package_from,
+                    &caller_package,
                     &path,
                     item_kind,
                     include_imports,
@@ -383,7 +383,7 @@ impl Resolver for CompilePackageResolver<'_> {
             }
             syntax::PathOrigin::Package(pkg) => {
                 // Resolve using pkg as suffix as one of the imports, so not really a "package path"
-                if let Some(syntax) = self.get_syntax(package_from.id.clone(), path_from) {
+                if let Some(syntax) = self.get_syntax(caller_package.id.clone(), caller_path) {
                     for import in &syntax.imports {
                         let item_path = [pkg.clone()]
                             .into_iter()
@@ -391,9 +391,9 @@ impl Resolver for CompilePackageResolver<'_> {
                             .collect::<Vec<_>>();
                         self.resolve_import(
                             root_package_id,
-                            &package_from,
                             import,
-                            path_from,
+                            &caller_package,
+                            caller_path,
                             &item_path,
                             item_kind,
                             &mut HashSet::new(),
@@ -408,7 +408,7 @@ impl Resolver for CompilePackageResolver<'_> {
                 //                any dependency usage?
 
                 // Resolve using pkg as dependency
-                if let Some(dep_pkg) = self.resolve_dependency_package(&package_from.id, pkg) {
+                if let Some(dep_pkg) = self.resolve_dependency_package(&caller_package.id, pkg) {
                     self.resolve_in(
                         root_package_id,
                         &dep_pkg,
@@ -428,10 +428,10 @@ impl Resolver for CompilePackageResolver<'_> {
 
     fn resolve_dependency(
         &mut self,
-        package_from: &Self::PackageId,
+        caller_package: &Self::PackageId,
         dependency_name: &str,
     ) -> Option<Self::PackageId> {
-        self.resolve_dependency_package(package_from, dependency_name)
+        self.resolve_dependency_package(caller_package, dependency_name)
             .map(|pkg| pkg.id.clone())
     }
 
