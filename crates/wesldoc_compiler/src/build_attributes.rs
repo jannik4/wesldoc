@@ -1,15 +1,18 @@
-use crate::{Context, build_expression, map};
-use wesl::syntax;
+use crate::{ATTRIBUTE_CONDITIONAL, Context, build_expression, map};
 use wesldoc_ast::*;
+use wgsl_parse::syntax;
 
-pub fn build_attributes(attributes: &[syntax::AttributeNode], ctx: &Context) -> Vec<Attribute> {
+pub fn build_attributes<T>(
+    attributes: &[syntax::AttributeNode],
+    ctx: &Context<T>,
+) -> Vec<Attribute> {
     attributes
         .iter()
         .filter_map(|attr| build_attribute(attr, ctx))
         .collect()
 }
 
-fn build_attribute(attr: &syntax::Attribute, ctx: &Context) -> Option<Attribute> {
+fn build_attribute<T>(attr: &syntax::Attribute, ctx: &Context<T>) -> Option<Attribute> {
     Some(match attr {
         syntax::Attribute::Align(expr) => Attribute::Align(build_expression(expr, ctx)),
         syntax::Attribute::Binding(expr) => Attribute::Binding(build_expression(expr, ctx)),
@@ -44,13 +47,20 @@ fn build_attribute(attr: &syntax::Attribute, ctx: &Context) -> Option<Attribute>
         syntax::Attribute::Vertex => Attribute::Vertex,
         syntax::Attribute::Fragment => Attribute::Fragment,
         syntax::Attribute::Compute => Attribute::Compute,
-        syntax::Attribute::Custom(custom_attribute) => Attribute::Custom {
-            name: custom_attribute.name.clone(),
-            arguments: custom_attribute
-                .arguments
-                .as_ref()
-                .map(|args| args.iter().map(|arg| build_expression(arg, ctx)).collect()),
-        },
+        syntax::Attribute::Custom(custom_attribute) => {
+            // Conditional attributes are handled separately
+            if custom_attribute.name == ATTRIBUTE_CONDITIONAL {
+                return None;
+            }
+
+            Attribute::Custom {
+                name: custom_attribute.name.clone(),
+                arguments: custom_attribute
+                    .arguments
+                    .as_ref()
+                    .map(|args| args.iter().map(|arg| build_expression(arg, ctx)).collect()),
+            }
+        }
         syntax::Attribute::Task => Attribute::Task,
         syntax::Attribute::Payload(expr) => Attribute::Payload(build_expression(expr, ctx)),
         syntax::Attribute::Mesh(expr) => Attribute::Mesh(build_expression(expr, ctx)),
@@ -63,7 +73,7 @@ fn build_attribute(attr: &syntax::Attribute, ctx: &Context) -> Option<Attribute>
             return None;
         }
 
-        // Ignore for now
-        wesl::syntax::Attribute::Publish => return None, // TODO: handle publish attribute
+        // Publish attribute is handled separately
+        wgsl_parse::syntax::Attribute::Publish => return None,
     })
 }

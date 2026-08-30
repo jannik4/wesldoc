@@ -1,53 +1,22 @@
-use crate::map;
-use wesl::syntax;
+use crate::{ATTRIBUTE_CONDITIONAL, map};
 use wesldoc_ast::*;
+use wgsl_parse::syntax;
 
-pub struct ConditionalScope {
-    prev: Vec<Conditional>,
-}
-
-impl ConditionalScope {
-    pub fn new() -> Self {
-        ConditionalScope { prev: Vec::new() }
-    }
-}
-
-pub fn build_conditional(
-    scope: &mut ConditionalScope,
-    attributes: &[syntax::AttributeNode],
-) -> Option<Conditional> {
-    for attr in attributes {
-        match attr.node() {
-            syntax::Attribute::If(spanned) => {
-                let this = conditional_from_expr(spanned.node())?;
-                scope.prev.clear();
-                scope.prev.push(this.clone());
-                return Some(this);
-            }
-            syntax::Attribute::Elif(spanned) => {
-                let this = conditional_from_expr(spanned.node())?;
-                let combined = scope.prev.iter().fold(this.clone(), |acc, c| {
-                    Conditional::And(
-                        Box::new(acc),
-                        Box::new(Conditional::Not(Box::new(c.clone()))),
-                    )
-                });
-                scope.prev.push(this);
-                return Some(combined);
-            }
-            syntax::Attribute::Else => {
-                return scope
-                    .prev
-                    .drain(..)
-                    .map(|c| Conditional::Not(Box::new(c)))
-                    .reduce(|a, b| Conditional::And(Box::new(a), Box::new(b)));
-            }
-            _ => (),
+pub fn conditional_from_attributes(attributes: &[syntax::AttributeNode]) -> Option<Conditional> {
+    attributes.iter().find_map(|attr| {
+        let syntax::Attribute::Custom(syntax::CustomAttribute { name, arguments }) = attr.node()
+        else {
+            return None;
+        };
+        if name != ATTRIBUTE_CONDITIONAL {
+            return None;
         }
-    }
-
-    scope.prev.clear();
-    None
+        let args = arguments.as_ref()?;
+        if args.len() != 1 {
+            return None;
+        }
+        conditional_from_expr(&args[0])
+    })
 }
 
 fn conditional_from_expr(expr: &syntax::Expression) -> Option<Conditional> {

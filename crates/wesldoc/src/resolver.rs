@@ -1,171 +1,477 @@
 use crate::{
-    Package,
-    cargo::{CargoMetadata, CargoPackage},
+    build::{BuildCache, Dependencies},
+    cargo::CargoMetadata,
+    package::{Package, PackageId},
 };
-use std::{borrow::Cow, cell::RefCell, collections::HashMap, rc::Rc};
-use wesl::{
-    FileResolver, ModulePath, ResolveError, Resolver,
-    syntax::{ImportStatement, PathOrigin, TranslationUnit},
+use anyhow::Result;
+use either::Either;
+use std::{
+    collections::{HashSet, hash_map::Entry},
+    sync::Arc,
 };
+use wesldoc_ast::{Conditional, DefinitionPath, Ident, ItemKind};
+use wesldoc_compiler::{
+    ResolveItemKind, ResolvedItem, Resolver, build_conditional::conditional_from_attributes,
+};
+use wgsl_parse::{SyntaxNode, syntax};
 
-pub struct DocsResolver {
-    this: FileResolver,
-    dependencies: Dependencies,
-
-    root_file_imports: RefCell<Option<Vec<ImportStatement>>>,
+pub struct CompilePackageResolver<'a> {
+    cache: &'a mut BuildCache,
+    cargo_metadata: Arc<CargoMetadata>,
 }
 
-enum Dependencies {
-    Explicit {
-        dependencies: HashMap<String, (Package, FileResolver)>,
-    },
-    Auto {
-        dependencies: RefCell<HashMap<String, (Package, FileResolver)>>,
-        cargo_metadata: Rc<CargoMetadata>,
-        this_cargo_package: Box<CargoPackage>,
-    },
-}
+impl<'a> CompilePackageResolver<'a> {
+    pub fn new(cache: &'a mut BuildCache, cargo_metadata: Arc<CargoMetadata>) -> Result<Self> {
+        Ok(Self {
+            cache,
+            cargo_metadata,
+        })
+    }
 
-impl DocsResolver {
-    pub fn new_explicit(this: &Package, dependencies: impl IntoIterator<Item = Package>) -> Self {
-        Self {
-            this: FileResolver::new(&this.root),
-            dependencies: Dependencies::Explicit {
-                dependencies: dependencies
-                    .into_iter()
-                    .map(|dep| {
-                        let resolver = FileResolver::new(&dep.root);
-                        (dep.local_name.clone(), (dep, resolver))
-                    })
-                    .collect(),
-            },
+    fn get_module_name(&mut self, package_id: PackageId, path: &[String]) -> Option<String> {
+        let package = self.cache.get_or_build(package_id).ok().flatten()?;
 
-            root_file_imports: RefCell::new(None),
+        // Navigate to the module specified by the path
+        let mut module = &*package.build;
+        for component in path {
+            let submodule = module.submodules.iter().find(|m| m.name == *component)?;
+            module = submodule;
         }
+
+        Some(module.name.clone())
     }
 
-    pub fn new_auto(
-        this: &Package,
-        cargo_metadata: Rc<CargoMetadata>,
-        cargo_package: CargoPackage,
-    ) -> Self {
-        Self {
-            this: FileResolver::new(&this.root),
-            dependencies: Dependencies::Auto {
-                dependencies: RefCell::new(HashMap::new()),
-                cargo_metadata,
-                this_cargo_package: Box::new(cargo_package),
-            },
+    fn get_syntax(
+        &mut self,
+        package_id: PackageId,
+        path: &[String],
+    ) -> Option<Arc<syntax::TranslationUnit>> {
+        let package = self.cache.get_or_build(package_id).ok().flatten()?;
 
-            root_file_imports: RefCell::new(None),
+        // Navigate to the module specified by the path
+        let mut module = &*package.build;
+        for component in path {
+            let submodule = module.submodules.iter().find(|m| m.name == *component)?;
+            module = submodule;
         }
+        let (syntax, _) = module.code.as_ref()?;
+
+        Some(Arc::clone(syntax))
     }
 
-    pub fn resolved_dependencies(&self) -> Vec<Package> {
-        match &self.dependencies {
-            Dependencies::Explicit { dependencies } => {
-                dependencies.values().map(|(pkg, _)| pkg.clone()).collect()
-            }
-            Dependencies::Auto { dependencies, .. } => dependencies
-                .borrow()
-                .values()
-                .map(|(pkg, _)| pkg.clone())
-                .collect(),
+    #[expect(clippy::too_many_arguments)]
+    fn resolve_in(
+        &mut self,
+        root_package_id: &PackageId,
+        package: &Package, // The package to resolve in
+        item_path: &[String],
+        item_kind: ResolveItemKind,
+        include_imports: bool,
+        visited: &mut HashSet<(PackageId, Vec<String>)>,
+        results: &mut Vec<ResolvedItem>,
+        condition: Conditional,
+    ) {
+        if !visited.insert((package.id.clone(), item_path.to_vec())) {
+            // Already visited this (package.id, item_path), avoid infinite loop
+            return;
         }
-    }
 
-    pub fn take_root_file_imports(&self) -> Vec<ImportStatement> {
-        self.root_file_imports
-            .borrow_mut()
-            .take()
-            .unwrap_or_default()
-    }
-
-    fn resolve<T>(
-        &self,
-        path: &ModulePath,
-        f: impl FnOnce(&FileResolver, &ModulePath) -> Result<T, ResolveError>,
-    ) -> Result<T, ResolveError> {
-        match &path.origin {
-            PathOrigin::Absolute | PathOrigin::Relative(_) => Ok(f(&self.this, path)?),
-            PathOrigin::Package(package) => {
-                // Rebase the path to be absolute
-                let path_absolute = ModulePath {
-                    origin: PathOrigin::Absolute,
-                    components: path.components.clone(),
-                };
-
-                // Look up the resolver for the package
-                match &self.dependencies {
-                    Dependencies::Explicit { dependencies } => {
-                        let (_, resolver) = dependencies.get(package).ok_or_else(|| {
-                            ResolveError::ModuleNotFound(
-                                path.clone(),
-                                "package not found".to_string(),
-                            )
-                        })?;
-                        f(resolver, &path_absolute)
+        let (prefix_path, name) = {
+            match item_kind {
+                ResolveItemKind::Declaration => (),
+                ResolveItemKind::DeclarationOrModule => {
+                    if let Some(mod_name) = self.get_module_name(package.id.clone(), item_path) {
+                        results.push(ResolvedItem {
+                            name: Ident(mod_name),
+                            kind: ItemKind::Module,
+                            def_path: if package.id == *root_package_id {
+                                DefinitionPath::Absolute(item_path.to_vec())
+                            } else {
+                                DefinitionPath::Package(
+                                    package.package_name.clone(),
+                                    package.version.clone(),
+                                    item_path.to_vec(),
+                                )
+                            },
+                            conditional: None, // Modules always exist, so no conditional
+                        });
                     }
-                    Dependencies::Auto {
-                        dependencies,
-                        cargo_metadata,
-                        this_cargo_package,
-                    } => {
-                        let mut dependencies = dependencies.borrow_mut();
-                        if let Some((_, resolver)) = dependencies.get(package) {
-                            return f(resolver, &path_absolute);
+                }
+            }
+
+            match item_path {
+                [path @ .., name] => (path, name),
+                [] => return, // No name to resolve
+            }
+        };
+
+        let Some(syntax) = self.get_syntax(package.id.clone(), prefix_path) else {
+            return;
+        };
+
+        // Lookup name in imports/exports
+        for import in &syntax.imports {
+            let is_export = import.attributes.iter().any(|attr| attr.is_publish());
+            if include_imports || is_export {
+                self.resolve_import(
+                    root_package_id,
+                    import,
+                    package,
+                    prefix_path,
+                    std::slice::from_ref(name),
+                    item_kind,
+                    visited,
+                    results,
+                    condition.clone(),
+                );
+            }
+        }
+
+        // Lookup name in global declarations
+        for decl in &syntax.global_declarations {
+            let Some((decl_name, decl_kind)) = decl_info(decl) else {
+                continue;
+            };
+            if *decl_name.name() != *name {
+                continue;
+            }
+            let decl_condition =
+                conditional_from_attributes(decl.attributes()).unwrap_or(Conditional::True);
+
+            results.push(ResolvedItem {
+                name: Ident(name.to_string()),
+                kind: decl_kind,
+                def_path: if package.id == *root_package_id {
+                    DefinitionPath::Absolute(prefix_path.to_vec())
+                } else {
+                    DefinitionPath::Package(
+                        package.package_name.clone(),
+                        package.version.clone(),
+                        prefix_path.to_vec(),
+                    )
+                },
+                conditional: Some(Conditional::And(
+                    Box::new(condition.clone()),
+                    Box::new(decl_condition),
+                )),
+            });
+        }
+    }
+
+    #[expect(clippy::too_many_arguments)]
+    fn resolve_import(
+        &mut self,
+        root_package_id: &PackageId,
+        import: &syntax::ImportStatement,
+        caller_package: &Package,
+        caller_path: &[String],
+        item_path: &[String],
+        item_kind: ResolveItemKind,
+        visited: &mut HashSet<(PackageId, Vec<String>)>,
+        results: &mut Vec<ResolvedItem>,
+        condition: Conditional,
+    ) {
+        let Some(import_path) = &import.path else {
+            // TODO: Handle no import path
+            // for example see: https://github.com/webgpu-tools/wesl-rs/blob/3c94796ccf329076af6cf158727e5fa55eb3b82a/crates/wesl/src/import.rs#L383-L405
+            return;
+        };
+        let import_condition =
+            conditional_from_attributes(import.attributes()).unwrap_or(Conditional::True);
+
+        let mut to_resolve = vec![(import_path.clone(), &import.content)];
+        while let Some((mut import_path, content)) = to_resolve.pop() {
+            match content {
+                syntax::ImportContent::Item(import_item) => {
+                    // Check name
+                    match &import_item.rename {
+                        Some(rename) => {
+                            if *rename.name() != item_path[0] {
+                                continue;
+                            }
                         }
+                        None => {
+                            if *import_item.ident.name() != item_path[0] {
+                                continue;
+                            }
+                        }
+                    }
 
-                        // Dependency not used yet, try to find it
-                        let dep = Package::new_dependency(
-                            this_cargo_package,
-                            package,
-                            None,
-                            cargo_metadata,
-                        )
-                        .map_err(|err| {
-                            ResolveError::ModuleNotFound(path.clone(), err.to_string())
-                        })?;
-                        let resolver = FileResolver::new(&dep.root);
+                    import_path
+                        .components
+                        .push(import_item.ident.name().to_string());
+                    import_path.components.extend_from_slice(&item_path[1..]);
 
-                        let res = f(&resolver, &path_absolute);
-                        dependencies.insert(dep.local_name.clone(), (dep, resolver));
+                    // And condition with import's conditional
+                    let condition = Conditional::And(
+                        Box::new(condition.clone()),
+                        Box::new(import_condition.clone()),
+                    );
 
-                        Ok(res?)
+                    // Resolve
+                    match import_path.origin {
+                        syntax::PathOrigin::Absolute => {
+                            let path = &import_path.components;
+                            self.resolve_in(
+                                root_package_id,
+                                caller_package,
+                                path,
+                                item_kind,
+                                false,
+                                visited,
+                                results,
+                                condition,
+                            );
+                        }
+                        syntax::PathOrigin::Relative(n) => {
+                            let to_keep = caller_path.len().saturating_sub(n);
+                            let path = caller_path
+                                .iter()
+                                .take(to_keep)
+                                .chain(&import_path.components)
+                                .cloned()
+                                .collect::<Vec<_>>();
+
+                            self.resolve_in(
+                                root_package_id,
+                                caller_package,
+                                &path,
+                                item_kind,
+                                false,
+                                visited,
+                                results,
+                                condition,
+                            );
+                        }
+                        syntax::PathOrigin::Package(package_name) => {
+                            let package = match self
+                                .resolve_dependency_package(&caller_package.id, &package_name)
+                            {
+                                Some(pkg) => pkg,
+                                None => {
+                                    println!("Warning: dependency '{}' not found", package_name);
+                                    continue;
+                                }
+                            };
+                            let path = &import_path.components;
+                            self.resolve_in(
+                                root_package_id,
+                                &package,
+                                path,
+                                item_kind,
+                                false,
+                                visited,
+                                results,
+                                condition,
+                            );
+                        }
+                    }
+                }
+                syntax::ImportContent::Collection(imports) => {
+                    for import in imports {
+                        let import_path = import_path.clone().join(import.path.iter().cloned());
+                        to_resolve.push((import_path, &import.content));
                     }
                 }
             }
         }
     }
-}
 
-impl Resolver for DocsResolver {
-    fn resolve_source<'a>(&'a self, path: &ModulePath) -> Result<Cow<'a, str>, ResolveError> {
-        self.resolve(path, |resolver, path| {
-            resolver
-                .resolve_source(path)
-                .map(|source| Cow::Owned(source.into()))
+    fn resolve_dependency_package(
+        &mut self,
+        caller_package: &PackageId,
+        dependency_name: &str,
+    ) -> Option<Arc<Package>> {
+        // TODO: handle error?
+        let package = self
+            .cache
+            .get_or_build(caller_package.clone())
+            .ok()
+            .flatten()?;
+
+        Some(match &mut package.dependencies {
+            Dependencies::Explicit { dependencies } => match dependencies.get(dependency_name) {
+                Some(pkg) => Arc::clone(pkg),
+                None => {
+                    println!("Warning: dependency '{}' not found", dependency_name);
+                    return None;
+                }
+            },
+            Dependencies::Auto { dependencies } => {
+                match dependencies.entry(dependency_name.to_string()) {
+                    Entry::Occupied(entry) => Arc::clone(entry.get()),
+                    Entry::Vacant(entry) => {
+                        let this_package = match &caller_package {
+                            PackageId::Cargo(package_id) => {
+                                Either::Left(self.cargo_metadata.package(package_id)?)
+                            }
+                            PackageId::Path(path, _) => Either::Right(&**path),
+                        };
+
+                        // TODO: handle error?
+                        let pkg = Package::new_dependency(
+                            this_package,
+                            dependency_name,
+                            None,
+                            &self.cargo_metadata,
+                        )
+                        .ok()?;
+                        let pkg = Arc::new(pkg);
+                        entry.insert(Arc::clone(&pkg));
+                        pkg
+                    }
+                }
+            }
         })
     }
+}
 
-    fn resolve_module(&self, path: &ModulePath) -> Result<TranslationUnit, ResolveError> {
-        let source = self.resolve_source(path)?;
-        let wesl = source.parse::<TranslationUnit>().map_err(|e| {
-            wesl::Diagnostic::from(e)
-                .with_module_path(path.clone(), self.display_name(path))
-                .with_source(source.to_string())
-        })?;
+impl Resolver for CompilePackageResolver<'_> {
+    type PackageId = PackageId;
 
-        let mut root_file_imports = self.root_file_imports.borrow_mut();
-        if root_file_imports.is_none() {
-            *root_file_imports = Some(wesl.imports.clone());
+    fn resolve_item(
+        &mut self,
+        caller_package: &Self::PackageId,
+        caller_path: &[String],
+        item_path: &syntax::ModulePath,
+        item_kind: ResolveItemKind,
+    ) -> Vec<ResolvedItem> {
+        let mut results = Vec::new();
+
+        let root_package_id = caller_package;
+
+        // TODO: handle error?
+        let caller_package = match self.cache.get_or_build(caller_package.clone()) {
+            Ok(Some(pkg)) => Arc::clone(&pkg.package),
+            _ => return results,
+        };
+
+        match &item_path.origin {
+            syntax::PathOrigin::Absolute => {
+                self.resolve_in(
+                    root_package_id,
+                    &caller_package,
+                    &item_path.components,
+                    item_kind,
+                    false,
+                    &mut HashSet::new(),
+                    &mut results,
+                    Conditional::True,
+                );
+            }
+            syntax::PathOrigin::Relative(n) => {
+                let include_imports = *n == 0 && item_path.components.len() == 1;
+
+                let to_keep = caller_path.len().saturating_sub(*n);
+                let path = caller_path
+                    .iter()
+                    .take(to_keep)
+                    .chain(item_path.components.iter())
+                    .cloned()
+                    .collect::<Vec<_>>();
+
+                self.resolve_in(
+                    root_package_id,
+                    &caller_package,
+                    &path,
+                    item_kind,
+                    include_imports,
+                    &mut HashSet::new(),
+                    &mut results,
+                    Conditional::True,
+                );
+            }
+            syntax::PathOrigin::Package(pkg) => {
+                // Resolve using pkg as suffix as one of the imports, so not really a "package path"
+                if let Some(syntax) = self.get_syntax(caller_package.id.clone(), caller_path) {
+                    for import in &syntax.imports {
+                        let item_path = [pkg.clone()]
+                            .into_iter()
+                            .chain(item_path.components.iter().cloned())
+                            .collect::<Vec<_>>();
+                        self.resolve_import(
+                            root_package_id,
+                            import,
+                            &caller_package,
+                            caller_path,
+                            &item_path,
+                            item_kind,
+                            &mut HashSet::new(),
+                            &mut results,
+                            Conditional::True,
+                        );
+                    }
+                }
+
+                // TODO: if one of the imports (or the "sum" of the imports) from above is
+                //                "unconditional" below should not be considered, as this shadows
+                //                any dependency usage?
+
+                // Resolve using pkg as dependency
+                if let Some(dep_pkg) = self.resolve_dependency_package(&caller_package.id, pkg) {
+                    self.resolve_in(
+                        root_package_id,
+                        &dep_pkg,
+                        &item_path.components,
+                        item_kind,
+                        false,
+                        &mut HashSet::new(),
+                        &mut results,
+                        Conditional::True,
+                    );
+                }
+            }
         }
 
-        Ok(wesl)
+        results
     }
 
-    fn display_name(&self, path: &ModulePath) -> Option<String> {
-        self.resolve(path, |resolver, path| Ok(resolver.display_name(path)))
-            .ok()?
+    fn resolve_dependency(
+        &mut self,
+        caller_package: &Self::PackageId,
+        dependency_name: &str,
+    ) -> Option<Self::PackageId> {
+        self.resolve_dependency_package(caller_package, dependency_name)
+            .map(|pkg| pkg.id.clone())
+    }
+
+    fn resolved_dependencies(
+        &self,
+        package_id: &Self::PackageId,
+    ) -> Vec<(String, wesldoc_ast::Version)> {
+        // TODO: handle error?
+        let Some(pkg) = self.cache.get(package_id) else {
+            return Vec::new();
+        };
+
+        pkg.dependencies
+            .clone()
+            .into_iter()
+            .map(|package| (package.package_name.clone(), package.version.clone()))
+            .collect()
+    }
+}
+
+fn decl_info(decl: &syntax::GlobalDeclaration) -> Option<(&syntax::Ident, ItemKind)> {
+    match decl {
+        syntax::GlobalDeclaration::Void => None,
+        syntax::GlobalDeclaration::Declaration(declaration) => Some((
+            &declaration.ident,
+            match declaration.kind {
+                syntax::DeclarationKind::Const => ItemKind::Constant,
+                syntax::DeclarationKind::Override => ItemKind::Override,
+                syntax::DeclarationKind::Let => return None,
+                syntax::DeclarationKind::Var(_) => ItemKind::GlobalVariable,
+            },
+        )),
+        syntax::GlobalDeclaration::TypeAlias(type_alias) => {
+            Some((&type_alias.ident, ItemKind::TypeAlias))
+        }
+        syntax::GlobalDeclaration::Struct(s) => Some((&s.ident, ItemKind::Struct)),
+        syntax::GlobalDeclaration::Function(function) => {
+            Some((&function.ident, ItemKind::Function))
+        }
+        syntax::GlobalDeclaration::ConstAssert(_) => None,
+        syntax::GlobalDeclaration::Compound(_) => None,
     }
 }

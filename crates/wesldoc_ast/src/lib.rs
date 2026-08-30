@@ -7,6 +7,7 @@ pub use semver::Version;
 #[derive(Debug, Clone)]
 pub struct WeslDocs {
     pub version: Version,
+    pub dependencies: Vec<(String, Version)>, // TODO: use in wesldoc_generator
     pub root: Module,
 }
 
@@ -135,6 +136,7 @@ impl<T> Default for Item<T> {
 pub trait ItemInstance {
     const ITEM_KIND: ItemKind;
     fn conditional(&self) -> Option<&Conditional>;
+    fn conditional_mut(&mut self) -> &mut Option<Conditional>;
     fn comment(&self) -> Option<&DocComment>;
     fn all_attributes(&self) -> impl Iterator<Item = &Attribute>;
 }
@@ -154,6 +156,9 @@ impl ItemInstance for Constant {
     const ITEM_KIND: ItemKind = ItemKind::Constant;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
+    }
+    fn conditional_mut(&mut self) -> &mut Option<Conditional> {
+        &mut self.conditional
     }
     fn comment(&self) -> Option<&DocComment> {
         self.comment.as_ref()
@@ -179,6 +184,9 @@ impl ItemInstance for Override {
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
     }
+    fn conditional_mut(&mut self) -> &mut Option<Conditional> {
+        &mut self.conditional
+    }
     fn comment(&self) -> Option<&DocComment> {
         self.comment.as_ref()
     }
@@ -203,6 +211,9 @@ impl ItemInstance for GlobalVariable {
     const ITEM_KIND: ItemKind = ItemKind::GlobalVariable;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
+    }
+    fn conditional_mut(&mut self) -> &mut Option<Conditional> {
+        &mut self.conditional
     }
     fn comment(&self) -> Option<&DocComment> {
         self.comment.as_ref()
@@ -301,6 +312,9 @@ impl ItemInstance for Struct {
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
     }
+    fn conditional_mut(&mut self) -> &mut Option<Conditional> {
+        &mut self.conditional
+    }
     fn comment(&self) -> Option<&DocComment> {
         self.comment.as_ref()
     }
@@ -356,6 +370,9 @@ impl ItemInstance for Function {
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
     }
+    fn conditional_mut(&mut self) -> &mut Option<Conditional> {
+        &mut self.conditional
+    }
     fn comment(&self) -> Option<&DocComment> {
         self.comment.as_ref()
     }
@@ -389,6 +406,9 @@ impl ItemInstance for TypeAlias {
     const ITEM_KIND: ItemKind = ItemKind::TypeAlias;
     fn conditional(&self) -> Option<&Conditional> {
         self.conditional.as_ref()
+    }
+    fn conditional_mut(&mut self) -> &mut Option<Conditional> {
+        &mut self.conditional
     }
     fn comment(&self) -> Option<&DocComment> {
         self.comment.as_ref()

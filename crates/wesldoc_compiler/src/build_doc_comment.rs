@@ -1,15 +1,20 @@
-use crate::{Context, ResolveTarget};
+use crate::{Context, ResolveItemKind};
 use wesldoc_ast::*;
+use wgsl_parse::syntax;
 
-pub fn build_inner_doc_comment(raw_comment: &str, ctx: &Context) -> Option<DocComment> {
+pub fn build_inner_doc_comment<T>(raw_comment: &str, ctx: &Context<T>) -> Option<DocComment> {
     build_doc_comment(raw_comment, "//!", ctx)
 }
 
-pub fn build_outer_doc_comment(raw_comment: &str, ctx: &Context) -> Option<DocComment> {
+pub fn build_outer_doc_comment<T>(raw_comment: &str, ctx: &Context<T>) -> Option<DocComment> {
     build_doc_comment(raw_comment, "///", ctx)
 }
 
-fn build_doc_comment(raw_comment: &str, comment_prefix: &str, ctx: &Context) -> Option<DocComment> {
+fn build_doc_comment<T>(
+    raw_comment: &str,
+    comment_prefix: &str,
+    ctx: &Context<T>,
+) -> Option<DocComment> {
     // Strip the comment prefix
     let comment = raw_comment
         .lines()
@@ -133,12 +138,15 @@ fn raise_heading_level(level: md::HeadingLevel) -> md::HeadingLevel {
     }
 }
 
-// TODO: Only works for items in scope as this just looks up the name in the source map
-fn resolve_intra_doc_links(events: &mut [md::Event], ctx: &Context) {
+fn resolve_intra_doc_links<T>(events: &mut [md::Event], ctx: &Context<T>) {
     for event in events {
-        if let md::Event::Start(md::Tag::Link { dest_url, .. }) = event {
+        let md::Event::Start(md::Tag::Link { dest_url, .. }) = event else {
+            continue;
+        };
+
+        for path in paths_from_url(dest_url) {
             if let Some((name, kind, def_path)) =
-                ctx.resolve_reference(ResolveTarget::Name(dest_url.as_ref()))
+                ctx.resolve_item(&path, ResolveItemKind::DeclarationOrModule)
             {
                 *dest_url = IntraDocLink {
                     def_path,
@@ -147,9 +155,64 @@ fn resolve_intra_doc_links(events: &mut [md::Event], ctx: &Context) {
                 }
                 .to_string()
                 .into();
-            } else {
-                log::warn!("Failed to resolve intra-doc link: {dest_url}");
+                break;
             }
         }
+
+        // TODO: warn if paths_from_url returns one or more paths but none of them resolves?
+    }
+}
+
+// Module paths this could resolve to. Paths are ordered by precedence from highest to lowest.
+fn paths_from_url(url: &str) -> Vec<syntax::ModulePath> {
+    let Ok(components) = url
+        .split("::")
+        .map(|s| s.trim())
+        .map(|s| {
+            if s.is_empty() || s.chars().any(|c| !c.is_ascii_alphanumeric() && c != '_') {
+                Err(())
+            } else {
+                Ok(s)
+            }
+        })
+        .collect::<Result<Vec<_>, _>>()
+    else {
+        return Vec::new();
+    };
+
+    match components.as_slice() {
+        [] => Vec::new(),
+        [name] => {
+            // Only one component could be a local module/item or a dependency package
+            vec![
+                syntax::ModulePath {
+                    origin: syntax::PathOrigin::Relative(0),
+                    components: vec![name.to_string()],
+                },
+                syntax::ModulePath {
+                    origin: syntax::PathOrigin::Package(name.to_string()),
+                    components: Vec::new(),
+                },
+            ]
+        }
+        ["package", components @ ..] => vec![syntax::ModulePath {
+            origin: syntax::PathOrigin::Absolute,
+            components: components.iter().map(|s| s.to_string()).collect(),
+        }],
+        ["super", components @ ..] => {
+            let additional_super = components.iter().take_while(|s| **s == "super").count();
+            vec![syntax::ModulePath {
+                origin: syntax::PathOrigin::Relative(1 + additional_super),
+                components: components
+                    .iter()
+                    .skip(additional_super)
+                    .map(|s| s.to_string())
+                    .collect(),
+            }]
+        }
+        [pkg, components @ ..] => vec![syntax::ModulePath {
+            origin: syntax::PathOrigin::Package(pkg.to_string()),
+            components: components.iter().map(|s| s.to_string()).collect(),
+        }],
     }
 }

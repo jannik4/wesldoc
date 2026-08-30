@@ -121,6 +121,10 @@ pub struct CargoPackage {
 }
 
 impl CargoPackage {
+    pub fn id(&self) -> PackageId {
+        self.package.id.clone()
+    }
+
     pub fn name(&self) -> String {
         self.package.name.to_string()
     }
