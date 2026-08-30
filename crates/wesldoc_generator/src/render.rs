@@ -146,6 +146,19 @@ fn builtin_str(builtin: &BuiltinValue) -> &'static str {
         BuiltinValue::PrimitiveCount => "primitive_count",
         BuiltinValue::TriangleIndices => "triangle_indices",
         BuiltinValue::CullPrimitive => "cull_primitive",
+        BuiltinValue::RayInvocationId => "ray_invocation_id",
+        BuiltinValue::NumRayInvocations => "num_ray_invocations",
+        BuiltinValue::InstanceCustomData => "instance_custom_data",
+        BuiltinValue::GeometryIndex => "geometry_index",
+        BuiltinValue::WorldRayOrigin => "world_ray_origin",
+        BuiltinValue::WorldRayDirection => "world_ray_direction",
+        BuiltinValue::ObjectRayOrigin => "object_ray_origin",
+        BuiltinValue::ObjectRayDirection => "object_ray_direction",
+        BuiltinValue::RayTMin => "ray_t_min",
+        BuiltinValue::RayTCurrentMax => "ray_t_current_max",
+        BuiltinValue::ObjectToWorld => "object_to_world",
+        BuiltinValue::WorldToObject => "world_to_object",
+        BuiltinValue::HitKind => "hit_kind",
     }
 }
 

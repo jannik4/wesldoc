@@ -64,6 +64,13 @@ fn build_attribute<T>(attr: &syntax::Attribute, ctx: &Context<T>) -> Option<Attr
         syntax::Attribute::Task => Attribute::Task,
         syntax::Attribute::Payload(expr) => Attribute::Payload(build_expression(expr, ctx)),
         syntax::Attribute::Mesh(expr) => Attribute::Mesh(build_expression(expr, ctx)),
+        syntax::Attribute::RayGeneration => Attribute::RayGeneration,
+        syntax::Attribute::AnyHit => Attribute::AnyHit,
+        syntax::Attribute::ClosestHit => Attribute::ClosestHit,
+        syntax::Attribute::Miss => Attribute::Miss,
+        syntax::Attribute::IncomingPayload(expr) => {
+            Attribute::IncomingPayload(build_expression(expr, ctx))
+        }
         syntax::Attribute::EarlyDepthTest(conservative_depth) => {
             Attribute::EarlyDepthTest(conservative_depth.as_ref().map(map))
         }

@@ -42,6 +42,16 @@
 @{{ attr.name() }}({{ ctx.render_expression(expr)|safe }})
 {%- when Attribute::Mesh with (expr) -%}
 @{{ attr.name() }}({{ ctx.render_expression(expr)|safe }})
+{%- when Attribute::RayGeneration -%}
+@{{ attr.name() }}
+{%- when Attribute::AnyHit -%}
+@{{ attr.name() }}
+{%- when Attribute::ClosestHit -%}
+@{{ attr.name() }}
+{%- when Attribute::Miss -%}
+@{{ attr.name() }}
+{%- when Attribute::IncomingPayload with (expr) -%}
+@{{ attr.name() }}({{ ctx.render_expression(expr)|safe }})
 {%- when Attribute::EarlyDepthTest with (d) -%}
 @{{ attr.name() }}{%- if let Some(d) = d %}({{ self::conservative_depth_str(d) }}){% endif %}
 {%- when Attribute::Custom with { name: _, arguments } -%}

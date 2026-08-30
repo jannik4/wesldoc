@@ -234,6 +234,8 @@ pub enum AddressSpace {
     Immediate,
     PushConstant,
     TaskPayload,
+    RayPayload,
+    IncomingRayPayload,
 }
 
 impl fmt::Display for AddressSpace {
@@ -254,6 +256,8 @@ impl fmt::Display for AddressSpace {
             AddressSpace::Immediate => write!(f, "<immediate>"),
             AddressSpace::PushConstant => write!(f, "<push_constant>"),
             AddressSpace::TaskPayload => write!(f, "<task_payload>"),
+            AddressSpace::RayPayload => write!(f, "<ray_payload>"),
+            AddressSpace::IncomingRayPayload => write!(f, "<incoming_ray_payload>"),
         }
     }
 }
@@ -469,6 +473,11 @@ pub enum Attribute {
     Task,
     Payload(Expression),
     Mesh(Expression),
+    RayGeneration,
+    AnyHit,
+    ClosestHit,
+    Miss,
+    IncomingPayload(Expression),
     EarlyDepthTest(Option<ConservativeDepth>),
     Custom {
         name: String,
@@ -499,6 +508,11 @@ impl Attribute {
             Attribute::Task => "task",
             Attribute::Payload(_) => "payload",
             Attribute::Mesh(_) => "mesh",
+            Attribute::RayGeneration => "ray_generation",
+            Attribute::AnyHit => "any_hit",
+            Attribute::ClosestHit => "closest_hit",
+            Attribute::Miss => "miss",
+            Attribute::IncomingPayload(_) => "incoming_payload",
             Attribute::EarlyDepthTest(_) => "early_depth_test",
             Attribute::Custom { name, .. } => name,
         }
@@ -535,6 +549,19 @@ pub enum BuiltinValue {
     PrimitiveCount,
     TriangleIndices,
     CullPrimitive,
+    RayInvocationId,
+    NumRayInvocations,
+    InstanceCustomData,
+    GeometryIndex,
+    WorldRayOrigin,
+    WorldRayDirection,
+    ObjectRayOrigin,
+    ObjectRayDirection,
+    RayTMin,
+    RayTCurrentMax,
+    ObjectToWorld,
+    WorldToObject,
+    HitKind,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

@@ -13,7 +13,7 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 
 [workspace.dependencies]
-wesl = { git = "https://github.com/jannik4/wesl-rs", rev = "2b63d5e69efd03f394c03242a81db086198602fa", features = [
+wesl = { git = "https://github.com/webgpu-tools/wesl-rs.git", rev = "3c94796ccf329076af6cf158727e5fa55eb3b82a", features = [
     "naga-ext",
 ] }
-wgsl-parse = { git = "https://github.com/jannik4/wesl-rs", rev = "2b63d5e69efd03f394c03242a81db086198602fa" }
+wgsl-parse = { git = "https://github.com/webgpu-tools/wesl-rs.git", rev = "3c94796ccf329076af6cf158727e5fa55eb3b82a" }

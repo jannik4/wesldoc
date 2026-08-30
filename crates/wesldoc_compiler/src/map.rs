@@ -47,6 +47,8 @@ impl Map<AddressSpace> for (syntax::AddressSpace, Option<syntax::AccessMode>) {
             syntax::AddressSpace::Handle => AddressSpace::Handle,
             syntax::AddressSpace::Immediate => AddressSpace::Immediate,
             syntax::AddressSpace::TaskPayload => AddressSpace::TaskPayload,
+            syntax::AddressSpace::RayPayload => AddressSpace::RayPayload,
+            syntax::AddressSpace::IncomingRayPayload => AddressSpace::IncomingRayPayload,
         }
     }
 }
@@ -101,6 +103,19 @@ impl Map<BuiltinValue> for syntax::BuiltinValue {
             syntax::BuiltinValue::PrimitiveCount => BuiltinValue::PrimitiveCount,
             syntax::BuiltinValue::TriangleIndices => BuiltinValue::TriangleIndices,
             syntax::BuiltinValue::CullPrimitive => BuiltinValue::CullPrimitive,
+            syntax::BuiltinValue::RayInvocationId => BuiltinValue::RayInvocationId,
+            syntax::BuiltinValue::NumRayInvocations => BuiltinValue::NumRayInvocations,
+            syntax::BuiltinValue::InstanceCustomData => BuiltinValue::InstanceCustomData,
+            syntax::BuiltinValue::GeometryIndex => BuiltinValue::GeometryIndex,
+            syntax::BuiltinValue::WorldRayOrigin => BuiltinValue::WorldRayOrigin,
+            syntax::BuiltinValue::WorldRayDirection => BuiltinValue::WorldRayDirection,
+            syntax::BuiltinValue::ObjectRayOrigin => BuiltinValue::ObjectRayOrigin,
+            syntax::BuiltinValue::ObjectRayDirection => BuiltinValue::ObjectRayDirection,
+            syntax::BuiltinValue::RayTMin => BuiltinValue::RayTMin,
+            syntax::BuiltinValue::RayTCurrentMax => BuiltinValue::RayTCurrentMax,
+            syntax::BuiltinValue::ObjectToWorld => BuiltinValue::ObjectToWorld,
+            syntax::BuiltinValue::WorldToObject => BuiltinValue::WorldToObject,
+            syntax::BuiltinValue::HitKind => BuiltinValue::HitKind,
         }
     }
 }
