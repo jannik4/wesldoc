@@ -3,8 +3,9 @@ use std::sync::Mutex;
 use wesldoc_ast::{DefinitionPath, Ident, ItemKind};
 use wgsl_parse::syntax::{ModulePath, TranslationUnit};
 
-pub struct Context<'a> {
-    resolver: Mutex<&'a mut dyn Resolver>,
+pub struct Context<'a, T> {
+    resolver: Mutex<&'a mut dyn Resolver<PackageId = T>>,
+    package_id: &'a T,
     path: &'a [String],
 
     syntax: &'a TranslationUnit,
@@ -14,9 +15,10 @@ pub struct Context<'a> {
     compile_state: &'a CompileState,
 }
 
-impl Context<'_> {
-    pub fn init<'a>(
-        resolver: &'a mut dyn Resolver,
+impl<'a, T> Context<'a, T> {
+    pub fn init(
+        resolver: &'a mut dyn Resolver<PackageId = T>,
+        package_id: &'a T,
         path: &'a [String],
 
         syntax: &'a TranslationUnit,
@@ -24,9 +26,10 @@ impl Context<'_> {
 
         compile_options: &'a CompileOptions,
         compile_state: &'a CompileState,
-    ) -> Context<'a> {
-        Context {
+    ) -> Self {
+        Self {
             resolver: Mutex::new(resolver),
+            package_id,
             path,
 
             syntax,
@@ -58,11 +61,11 @@ impl Context<'_> {
         path: &ModulePath,
         item_kind: ResolveItemKind,
     ) -> Option<(Ident, ItemKind, DefinitionPath)> {
-        let items = self
-            .resolver
-            .lock()
-            .unwrap()
-            .resolve_item(self.path, path, item_kind);
+        let items =
+            self.resolver
+                .lock()
+                .unwrap()
+                .resolve_item(self.package_id, self.path, path, item_kind);
 
         // TODO(no-comp): ...
         items

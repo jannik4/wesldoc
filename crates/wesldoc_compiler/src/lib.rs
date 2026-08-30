@@ -48,20 +48,24 @@ pub struct ResolvedItem {
     pub conditional: Option<Conditional>,
 }
 
-#[derive(Debug, Clone)]
-pub struct ResolverResult {
-    pub version: Version,
-    pub dependencies: Vec<(String, Version)>,
-}
-
 pub trait Resolver {
+    type PackageId;
+
     fn resolve_item(
         &mut self,
+        package_from: &Self::PackageId,
         path_from: &[String],
         item_path: &ModulePath,
         item_kind: ResolveItemKind,
     ) -> Vec<ResolvedItem>;
-    fn finish(self) -> ResolverResult;
+
+    fn resolve_dependency(
+        &mut self,
+        package_from: &Self::PackageId,
+        dependency_name: &str,
+    ) -> Option<Self::PackageId>;
+
+    fn resolved_dependencies(&self, package_id: &Self::PackageId) -> Vec<(String, Version)>;
 }
 
 #[derive(Debug, Error)]
@@ -98,17 +102,25 @@ pub struct WeslModule {
     pub submodules: Vec<WeslModule>,
 }
 
-pub fn compile(
-    mut resolver: impl Resolver,
+pub fn compile<T>(
+    mut resolver: impl Resolver<PackageId = T>,
+    package_id: &T,
+    package_version: Version,
     root: &WeslModule,
     options: &CompileOptions,
 ) -> Result<(WeslDocs, CompileStats)> {
     let compile_state = CompileState::default();
-    let root = compile_module(&mut resolver, root, &[], options, &compile_state)?;
-    let resolver_result = resolver.finish();
+    let root = compile_module(
+        &mut resolver,
+        package_id,
+        root,
+        &[],
+        options,
+        &compile_state,
+    )?;
     let mut docs = WeslDocs {
-        version: resolver_result.version,
-        dependencies: resolver_result.dependencies,
+        version: package_version,
+        dependencies: resolver.resolved_dependencies(package_id),
         root,
     };
     let compile_stats = compile_state.into_result()?;
@@ -118,8 +130,9 @@ pub fn compile(
     Ok((docs, compile_stats))
 }
 
-fn compile_module(
-    resolver: &mut dyn Resolver,
+fn compile_module<T>(
+    resolver: &mut dyn Resolver<PackageId = T>,
+    package_id: &T,
     wesl_module: &WeslModule,
     path: &[String],
     compile_options: &CompileOptions,
@@ -132,7 +145,14 @@ fn compile_module(
         .map(|m| {
             let mut path = path.to_vec();
             path.push(m.name.clone());
-            compile_module(resolver, m, &path, compile_options, compile_state)
+            compile_module(
+                resolver,
+                package_id,
+                m,
+                &path,
+                compile_options,
+                compile_state,
+            )
         })
         .collect::<Result<Vec<_>, FatalError>>()?;
 
@@ -141,6 +161,7 @@ fn compile_module(
     };
     let ctx = &Context::init(
         resolver,
+        package_id,
         path,
         syntax,
         source,
@@ -162,7 +183,7 @@ fn compile_module(
     module.translate_time_features = collect_features(ctx);
 
     // TODO(no-comp): Compile re-exports (collect from imports)
-    // --> create a new context then (also new resolver as resolver is currently bound to this package)
+    // --> create a new context then
 
     // Compile locally defined global declarations
     compile_decls(&syntax.global_declarations, ctx, &mut module)?;
@@ -170,9 +191,9 @@ fn compile_module(
     Ok(module)
 }
 
-fn compile_decls(
+fn compile_decls<T>(
     decls: &[syntax::GlobalDeclarationNode],
-    ctx: &Context,
+    ctx: &Context<T>,
     module: &mut Module,
 ) -> Result<(), FatalError> {
     for decl in decls {
@@ -362,7 +383,7 @@ impl Severity {
     }
 }
 
-fn validate_module_doc_comment(module: &Module, ctx: &Context) {
+fn validate_module_doc_comment<T>(module: &Module, ctx: &Context<T>) {
     let is_documented = module.comment.is_some();
     ctx.compile_state().track_documented(is_documented);
     if is_documented {
@@ -391,10 +412,10 @@ fn validate_module_doc_comment(module: &Module, ctx: &Context) {
     }
 }
 
-fn validate_item_doc_comment(
+fn validate_item_doc_comment<T>(
     comment: &Option<DocComment>,
     span: wgsl_parse::syntax::Span,
-    ctx: &Context,
+    ctx: &Context<T>,
 ) {
     let is_documented = comment.is_some();
     ctx.compile_state().track_documented(is_documented);

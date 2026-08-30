@@ -91,14 +91,19 @@ impl Args {
             );
 
             // Build wesl module
-            let wesl_module = cache
-                .get_or_build(package.id.clone())?
-                .context("expected wesl package")?;
+            let wesl_module = Arc::clone(
+                &cache
+                    .get_or_build(package.id.clone())?
+                    .context("expected wesl package")?
+                    .build,
+            );
 
             // Compile to docs
-            let resolver = CompilePackageResolver::new(&mut cache, package, cargo_package)?;
+            let resolver = CompilePackageResolver::new(&mut cache, Arc::clone(&cargo_metadata))?;
             let (docs, compile_stats) = wesldoc_compiler::compile(
                 resolver,
+                &package.id,
+                package.version,
                 &wesl_module,
                 &wesldoc_compiler::CompileOptions {
                     missing_documentation: self.missing_docs.into(),

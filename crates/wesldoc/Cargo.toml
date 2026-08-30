@@ -21,3 +21,4 @@ cargo_metadata = "0.23.1"
 toml = "1.1.4"
 serde = { version = "1.0.226", features = ["derive"] }
 anyhow = "1.0.104"
+either = "1.18.0"

@@ -2,7 +2,8 @@ use crate::{
     cargo::{CargoMetadata, CargoPackage},
     wesl_toml::{WeslToml, WeslTomlDependency},
 };
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
+use either::Either;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -56,7 +57,8 @@ impl Package {
     }
 
     pub fn new_dependency(
-        this_cargo_package: &CargoPackage,
+        // either a cargo package or a path to the package
+        this_package: Either<&CargoPackage, &Path>,
 
         dependency_key: impl Into<String>,
         dependency: Option<&WeslTomlDependency>,
@@ -69,11 +71,22 @@ impl Package {
 
         // Handle path dependencies
         if let Some(dep_path) = dependency.and_then(|d| d.path.as_ref()) {
-            return Self::from_path(
-                &this_cargo_package.crate_path().join(dep_path),
-                dep_name.clone(),
-            );
+            let base_path = match this_package {
+                Either::Left(cargo_package) => &cargo_package.crate_path(),
+                Either::Right(path) => path,
+            };
+
+            return Self::from_path(&base_path.join(dep_path), dep_name.clone());
         }
+
+        let this_cargo_package = match this_package {
+            Either::Left(cargo_package) => cargo_package,
+            Either::Right(_) => {
+                bail!(
+                    "dependency '{dep_name}' is not a path dependency, but the parent package is not a cargo package"
+                )
+            }
+        };
 
         let dep_pkg_id = this_cargo_package
             .dep(dep_name)

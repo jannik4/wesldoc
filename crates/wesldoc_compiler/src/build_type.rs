@@ -2,7 +2,7 @@ use crate::{Context, ResolveItemKind, build_expression};
 use wesldoc_ast::*;
 use wgsl_parse::syntax;
 
-pub fn build_type(ty: &syntax::TypeExpression, ctx: &Context) -> TypeExpression {
+pub fn build_type<T>(ty: &syntax::TypeExpression, ctx: &Context<T>) -> TypeExpression {
     let name = ty.ident.name().clone();
 
     let mut path = ty.path.clone().unwrap_or_else(|| syntax::ModulePath {

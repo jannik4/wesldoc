@@ -1,69 +1,35 @@
 use crate::{
-    build::BuildCache,
-    cargo::CargoPackage,
+    build::{BuildCache, Dependencies},
+    cargo::CargoMetadata,
     package::{Package, PackageId},
-    wesl_toml::DependenciesAuto,
 };
 use anyhow::Result;
-use std::{
-    collections::{HashMap, hash_map::Entry},
-    sync::Arc,
-};
+use either::Either;
+use std::{collections::hash_map::Entry, sync::Arc};
 use wesldoc_ast::{Conditional, DefinitionPath, Ident, ItemKind};
 use wesldoc_compiler::{
-    ResolveItemKind, ResolvedItem, Resolver, ResolverResult,
-    build_conditional::conditional_from_attributes,
+    ResolveItemKind, ResolvedItem, Resolver, build_conditional::conditional_from_attributes,
 };
 use wgsl_parse::{SyntaxNode, syntax};
 
 pub struct CompilePackageResolver<'a> {
     cache: &'a mut BuildCache,
-    root_package: Arc<Package>,
-    dependencies: Dependencies,
+    cargo_metadata: Arc<CargoMetadata>,
 }
 
 impl<'a> CompilePackageResolver<'a> {
-    pub fn new(
-        cache: &'a mut BuildCache,
-        package: Package,
-        cargo_package: &CargoPackage,
-    ) -> Result<Self> {
-        let dependencies = match package.wesl_toml.package.dependencies {
-            Some(DependenciesAuto::Auto) => Dependencies::Auto {
-                dependencies: HashMap::new(),
-            },
-            None => Dependencies::Explicit {
-                dependencies: package
-                    .wesl_toml
-                    .dependencies
-                    .iter()
-                    .map(|(dep_key, dep)| {
-                        Ok((
-                            dep_key.clone(),
-                            Arc::new(Package::new_dependency(
-                                cargo_package,
-                                dep_key,
-                                Some(dep),
-                                cache.cargo_metadata(),
-                            )?),
-                        ))
-                    })
-                    .collect::<Result<_>>()?,
-            },
-        };
-
+    pub fn new(cache: &'a mut BuildCache, cargo_metadata: Arc<CargoMetadata>) -> Result<Self> {
         Ok(Self {
             cache,
-            root_package: Arc::new(package),
-            dependencies,
+            cargo_metadata,
         })
     }
 
     fn get_module_name(&mut self, package_id: PackageId, path: &[String]) -> Option<String> {
-        let wesl_package = self.cache.get_or_build(package_id).ok().flatten()?;
+        let package = self.cache.get_or_build(package_id).ok().flatten()?;
 
         // Navigate to the module specified by the path
-        let mut module = &*wesl_package;
+        let mut module = &*package.build;
         for component in path {
             let submodule = module.submodules.iter().find(|m| m.name == *component)?;
             module = submodule;
@@ -77,10 +43,10 @@ impl<'a> CompilePackageResolver<'a> {
         package_id: PackageId,
         path: &[String],
     ) -> Option<Arc<syntax::TranslationUnit>> {
-        let wesl_package = self.cache.get_or_build(package_id).ok().flatten()?;
+        let package = self.cache.get_or_build(package_id).ok().flatten()?;
 
         // Navigate to the module specified by the path
-        let mut module = &*wesl_package;
+        let mut module = &*package.build;
         for component in path {
             let submodule = module.submodules.iter().find(|m| m.name == *component)?;
             module = submodule;
@@ -91,8 +57,10 @@ impl<'a> CompilePackageResolver<'a> {
     }
 
     // TODO(no-comp): detect infinite loops!!! (e.g. keep track of visited (package.id, path), break on cycle)
+    #[expect(clippy::too_many_arguments)]
     fn resolve_in(
         &mut self,
+        root_package_id: &PackageId,
         package: &Package,
         include_imports: bool,
         item_path: &[String],
@@ -108,7 +76,7 @@ impl<'a> CompilePackageResolver<'a> {
                         results.push(ResolvedItem {
                             name: Ident(mod_name),
                             kind: ItemKind::Module,
-                            def_path: if package.id == self.root_package.id {
+                            def_path: if package.id == *root_package_id {
                                 DefinitionPath::Absolute(item_path.to_vec())
                             } else {
                                 DefinitionPath::Package(
@@ -136,19 +104,18 @@ impl<'a> CompilePackageResolver<'a> {
         // Lookup name in imports/exports
         for import in &syntax.imports {
             let is_export = import.attributes.iter().any(|attr| attr.is_publish());
-            if !include_imports && !is_export {
-                continue;
+            if include_imports || is_export {
+                self.resolve_import(
+                    root_package_id,
+                    package,
+                    import,
+                    prefix_path,
+                    std::slice::from_ref(name),
+                    item_kind,
+                    results,
+                    condition.clone(),
+                );
             }
-
-            self.resolve_import(
-                package,
-                import,
-                prefix_path,
-                std::slice::from_ref(name),
-                item_kind,
-                results,
-                condition.clone(),
-            );
         }
 
         // Lookup name in global declarations
@@ -165,7 +132,7 @@ impl<'a> CompilePackageResolver<'a> {
             results.push(ResolvedItem {
                 name: Ident(name.to_string()),
                 kind: decl_kind,
-                def_path: if package.id == self.root_package.id {
+                def_path: if package.id == *root_package_id {
                     DefinitionPath::Absolute(prefix_path.to_vec())
                 } else {
                     DefinitionPath::Package(
@@ -185,6 +152,7 @@ impl<'a> CompilePackageResolver<'a> {
     #[expect(clippy::too_many_arguments)]
     fn resolve_import(
         &mut self,
+        root_package_id: &PackageId,
         package: &Package,
         import: &syntax::ImportStatement,
         path: &[String],
@@ -231,7 +199,15 @@ impl<'a> CompilePackageResolver<'a> {
                     match import_path.origin {
                         syntax::PathOrigin::Absolute => {
                             let path = &import_path.components;
-                            self.resolve_in(package, false, path, item_kind, results, condition);
+                            self.resolve_in(
+                                root_package_id,
+                                package,
+                                false,
+                                path,
+                                item_kind,
+                                results,
+                                condition,
+                            );
                         }
                         syntax::PathOrigin::Relative(n) => {
                             let to_keep = path.len().saturating_sub(n);
@@ -242,55 +218,36 @@ impl<'a> CompilePackageResolver<'a> {
                                 .cloned()
                                 .collect::<Vec<_>>();
 
-                            self.resolve_in(package, false, &path, item_kind, results, condition);
+                            self.resolve_in(
+                                root_package_id,
+                                package,
+                                false,
+                                &path,
+                                item_kind,
+                                results,
+                                condition,
+                            );
                         }
                         syntax::PathOrigin::Package(package_name) => {
-                            let package = match &mut self.dependencies {
-                                Dependencies::Explicit { dependencies } => {
-                                    match dependencies.get(&package_name) {
-                                        Some(pkg) => Arc::clone(pkg),
-                                        None => {
-                                            println!(
-                                                "Warning: dependency '{}' not found",
-                                                package_name
-                                            );
-                                            continue;
-                                        }
-                                    }
-                                }
-                                Dependencies::Auto { dependencies } => {
-                                    match dependencies.entry(package_name.clone()) {
-                                        Entry::Occupied(entry) => Arc::clone(entry.get()),
-                                        Entry::Vacant(entry) => {
-                                            let PackageId::Cargo(package_id) = &package.id else {
-                                                continue;
-                                            };
-                                            let Some(this_cargo_package) =
-                                                self.cache.cargo_metadata().package(package_id)
-                                            else {
-                                                continue;
-                                            };
-
-                                            // TODO(no-comp): handle error?
-                                            match Package::new_dependency(
-                                                this_cargo_package,
-                                                package_name,
-                                                None,
-                                                self.cache.cargo_metadata(),
-                                            ) {
-                                                Ok(pkg) => {
-                                                    let pkg = Arc::new(pkg);
-                                                    entry.insert(Arc::clone(&pkg));
-                                                    pkg
-                                                }
-                                                Err(_) => continue,
-                                            }
-                                        }
-                                    }
+                            let package = match self
+                                .resolve_dependency_package(&package.id, &package_name)
+                            {
+                                Some(pkg) => pkg,
+                                None => {
+                                    println!("Warning: dependency '{}' not found", package_name);
+                                    continue;
                                 }
                             };
                             let path = &import_path.components;
-                            self.resolve_in(&package, false, path, item_kind, results, condition);
+                            self.resolve_in(
+                                root_package_id,
+                                &package,
+                                false,
+                                path,
+                                item_kind,
+                                results,
+                                condition,
+                            );
                         }
                     }
                 }
@@ -303,21 +260,84 @@ impl<'a> CompilePackageResolver<'a> {
             }
         }
     }
+
+    fn resolve_dependency_package(
+        &mut self,
+        package_from: &PackageId,
+        dependency_name: &str,
+    ) -> Option<Arc<Package>> {
+        // TODO(no-comp): handle error?
+        let package = self
+            .cache
+            .get_or_build(package_from.clone())
+            .ok()
+            .flatten()?;
+
+        Some(match &mut package.dependencies {
+            Dependencies::Explicit { dependencies } => match dependencies.get(dependency_name) {
+                Some(pkg) => Arc::clone(pkg),
+                None => {
+                    println!("Warning: dependency '{}' not found", dependency_name);
+                    return None;
+                }
+            },
+            Dependencies::Auto { dependencies } => {
+                match dependencies.entry(dependency_name.to_string()) {
+                    Entry::Occupied(entry) => Arc::clone(entry.get()),
+                    Entry::Vacant(entry) => {
+                        let this_package = match &package_from {
+                            PackageId::Cargo(package_id) => {
+                                Either::Left(self.cargo_metadata.package(package_id)?)
+                            }
+                            PackageId::Path(path, _) => Either::Right(&**path),
+                        };
+
+                        // TODO(no-comp): handle error?
+                        match Package::new_dependency(
+                            this_package,
+                            dependency_name,
+                            None,
+                            &self.cargo_metadata,
+                        ) {
+                            Ok(pkg) => {
+                                let pkg = Arc::new(pkg);
+                                entry.insert(Arc::clone(&pkg));
+                                pkg
+                            }
+                            Err(_) => return None,
+                        }
+                    }
+                }
+            }
+        })
+    }
 }
 
 impl Resolver for CompilePackageResolver<'_> {
+    type PackageId = PackageId;
+
     fn resolve_item(
         &mut self,
+        package_from: &Self::PackageId,
         path_from: &[String],
         item_path: &syntax::ModulePath,
         item_kind: ResolveItemKind,
     ) -> Vec<ResolvedItem> {
         let mut results = Vec::new();
 
+        let root_package_id = package_from;
+
+        // TODO(no-comp): handle error?
+        let package_from = match self.cache.get_or_build(package_from.clone()) {
+            Ok(Some(pkg)) => Arc::clone(&pkg.package),
+            _ => return results,
+        };
+
         match &item_path.origin {
             syntax::PathOrigin::Absolute => {
                 self.resolve_in(
-                    &Arc::clone(&self.root_package),
+                    root_package_id,
+                    &package_from,
                     false,
                     &item_path.components,
                     item_kind,
@@ -337,7 +357,8 @@ impl Resolver for CompilePackageResolver<'_> {
                     .collect::<Vec<_>>();
 
                 self.resolve_in(
-                    &Arc::clone(&self.root_package),
+                    root_package_id,
+                    &package_from,
                     include_imports,
                     &path,
                     item_kind,
@@ -347,14 +368,15 @@ impl Resolver for CompilePackageResolver<'_> {
             }
             syntax::PathOrigin::Package(pkg) => {
                 // Resolve using pkg as suffix as one of the imports, so not really a "package path"
-                if let Some(syntax) = self.get_syntax(self.root_package.id.clone(), path_from) {
+                if let Some(syntax) = self.get_syntax(package_from.id.clone(), path_from) {
                     for import in &syntax.imports {
                         let item_path = [pkg.clone()]
                             .into_iter()
                             .chain(item_path.components.iter().cloned())
                             .collect::<Vec<_>>();
                         self.resolve_import(
-                            &Arc::clone(&self.root_package),
+                            root_package_id,
+                            &package_from,
                             import,
                             path_from,
                             &item_path,
@@ -374,34 +396,29 @@ impl Resolver for CompilePackageResolver<'_> {
         results
     }
 
-    fn finish(self) -> ResolverResult {
-        ResolverResult {
-            version: self.root_package.version.clone(),
-            dependencies: self
-                .dependencies
-                .into_iter()
-                .map(|package| (package.package_name.clone(), package.version.clone()))
-                .collect(),
-        }
+    fn resolve_dependency(
+        &mut self,
+        package_from: &Self::PackageId,
+        dependency_name: &str,
+    ) -> Option<Self::PackageId> {
+        self.resolve_dependency_package(package_from, dependency_name)
+            .map(|pkg| pkg.id.clone())
     }
-}
 
-// local_name -> package
-enum Dependencies {
-    Explicit {
-        dependencies: HashMap<String, Arc<Package>>,
-    },
-    Auto {
-        dependencies: HashMap<String, Arc<Package>>,
-    },
-}
+    fn resolved_dependencies(
+        &self,
+        package_id: &Self::PackageId,
+    ) -> Vec<(String, wesldoc_ast::Version)> {
+        // TODO(no-comp): handle error?
+        let Some(pkg) = self.cache.get(package_id) else {
+            return Vec::new();
+        };
 
-impl Dependencies {
-    fn into_iter(self) -> impl Iterator<Item = Arc<Package>> {
-        match self {
-            Dependencies::Explicit { dependencies } => dependencies.into_values(),
-            Dependencies::Auto { dependencies } => dependencies.into_values(),
-        }
+        pkg.dependencies
+            .clone()
+            .into_iter()
+            .map(|package| (package.package_name.clone(), package.version.clone()))
+            .collect()
     }
 }
 

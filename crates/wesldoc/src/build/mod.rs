@@ -3,8 +3,10 @@ mod preprocess;
 use crate::{
     cargo::CargoMetadata,
     package::{Package, PackageId},
+    wesl_toml::DependenciesAuto,
 };
-use anyhow::Result;
+use anyhow::{Context, Result};
+use either::Either;
 use std::{
     collections::{HashMap, hash_map::Entry},
     fs,
@@ -14,7 +16,7 @@ use std::{
 use wesldoc_compiler::WeslModule;
 
 pub struct BuildCache {
-    packages: HashMap<PackageId, Arc<WeslModule>>,
+    packages: HashMap<PackageId, PackageBuild>,
     cargo_metadata: Arc<CargoMetadata>,
 }
 
@@ -26,35 +28,101 @@ impl BuildCache {
         }
     }
 
-    pub fn get_or_build(&mut self, package_id: PackageId) -> Result<Option<Arc<WeslModule>>> {
+    pub fn get_or_build(&mut self, package_id: PackageId) -> Result<Option<&mut PackageBuild>> {
         match self.packages.entry(package_id) {
-            Entry::Occupied(pkg) => Ok(Some(Arc::clone(pkg.get()))),
+            Entry::Occupied(pkg) => Ok(Some(pkg.into_mut())),
             Entry::Vacant(entry) => {
-                let package = match entry.key() {
-                    PackageId::Cargo(package_id) => {
-                        let cargo_package = match self.cargo_metadata.package(package_id) {
-                            Some(pkg) => pkg,
-                            None => return Ok(None),
-                        };
-                        Package::from_cargo_package(cargo_package)?
-                    }
-                    PackageId::Path(path, name) => Package::from_path(path, name.clone())?,
-                };
-                let wesl_module = Arc::new(build_package(package)?);
-                entry.insert(Arc::clone(&wesl_module));
-                Ok(Some(wesl_module))
+                let package = PackageBuild::new(entry.key(), &self.cargo_metadata)?;
+                Ok(Some(entry.insert(package)))
             }
         }
     }
 
-    pub fn cargo_metadata(&self) -> &CargoMetadata {
-        &self.cargo_metadata
+    pub fn get(&self, package_id: &PackageId) -> Option<&PackageBuild> {
+        self.packages.get(package_id)
     }
 }
 
-fn build_package(package: Package) -> Result<WeslModule> {
+pub struct PackageBuild {
+    pub package: Arc<Package>,
+    pub build: Arc<WeslModule>,
+    pub dependencies: Dependencies,
+}
+
+impl PackageBuild {
+    fn new(package_id: &PackageId, cargo_metadata: &CargoMetadata) -> Result<Self> {
+        let (package, this_package_meta) = match package_id {
+            PackageId::Cargo(package_id) => {
+                let cargo_package = cargo_metadata
+                    .package(package_id)
+                    .context("expected cargo package")?;
+                (
+                    Package::from_cargo_package(cargo_package)?,
+                    Either::Left(cargo_package),
+                )
+            }
+            PackageId::Path(path, name) => (
+                Package::from_path(&path, name.clone())?,
+                Either::Right(&**path),
+            ),
+        };
+
+        let build = Arc::new(build_package(&package)?);
+        let dependencies = match package.wesl_toml.package.dependencies {
+            Some(DependenciesAuto::Auto) => Dependencies::Auto {
+                dependencies: HashMap::new(),
+            },
+            None => Dependencies::Explicit {
+                dependencies: package
+                    .wesl_toml
+                    .dependencies
+                    .iter()
+                    .map(|(dep_key, dep)| {
+                        Ok((
+                            dep_key.clone(),
+                            Arc::new(Package::new_dependency(
+                                this_package_meta,
+                                dep_key,
+                                Some(dep),
+                                cargo_metadata,
+                            )?),
+                        ))
+                    })
+                    .collect::<Result<_>>()?,
+            },
+        };
+
+        Ok(Self {
+            package: Arc::new(package),
+            build,
+            dependencies,
+        })
+    }
+}
+
+// local_name -> package
+#[derive(Debug, Clone)]
+pub enum Dependencies {
+    Explicit {
+        dependencies: HashMap<String, Arc<Package>>,
+    },
+    Auto {
+        dependencies: HashMap<String, Arc<Package>>,
+    },
+}
+
+impl Dependencies {
+    pub fn into_iter(self) -> impl Iterator<Item = Arc<Package>> {
+        match self {
+            Dependencies::Explicit { dependencies } => dependencies.into_values(),
+            Dependencies::Auto { dependencies } => dependencies.into_values(),
+        }
+    }
+}
+
+fn build_package(package: &Package) -> Result<WeslModule> {
     Ok(WeslModule {
-        name: package.package_name,
+        name: package.package_name.clone(),
         code: None,
         submodules: build_submodules(&package.root)?,
     })

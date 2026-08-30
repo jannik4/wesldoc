@@ -2,14 +2,17 @@ use crate::{ATTRIBUTE_CONDITIONAL, Context, build_expression, map};
 use wesldoc_ast::*;
 use wgsl_parse::syntax;
 
-pub fn build_attributes(attributes: &[syntax::AttributeNode], ctx: &Context) -> Vec<Attribute> {
+pub fn build_attributes<T>(
+    attributes: &[syntax::AttributeNode],
+    ctx: &Context<T>,
+) -> Vec<Attribute> {
     attributes
         .iter()
         .filter_map(|attr| build_attribute(attr, ctx))
         .collect()
 }
 
-fn build_attribute(attr: &syntax::Attribute, ctx: &Context) -> Option<Attribute> {
+fn build_attribute<T>(attr: &syntax::Attribute, ctx: &Context<T>) -> Option<Attribute> {
     Some(match attr {
         syntax::Attribute::Align(expr) => Attribute::Align(build_expression(expr, ctx)),
         syntax::Attribute::Binding(expr) => Attribute::Binding(build_expression(expr, ctx)),

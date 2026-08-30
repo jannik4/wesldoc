@@ -2,7 +2,7 @@ use crate::{ATTRIBUTE_CONDITIONAL, Context};
 use wesldoc_ast::IndexSet;
 use wgsl_parse::syntax::*;
 
-pub fn collect_features(ctx: &Context) -> IndexSet<String> {
+pub fn collect_features<T>(ctx: &Context<T>) -> IndexSet<String> {
     let mut features = IndexSet::new();
 
     for directive in &ctx.syntax().global_directives {
