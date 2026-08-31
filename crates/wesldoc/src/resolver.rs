@@ -293,10 +293,10 @@ impl<'a> CompilePackageResolver<'a> {
             .flatten()?;
 
         Some(match &mut package.dependencies {
-            Dependencies::Explicit { dependencies } => match dependencies.get(dependency_name) {
-                Some(pkg) => Arc::clone(pkg),
-                None => return None,
-            },
+            Dependencies::Explicit { dependencies } => {
+                let pkg = dependencies.get(dependency_name)?;
+                Arc::clone(pkg)
+            }
             Dependencies::Auto { dependencies } => {
                 match dependencies.entry(dependency_name.to_string()) {
                     Entry::Occupied(entry) => Arc::clone(entry.get()),
