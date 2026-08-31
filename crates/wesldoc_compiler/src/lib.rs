@@ -102,11 +102,15 @@ pub struct WeslModule {
     pub submodules: Vec<WeslModule>,
 }
 
+#[expect(clippy::too_many_arguments)]
 pub fn compile<T>(
     mut resolver: impl Resolver<PackageId = T>,
     package_id: &T,
     package_version: Version,
     root: &WeslModule,
+    homepage: Option<String>,
+    repository: Option<String>,
+    license: Option<String>,
     options: &CompileOptions,
 ) -> Result<(WeslDocs, CompileStats)> {
     let compile_state = CompileState::default();
@@ -121,6 +125,9 @@ pub fn compile<T>(
     let mut docs = WeslDocs {
         version: package_version,
         dependencies: resolver.resolved_dependencies(package_id),
+        homepage,
+        repository,
+        license,
         root,
     };
     let compile_stats = compile_state.into_result()?;

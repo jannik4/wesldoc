@@ -34,15 +34,18 @@
 
 <body>
     <div class="nav">
-        <a class="icon icon-home" style="margin-right: 12px;" href="{{ root_url }}index.html"></a>
-        <span style="margin-right: 12px;">{{ ctx.doc.root.name }}</span>
-        <select class="select" id="selectVersion" onchange="changeVersion()" autocomplete="off">
-            <option
-                value="{% for _ in 0..ctx.level() %}../{% endfor %}../../{{ this_version }}/{{ ctx.doc.root.name }}/index.html">
-                {{ this_version }}
-            </option>
-        </select>
-        {% include "settings.html" %}
+        <a class="nav-item nav-item-bd-right muted-link" href="{{ root_url }}index.html">
+            <span class="icon icon-home"></span>
+        </a>
+        <a id="show-package" class="nav-item nav-item-bd-right muted-link icon-and-text" href="#">
+            {{ ctx.doc.root.name }} {{ ctx.doc.version.to_string() }}
+            <span class="icon icon-mod-small icon-down"></span>
+        </a>
+        {% include "package_menu.html" %}
+        <button id="show-settings" class="nav-item nav-item-bd-left muted-link" aria-label="Show settings">
+            <span class="icon icon-settings"></span>
+        </button>
+        {% include "settings_menu.html" %}
     </div>
     <div class="content">
         <input type="text" id="search" placeholder="Search" oninput="searchDebounced()" autocomplete="off">
@@ -71,7 +74,7 @@
             root: "{% for _ in 0..ctx.level() %}../{% endfor %}../",
         };
     </script>
-    <script src="{{ root_url }}-/static/js/selectVersion.js"></script>
+    <script src="{{ root_url }}-/static/js/package.js"></script>
     <script src="{{ root_url }}-/static/js/search.js"></script>
     <script src="{{ root_url }}-/static/js/lineNumbers.js"></script>
 </body>

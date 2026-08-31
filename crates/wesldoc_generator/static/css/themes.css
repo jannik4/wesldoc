@@ -1,6 +1,7 @@
 :root[data-theme="dark"] {
   --background-color: #3b3b3b;
   --color: #eee;
+  --color-hover: #ccc;
 
   --nav-background-color: #2e2e2e;
   --nav-border-color: #555;
@@ -38,6 +39,7 @@
 :root[data-theme="light"] {
   --background-color: #fff;
   --color: #000;
+  --color-hover: #222;
 
   --nav-background-color: #f2f2f2;
   --nav-border-color: #aaa;

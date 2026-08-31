@@ -7,7 +7,10 @@ pub use semver::Version;
 #[derive(Debug, Clone)]
 pub struct WeslDocs {
     pub version: Version,
-    pub dependencies: Vec<(String, Version)>, // TODO: use in wesldoc_generator
+    pub dependencies: Vec<(String, Version)>,
+    pub homepage: Option<String>,
+    pub repository: Option<String>,
+    pub license: Option<String>,
     pub root: Module,
 }
 

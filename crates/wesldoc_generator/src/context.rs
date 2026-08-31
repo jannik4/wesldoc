@@ -53,6 +53,21 @@ impl<'a> Context<'a> {
         }
     }
 
+    pub fn package_homepage(&self) -> Option<&str> {
+        self.doc
+            .homepage
+            .as_deref()
+            .or(self.doc.repository.as_deref())
+    }
+
+    pub fn package_repository(&self) -> Option<&str> {
+        self.doc.repository.as_deref()
+    }
+
+    pub fn package_license(&self) -> Option<&str> {
+        self.doc.license.as_deref()
+    }
+
     pub fn level(&self) -> usize {
         self.module_path.level
     }

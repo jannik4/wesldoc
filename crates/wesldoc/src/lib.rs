@@ -110,6 +110,9 @@ impl Args {
                 &package.id,
                 package.version,
                 &wesl_module,
+                cargo_package.homepage(),
+                cargo_package.repository(),
+                cargo_package.license(),
                 &wesldoc_compiler::CompileOptions {
                     missing_documentation: self.missing_docs.into(),
                 },

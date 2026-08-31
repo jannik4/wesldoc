@@ -133,6 +133,18 @@ impl CargoPackage {
         self.package.version.clone()
     }
 
+    pub fn homepage(&self) -> Option<String> {
+        self.package.homepage.clone()
+    }
+
+    pub fn repository(&self) -> Option<String> {
+        self.package.repository.clone()
+    }
+
+    pub fn license(&self) -> Option<String> {
+        self.package.license.clone()
+    }
+
     pub fn crate_path(&self) -> PathBuf {
         self.package
             .manifest_path

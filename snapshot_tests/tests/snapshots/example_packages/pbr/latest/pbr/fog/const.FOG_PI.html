@@ -30,16 +30,52 @@
 
 <body>
     <div class="nav">
-        <a class="icon icon-home" style="margin-right: 12px;" href="../../../../index.html"></a>
-        <span style="margin-right: 12px;">pbr</span>
-        <select class="select" id="selectVersion" onchange="changeVersion()" autocomplete="off">
-            <option
-                value="../../../latest/pbr/index.html">
-                latest
-            </option>
-        </select>
-        <button id="show-settings" class="icon icon-settings" aria-label="Show settings"></button>
-<div id="settings-menu">
+        <a class="nav-item nav-item-bd-right muted-link" href="../../../../index.html">
+            <span class="icon icon-home"></span>
+        </a>
+        <a id="show-package" class="nav-item nav-item-bd-right muted-link icon-and-text" href="#">
+            pbr 0.0.0
+            <span class="icon icon-mod-small icon-down"></span>
+        </a>
+        <div id="package-menu">
+    <div>
+        <div class="title">Package</div>
+        <div class="body">
+            
+            <a class="muted-link icon-and-text" href="https://github.com/jannik4/wesldoc"><span class="icon icon-home"></span>Homepage</a>
+            
+            
+            <a class="muted-link icon-and-text" href="https://github.com/jannik4/wesldoc"><span
+                    class="icon icon-repository"></span>Repository</a>
+            
+            
+            <a class="muted-link icon-and-text" href="#"><span class="icon icon-license"></span>MIT OR Apache-2.0</a>
+            
+        </div>
+    </div>
+
+    <div>
+        <div class="title">Dependencies</div>
+        <div class="body">
+            
+            <a class="muted-link"
+                href="../../../../math_utils/0.0.0/math_utils/index.html">
+                math_utils 0.0.0
+            </a>
+            
+            
+        </div>
+    </div>
+
+    <div>
+        <div class="title">Versions</div>
+        <div id="package-versions-list" class="body"></div>
+    </div>
+</div>
+        <button id="show-settings" class="nav-item nav-item-bd-left muted-link" aria-label="Show settings">
+            <span class="icon icon-settings"></span>
+        </button>
+        <div id="settings-menu">
     <div class="settings-title">Theme</div>
     <label>
         <input type="radio" name="theme" id="theme-auto" value="auto"> Auto
@@ -88,7 +124,7 @@
             root: "../../",
         };
     </script>
-    <script src="../../../../-/static/js/selectVersion.js"></script>
+    <script src="../../../../-/static/js/package.js"></script>
     <script src="../../../../-/static/js/search.js"></script>
     <script src="../../../../-/static/js/lineNumbers.js"></script>
 </body>

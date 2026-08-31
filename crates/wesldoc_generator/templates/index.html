@@ -17,11 +17,14 @@
 
 <body>
     <div class="nav">
-        <span style="margin-right: 12px;">WESL Docs</span>
-        {% include "settings.html" %}
+        <span class="nav-item nav-item-bd-right">WESL Docs</span>
+        <button id="show-settings" class="nav-item nav-item-bd-left muted-link" aria-label="Show settings">
+            <span class="icon icon-settings"></span>
+        </button>
+        {% include "settings_menu.html" %}
     </div>
     <div class="content">
-        <h3 class="item-list-title">Packages</h3>
+        <h3 class="item-list-title" style="margin-top: 16px;">Packages</h3>
         <ul class="item-list">
             {% for package in packages %}
             <li>

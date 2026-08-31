@@ -31,8 +31,9 @@ window.addEventListener("load", function () {
         settingsMenu.style.display = isVisible ? "none" : "block";
     });
     window.addEventListener("click", function (event) {
+        const showSettings = document.getElementById("show-settings");
         const settingsMenu = document.getElementById("settings-menu");
-        if (settingsMenu.contains(event.target) || event.target.id === "show-settings") {
+        if (showSettings.contains(event.target) || settingsMenu.contains(event.target)) {
             return;
         }
         settingsMenu.style.display = "none";

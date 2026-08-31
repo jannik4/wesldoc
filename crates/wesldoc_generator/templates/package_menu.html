@@ -1,0 +1,37 @@
+<div id="package-menu">
+    <div>
+        <div class="title">Package</div>
+        <div class="body">
+            {% if let Some(homepage) = ctx.package_homepage() %}
+            <a class="muted-link icon-and-text" href="{{ homepage }}"><span class="icon icon-home"></span>Homepage</a>
+            {% endif %}
+            {% if let Some(repository) = ctx.package_repository() %}
+            <a class="muted-link icon-and-text" href="{{ repository }}"><span
+                    class="icon icon-repository"></span>Repository</a>
+            {% endif %}
+            {% if let Some(license) = ctx.package_license() %}
+            <a class="muted-link icon-and-text" href="#"><span class="icon icon-license"></span>{{ license }}</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div>
+        <div class="title">Dependencies</div>
+        <div class="body">
+            {% for (dep_name, dep_version) in ctx.doc.dependencies %}
+            <a class="muted-link"
+                href="{% for _ in 0..ctx.level() %}../{% endfor %}../../../{{ dep_name }}/{{ dep_version }}/{{ dep_name }}/index.html">
+                {{ dep_name }} {{ dep_version }}
+            </a>
+            {% endfor %}
+            {% if ctx.doc.dependencies.is_empty() %}
+            <span><i>No dependencies</i></span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div>
+        <div class="title">Versions</div>
+        <div id="package-versions-list" class="body"></div>
+    </div>
+</div>
