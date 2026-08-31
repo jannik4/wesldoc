@@ -12,6 +12,7 @@ readme.workspace = true
 wesldoc_ast = { path = "../wesldoc_ast" }
 wesldoc_compiler = { path = "../wesldoc_compiler" }
 wesldoc_generator = { path = "../wesldoc_generator" }
+wesldoc_report = { path = "../wesldoc_report" }
 
 wesl = { workspace = true }
 wgsl-parse = { workspace = true }

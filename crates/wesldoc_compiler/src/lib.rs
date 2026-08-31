@@ -402,10 +402,10 @@ fn validate_module_doc_comment<T>(module: &Module, ctx: &Context<T>) {
     report = report.with_source_code(ctx.source().to_string());
     match severity {
         Severity::Warn => {
-            log::warn!("{report:?}");
+            wesldoc_report::warn!("{report:?}");
         }
         Severity::Error => {
-            log::error!("{report:?}");
+            wesldoc_report::error!("{report:?}");
             ctx.compile_state()
                 .report_error(Error::MissingDocumentation);
         }
@@ -438,10 +438,10 @@ fn validate_item_doc_comment<T>(
     report = report.with_source_code(ctx.source().to_string());
     match severity {
         Severity::Warn => {
-            log::warn!("{report:?}");
+            wesldoc_report::warn!("{report:?}");
         }
         Severity::Error => {
-            log::error!("{report:?}");
+            wesldoc_report::error!("{report:?}");
             ctx.compile_state()
                 .report_error(Error::MissingDocumentation);
         }

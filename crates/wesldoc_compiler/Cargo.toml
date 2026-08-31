@@ -10,8 +10,8 @@ readme.workspace = true
 
 [dependencies]
 wesldoc_ast = { path = "../wesldoc_ast" }
+wesldoc_report = { path = "../wesldoc_report" }
 
 wgsl-parse = { workspace = true }
-log = "0.4.27"
 thiserror = "2.0.20"
 miette = { version = "7.6.0", features = ["fancy"] }

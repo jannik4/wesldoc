@@ -25,7 +25,7 @@ fn conditional_from_expr(expr: &syntax::Expression) -> Option<Conditional> {
             syntax::LiteralExpression::Bool(true) => Some(Conditional::True),
             syntax::LiteralExpression::Bool(false) => Some(Conditional::False),
             _ => {
-                log::warn!("unsupported literal type for conditional: {lit:?}");
+                wesldoc_report::warn!("unsupported literal type for conditional: {lit:?}");
                 None
             }
         },
@@ -35,9 +35,9 @@ fn conditional_from_expr(expr: &syntax::Expression) -> Option<Conditional> {
                 conditional_from_expr(unary.operand.node())?,
             ))),
             _ => {
-                log::warn!(
+                wesldoc_report::warn!(
                     "unsupported unary operator for conditional: {:?}",
-                    unary.operator
+                    unary.operator,
                 );
                 None
             }
@@ -52,17 +52,17 @@ fn conditional_from_expr(expr: &syntax::Expression) -> Option<Conditional> {
                 Box::new(conditional_from_expr(binary.right.node())?),
             )),
             _ => {
-                log::warn!(
+                wesldoc_report::warn!(
                     "unsupported binary operator for conditional: {:?}",
-                    binary.operator
+                    binary.operator,
                 );
                 None
             }
         },
         syntax::Expression::TypeOrIdentifier(type_or_ident) => {
             if type_or_ident.template_args.is_some() {
-                log::warn!(
-                    "template arguments are not supported in conditionals: {type_or_ident:?}"
+                wesldoc_report::warn!(
+                    "template arguments are not supported in conditionals: {type_or_ident:?}",
                 );
                 None
             } else {
@@ -70,7 +70,7 @@ fn conditional_from_expr(expr: &syntax::Expression) -> Option<Conditional> {
             }
         }
         _ => {
-            log::warn!("unsupported expression type for conditional: {expr:?}");
+            wesldoc_report::warn!("unsupported expression type for conditional: {expr:?}",);
             None
         }
     }

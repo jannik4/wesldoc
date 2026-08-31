@@ -249,7 +249,10 @@ impl<'a> CompilePackageResolver<'a> {
                             {
                                 Some(pkg) => pkg,
                                 None => {
-                                    println!("Warning: dependency '{}' not found", package_name);
+                                    wesldoc_report::warn!(
+                                        "dependency '{}' not found",
+                                        package_name
+                                    );
                                     continue;
                                 }
                             };
@@ -292,10 +295,7 @@ impl<'a> CompilePackageResolver<'a> {
         Some(match &mut package.dependencies {
             Dependencies::Explicit { dependencies } => match dependencies.get(dependency_name) {
                 Some(pkg) => Arc::clone(pkg),
-                None => {
-                    println!("Warning: dependency '{}' not found", dependency_name);
-                    return None;
-                }
+                None => return None,
             },
             Dependencies::Auto { dependencies } => {
                 match dependencies.entry(dependency_name.to_string()) {

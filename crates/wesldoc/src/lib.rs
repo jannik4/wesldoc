@@ -70,7 +70,10 @@ impl Args {
         }
 
         // Resolve cargo dependencies
-        let cargo_metadata = Arc::new(CargoMetadata::resolve(&self.package)?);
+        let cargo_metadata = Arc::new(wesldoc_report::spinner(
+            "Fetching cargo metadata...",
+            || CargoMetadata::resolve(&self.package),
+        )?);
 
         // Cache
         let mut cache = BuildCache::new(Arc::clone(&cargo_metadata));
@@ -85,9 +88,11 @@ impl Args {
             }
             wesl_package_found = true;
 
-            println!(
-                "Documenting package: {} v{}",
-                package.package_name, package.version
+            wesldoc_report::info!(
+                "Documenting" =>
+                "{} v{}",
+                package.package_name,
+                package.version
             );
 
             // Build wesl module
@@ -111,8 +116,9 @@ impl Args {
             )
             .with_context(|| format!("failed to compile package '{}'", wesl_module.name))?;
             if self.statistics {
-                println!(
-                    "Documentation Coverage: {:.2}%",
+                wesldoc_report::metric!(
+                    "Coverage" =>
+                    "{:.2}%",
                     compile_stats.documented_percentage()
                 );
             }
