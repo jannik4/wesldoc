@@ -1,3 +1,7 @@
+:root {
+  --nav-height: 34px;
+}
+
 html,
 body {
   margin: 0;
@@ -26,30 +30,115 @@ h6 {
   margin: 16px 0 8px 0;
 }
 
-.nav {
+.muted-link {
+  text-decoration: none !important;
+}
+
+.muted-link:hover {
+  color: var(--color-hover);
+}
+
+.muted-link.icon:hover {
+  background-color: var(--color-hover);
+}
+
+.muted-link:hover .icon {
+  background-color: var(--color-hover);
+}
+
+.icon-and-text {
   display: flex;
   align-items: center;
-  height: 38px;
-  padding: 8px 16px;
+  gap: 6px;
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  height: var(--nav-height);
   background-color: var(--nav-background-color);
   border-bottom: 1px solid var(--nav-border-color);
+}
+
+.nav-item {
+  padding: 8px 16px;
+}
+
+.nav-item-bd-left {
+  border-left: 1px solid var(--nav-border-color) !important;
+}
+
+.nav-item-bd-right {
+  border-right: 1px solid var(--nav-border-color) !important;
+}
+
+#show-package {
+  font-size: 14px;
+}
+
+#package-menu {
+  position: fixed;
+  left: 46px;
+  top: var(--nav-height);
+  background-color: var(--nav-background-color);
+  border: 1px solid var(--nav-border-color);
+  border-top: none;
+  font-size: 14px;
+  z-index: 100;
+
+  width: 350px;
+  min-height: 100px;
+
+  display: none;
+  grid-template-columns: 1fr 1fr;
+}
+
+#package-menu > :first-child {
+  grid-column: 1 / -1;
+  border-bottom: 1px solid var(--nav-border-color);
+}
+
+#package-menu > :nth-child(2) {
+  border-right: 1px solid var(--nav-border-color);
+}
+
+#package-menu > div {
+  padding: 8px;
+  max-height: 200px;
+}
+
+#package-menu > div > .body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+#package-menu > div > .title {
+  font-weight: bold;
+  margin-bottom: 6px;
 }
 
 #show-settings {
   margin-left: auto;
   border: none;
   cursor: pointer;
+  background-color: transparent;
 }
 
 #settings-menu {
   display: none;
   position: absolute;
-  top: 34px;
-  right: 6px;
+  top: var(--nav-height);
+  right: 0px;
   background-color: var(--nav-background-color);
-  border-radius: 8px;
   border: 1px solid var(--nav-border-color);
-  padding: 1rem;
+  border-top: none;
+
+  font-size: 14px;
+  padding: 8px;
   z-index: 100;
   min-width: 150px;
 }
@@ -223,6 +312,8 @@ a:hover {
   padding: 0 4px;
   margin-right: 16px;
   color: var(--line-number-color);
+
+  scroll-margin-top: var(--nav-height);
 }
 
 .line-number-highlighted {
