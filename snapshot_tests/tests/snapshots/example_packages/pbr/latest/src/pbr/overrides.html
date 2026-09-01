@@ -102,7 +102,7 @@
             id="1"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >1</a>@id(0) override has_directional_light: bool = true;
+        >1</a><span class="syntax-source syntax-wesl"><span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@id</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">0</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span> <span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">override</span> <span class="syntax-variable syntax-other syntax-wgsl">has_directional_light</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-boolean syntax-wgsl">bool</span> <span class="syntax-keyword syntax-operator syntax-assignment syntax-equal syntax-wgsl">=</span> <span class="syntax-constant syntax-language syntax-boolean syntax-wgsl">true</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
 <a
             href="#2"
             id="2"
@@ -114,7 +114,7 @@
             id="3"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >3</a>@id(100) override has_spot_light: bool = true;
+        >3</a><span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@id</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">100</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span> <span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">override</span> <span class="syntax-variable syntax-other syntax-wgsl">has_spot_light</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-boolean syntax-wgsl">bool</span> <span class="syntax-keyword syntax-operator syntax-assignment syntax-equal syntax-wgsl">=</span> <span class="syntax-constant syntax-language syntax-boolean syntax-wgsl">true</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
 <a
             href="#4"
             id="4"
@@ -126,19 +126,19 @@
             id="5"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >5</a>/// The magnitude of the speed. This must be overriden.
+        >5</a><span class="syntax-comment syntax-line syntax-documentation syntax-wgsl">/// The magnitude of the speed. This must be overriden.</span>
 <a
             href="#6"
             id="6"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >6</a>override speed_magnitude: f32;
+        >6</a><span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">override</span> <span class="syntax-variable syntax-other syntax-wgsl">speed_magnitude</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
 <a
             href="#7"
             id="7"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >7</a>override direction: vec3;
+        >7</a><span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">override</span> <span class="syntax-variable syntax-other syntax-wgsl">direction</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-vectors syntax-wgsl">vec3</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
 <a
             href="#8"
             id="8"
@@ -150,19 +150,19 @@
             id="9"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >9</a>/// The speed. This is computed from the [`speed_magnitude`] and [`direction`].
+        >9</a><span class="syntax-comment syntax-line syntax-documentation syntax-wgsl">/// The speed. This is computed from the [`speed_magnitude`] and [`direction`].</span>
 <a
             href="#10"
             id="10"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >10</a>override speed = speed_magnitude * direction;
+        >10</a><span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">override</span> <span class="syntax-variable syntax-other syntax-wgsl">speed</span> <span class="syntax-keyword syntax-operator syntax-assignment syntax-equal syntax-wgsl">=</span> <span class="syntax-variable syntax-other syntax-wgsl">speed_magnitude</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-variable syntax-other syntax-wgsl">direction</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
 <a
             href="#11"
             id="11"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >11</a></code>
+        >11</a></span></code>
 </pre>
 
         </div>

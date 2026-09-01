@@ -102,7 +102,7 @@
             id="1"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >1</a>import math_utils::constants::PI;
+        >1</a><span class="syntax-source syntax-wesl"><span class="syntax-keyword syntax-control syntax-import syntax-wesl">import</span> <span class="syntax-variable syntax-other syntax-wgsl">math_utils</span><span class="syntax-keyword syntax-operator syntax-module syntax-wesl">::</span><span class="syntax-variable syntax-other syntax-wgsl">constants</span><span class="syntax-keyword syntax-operator syntax-module syntax-wesl">::</span><span class="syntax-entity syntax-name syntax-type syntax-wgsl">PI</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
 <a
             href="#2"
             id="2"
@@ -114,7 +114,7 @@
             id="3"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >3</a>const FOG_PI: f32 = PI;
+        >3</a><span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">const</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">FOG_PI</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span> <span class="syntax-keyword syntax-operator syntax-assignment syntax-equal syntax-wgsl">=</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">PI</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
 <a
             href="#4"
             id="4"
@@ -126,67 +126,67 @@
             id="5"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >5</a>struct Fog {
+        >5</a><span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">struct</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">Fog</span> <span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">{</span>
 <a
             href="#6"
             id="6"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >6</a>    base_color: vec4&#60;f32&#62;,
+        >6</a>    <span class="syntax-variable syntax-other syntax-wgsl">base_color</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-meta syntax-type syntax-template syntax-wgsl">vec4&lt;<span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span>&gt;</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#7"
             id="7"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >7</a>    @if(emissive)
+        >7</a>    <span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@if</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-variable syntax-other syntax-wgsl">emissive</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span>
 <a
             href="#8"
             id="8"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >8</a>    emissive: vec4&#60;f32&#62;,
+        >8</a>    <span class="syntax-variable syntax-other syntax-wgsl">emissive</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-meta syntax-type syntax-template syntax-wgsl">vec4&lt;<span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span>&gt;</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#9"
             id="9"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >9</a>    @if(fog_flags_unsigned)
+        >9</a>    <span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@if</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-variable syntax-other syntax-wgsl">fog_flags_unsigned</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span>
 <a
             href="#10"
             id="10"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >10</a>    flags: u32,
+        >10</a>    <span class="syntax-variable syntax-other syntax-wgsl">flags</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-integer syntax-wgsl">u32</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#11"
             id="11"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >11</a>    @elif(fog_flags_signed)
+        >11</a>    <span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@elif</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-variable syntax-other syntax-wgsl">fog_flags_signed</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span>
 <a
             href="#12"
             id="12"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >12</a>    flags: i32,
+        >12</a>    <span class="syntax-variable syntax-other syntax-wgsl">flags</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-integer syntax-wgsl">i32</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#13"
             id="13"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >13</a>    @else
+        >13</a>    <span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@else</span>
 <a
             href="#14"
             id="14"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >14</a>    flags: bool,
+        >14</a>    <span class="syntax-variable syntax-other syntax-wgsl">flags</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-boolean syntax-wgsl">bool</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#15"
             id="15"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >15</a>}
+        >15</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span>
 <a
             href="#16"
             id="16"
@@ -198,7 +198,7 @@
             id="17"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >17</a>// Empty lines to make this page scrollable in the browser
+        >17</a><span class="syntax-comment syntax-line syntax-double-slash syntax-wgsl">// Empty lines to make this page scrollable in the browser</span>
 <a
             href="#18"
             id="18"
@@ -258,7 +258,7 @@
             id="27"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >27</a>// ...
+        >27</a><span class="syntax-comment syntax-line syntax-double-slash syntax-wgsl">// ...</span>
 <a
             href="#28"
             id="28"
@@ -318,7 +318,7 @@
             id="37"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >37</a>// ...
+        >37</a><span class="syntax-comment syntax-line syntax-double-slash syntax-wgsl">// ...</span>
 <a
             href="#38"
             id="38"
@@ -378,7 +378,7 @@
             id="47"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >47</a>// ...
+        >47</a><span class="syntax-comment syntax-line syntax-double-slash syntax-wgsl">// ...</span>
 <a
             href="#48"
             id="48"
@@ -438,7 +438,7 @@
             id="57"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >57</a>// ...
+        >57</a><span class="syntax-comment syntax-line syntax-double-slash syntax-wgsl">// ...</span>
 <a
             href="#58"
             id="58"
@@ -498,7 +498,7 @@
             id="67"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >67</a>// ...
+        >67</a><span class="syntax-comment syntax-line syntax-double-slash syntax-wgsl">// ...</span>
 <a
             href="#68"
             id="68"
@@ -558,7 +558,7 @@
             id="77"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >77</a>// ...
+        >77</a><span class="syntax-comment syntax-line syntax-double-slash syntax-wgsl">// ...</span>
 <a
             href="#78"
             id="78"
@@ -582,61 +582,61 @@
             id="81"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >81</a>@if(linear_fog)
+        >81</a><span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@if</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-variable syntax-other syntax-wgsl">linear_fog</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span>
 <a
             href="#82"
             id="82"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >82</a>fn linear_fog(
+        >82</a><span class="syntax-meta syntax-function syntax-definition syntax-wgsl">fn linear_fog(
 <a
             href="#83"
             id="83"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >83</a>    fog: Fog,
+        >83</a>    <span class="syntax-variable syntax-other syntax-wgsl">fog</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">Fog</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#84"
             id="84"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >84</a>    input_color: vec4&#60;f32&#62;,
+        >84</a>    <span class="syntax-variable syntax-other syntax-wgsl">input_color</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-meta syntax-type syntax-template syntax-wgsl">vec4&lt;<span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span>&gt;</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#85"
             id="85"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >85</a>    distance: f32,
+        >85</a>    <span class="syntax-variable syntax-other syntax-wgsl">distance</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#86"
             id="86"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >86</a>    @if(fog_extra_flags)
+        >86</a>    <span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@if</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-variable syntax-other syntax-wgsl">fog_extra_flags</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span>
 <a
             href="#87"
             id="87"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >87</a>    extra_flags: u32,
+        >87</a>    <span class="syntax-variable syntax-other syntax-wgsl">extra_flags</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-integer syntax-wgsl">u32</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#88"
             id="88"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >88</a>) -&#62; vec4&#60;f32&#62; {
+        >88</a><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span> <span class="syntax-keyword syntax-operator syntax-arrow syntax-skinny syntax-wgsl">-&gt;</span> <span class="syntax-meta syntax-type syntax-template syntax-wgsl">vec4&lt;<span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span>&gt;</span> {</span>
 <a
             href="#89"
             id="89"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >89</a>    return mix(input_color, fog.base_color, distance) * PI;
+        >89</a>    <span class="syntax-keyword syntax-control syntax-wgsl">return</span> <span class="syntax-meta syntax-function syntax-wgsl">mix(<span class="syntax-variable syntax-other syntax-wgsl">input_color</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-variable syntax-other syntax-wgsl">fog</span><span class="syntax-keyword syntax-operator syntax-access syntax-dot syntax-wgsl">.</span><span class="syntax-variable syntax-other syntax-wgsl">base_color</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-variable syntax-other syntax-wgsl">distance</span>)</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">PI</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
 <a
             href="#90"
             id="90"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >90</a>}</code>
+        >90</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span></span></code>
 </pre>
 
         </div>

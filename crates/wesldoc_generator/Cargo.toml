@@ -15,4 +15,9 @@ include_dir = "0.7.4"
 serde = { version = "1.0.193", features = ["derive"] }
 serde_json = "1.0.108"
 ammonia = "4.1.4"
+syntect = { version = "5.3.0", default-features = false, features = [
+    "regex-onig",
+    "yaml-load",
+    "html",
+] }
 thiserror = "2.0.20"

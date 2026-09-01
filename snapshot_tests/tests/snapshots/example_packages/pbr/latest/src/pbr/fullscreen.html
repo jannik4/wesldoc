@@ -102,37 +102,37 @@
             id="1"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >1</a>struct FullscreenVertexOutput {
+        >1</a><span class="syntax-source syntax-wesl"><span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">struct</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">FullscreenVertexOutput</span> <span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">{</span>
 <a
             href="#2"
             id="2"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >2</a>    @builtin(position)
+        >2</a>    <span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@builtin</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-variable syntax-other syntax-wgsl">position</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span>
 <a
             href="#3"
             id="3"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >3</a>    position: vec4&#60;f32&#62;,
+        >3</a>    <span class="syntax-variable syntax-other syntax-wgsl">position</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-meta syntax-type syntax-template syntax-wgsl">vec4&lt;<span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span>&gt;</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#4"
             id="4"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >4</a>    @location(0)
+        >4</a>    <span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@location</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">0</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span>
 <a
             href="#5"
             id="5"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >5</a>    uv: vec2&#60;f32&#62;,
+        >5</a>    <span class="syntax-variable syntax-other syntax-wgsl">uv</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-meta syntax-type syntax-template syntax-wgsl">vec2&lt;<span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span>&gt;</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#6"
             id="6"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >6</a>}
+        >6</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span>
 <a
             href="#7"
             id="7"
@@ -144,37 +144,37 @@
             id="8"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >8</a>@vertex
+        >8</a><span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@vertex</span>
 <a
             href="#9"
             id="9"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >9</a>fn fullscreen_vertex_shader(@builtin(vertex_index) vertex_index: u32) -&#62; FullscreenVertexOutput {
+        >9</a><span class="syntax-meta syntax-function syntax-definition syntax-wgsl">fn fullscreen_vertex_shader(<span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@builtin</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-variable syntax-other syntax-wgsl">vertex_index</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span> <span class="syntax-variable syntax-other syntax-wgsl">vertex_index</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-integer syntax-wgsl">u32</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span> <span class="syntax-keyword syntax-operator syntax-arrow syntax-skinny syntax-wgsl">-&gt;</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">FullscreenVertexOutput</span> {</span>
 <a
             href="#10"
             id="10"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >10</a>    let uv = vec2&#60;f32&#62;(f32(vertex_index &#62;&#62; 1u), f32(vertex_index &#38; 1u)) * 2.0;
+        >10</a>    <span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">let</span> <span class="syntax-variable syntax-other syntax-wgsl">uv</span> <span class="syntax-keyword syntax-operator syntax-assignment syntax-equal syntax-wgsl">=</span> <span class="syntax-meta syntax-function syntax-wgsl">vec2&lt;f32&gt;(<span class="syntax-meta syntax-function syntax-wgsl">f32(<span class="syntax-variable syntax-other syntax-wgsl">vertex_index</span> <span class="syntax-keyword syntax-operator syntax-logical syntax-wgsl">&gt;&gt;</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">1u</span>)</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-meta syntax-function syntax-wgsl">f32(<span class="syntax-variable syntax-other syntax-wgsl">vertex_index</span> <span class="syntax-keyword syntax-operator syntax-address-of syntax-and syntax-wgsl">&amp;</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">1u</span>)</span>)</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">2</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
 <a
             href="#11"
             id="11"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >11</a>    let clip_position = vec4&#60;f32&#62;(uv * vec2&#60;f32&#62;(2.0, -2.0) + vec2&#60;f32&#62;(-1.0, 1.0), 0.0, 1.0);
+        >11</a>    <span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">let</span> <span class="syntax-variable syntax-other syntax-wgsl">clip_position</span> <span class="syntax-keyword syntax-operator syntax-assignment syntax-equal syntax-wgsl">=</span> <span class="syntax-meta syntax-function syntax-wgsl">vec4&lt;f32&gt;(<span class="syntax-variable syntax-other syntax-wgsl">uv</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-meta syntax-function syntax-wgsl">vec2&lt;f32&gt;(<span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">2</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">-</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">2</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span>)</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">+</span> <span class="syntax-meta syntax-function syntax-wgsl">vec2&lt;f32&gt;(<span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">-</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">1</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">1</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span>)</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">0</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">1</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span>)</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
 <a
             href="#12"
             id="12"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >12</a>    return FullscreenVertexOutput(clip_position, uv);
+        >12</a>    <span class="syntax-keyword syntax-control syntax-wgsl">return</span> <span class="syntax-meta syntax-function syntax-wgsl">FullscreenVertexOutput(<span class="syntax-variable syntax-other syntax-wgsl">clip_position</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-variable syntax-other syntax-wgsl">uv</span>)</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
 <a
             href="#13"
             id="13"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >13</a>}</code>
+        >13</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span></span></code>
 </pre>
 
         </div>

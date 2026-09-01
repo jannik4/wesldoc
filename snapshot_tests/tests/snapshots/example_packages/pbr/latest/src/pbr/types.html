@@ -102,43 +102,43 @@
             id="1"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >1</a>struct StandardMaterial {
+        >1</a><span class="syntax-source syntax-wesl"><span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">struct</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">StandardMaterial</span> <span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">{</span>
 <a
             href="#2"
             id="2"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >2</a>    base_color: vec4&#60;f32&#62;,
+        >2</a>    <span class="syntax-variable syntax-other syntax-wgsl">base_color</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-meta syntax-type syntax-template syntax-wgsl">vec4&lt;<span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span>&gt;</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#3"
             id="3"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >3</a>    emissive: vec4&#60;f32&#62;,
+        >3</a>    <span class="syntax-variable syntax-other syntax-wgsl">emissive</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-meta syntax-type syntax-template syntax-wgsl">vec4&lt;<span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span>&gt;</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#4"
             id="4"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >4</a>    metallic: f32,
+        >4</a>    <span class="syntax-variable syntax-other syntax-wgsl">metallic</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#5"
             id="5"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >5</a>    roughness: f32,
+        >5</a>    <span class="syntax-variable syntax-other syntax-wgsl">roughness</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#6"
             id="6"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >6</a>    custom_data: CustomData,
+        >6</a>    <span class="syntax-variable syntax-other syntax-wgsl">custom_data</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">CustomData</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#7"
             id="7"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >7</a>}
+        >7</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span>
 <a
             href="#8"
             id="8"
@@ -150,31 +150,31 @@
             id="9"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >9</a>@if(custom_data_value_index)
+        >9</a><span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@if</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-variable syntax-other syntax-wgsl">custom_data_value_index</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span>
 <a
             href="#10"
             id="10"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >10</a>struct CustomData {
+        >10</a><span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">struct</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">CustomData</span> <span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">{</span>
 <a
             href="#11"
             id="11"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >11</a>    value: f32,
+        >11</a>    <span class="syntax-variable syntax-other syntax-wgsl">value</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#12"
             id="12"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >12</a>    index: u32,
+        >12</a>    <span class="syntax-variable syntax-other syntax-wgsl">index</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-integer syntax-wgsl">u32</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#13"
             id="13"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >13</a>}
+        >13</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span>
 <a
             href="#14"
             id="14"
@@ -186,31 +186,31 @@
             id="15"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >15</a>@if(!custom_data_value_index)
+        >15</a><span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@if</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-keyword syntax-operator syntax-logical syntax-wgsl">!</span><span class="syntax-variable syntax-other syntax-wgsl">custom_data_value_index</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span>
 <a
             href="#16"
             id="16"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >16</a>struct CustomData {
+        >16</a><span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">struct</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">CustomData</span> <span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">{</span>
 <a
             href="#17"
             id="17"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >17</a>    position: vec3&#60;f32&#62;,
+        >17</a>    <span class="syntax-variable syntax-other syntax-wgsl">position</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-meta syntax-type syntax-template syntax-wgsl">vec3&lt;<span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span>&gt;</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#18"
             id="18"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >18</a>    normal: vec3&#60;f32&#62;,
+        >18</a>    <span class="syntax-variable syntax-other syntax-wgsl">normal</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-meta syntax-type syntax-template syntax-wgsl">vec3&lt;<span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span>&gt;</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
 <a
             href="#19"
             id="19"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >19</a>}</code>
+        >19</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span></span></code>
 </pre>
 
         </div>

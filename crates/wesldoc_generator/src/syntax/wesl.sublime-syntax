@@ -1,0 +1,23 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: WESL
+scope: source.wesl
+contexts:
+    main:
+        - include: documentation_comment
+        - include: keywords
+        - include: scope:source.wgsl
+    documentation_comment:
+        - match: \s*///.*
+          comment: documentation comment
+          scope: comment.line.documentation.wgsl
+    keywords:
+        - match: \b(import)\b
+          scope: keyword.control.import.wesl
+        - match: \b(package|super|as)\b
+          comment: keywords used in import statements
+          scope: keyword.control.wesl
+        - match: "::"
+          comment: double colon
+          scope: keyword.operator.module.wesl

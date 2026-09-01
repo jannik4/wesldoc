@@ -4,15 +4,15 @@
 {% let digits = source.lines().count().max(1).ilog10() + 1 %}
 <pre class="code-block">
 <code>
-    {%- for (idx, line) in source.lines().enumerate() -%}
+    {%- for (idx, line) in self.source_lines() -%}
         <a
-            href="#{{ idx + 1 }}"
-            id="{{ idx + 1 }}"
+            href="#{{ idx }}"
+            id="{{ idx }}"
             class="line-number line-number-digits-{{ digits }}"
             data-nosnippet
         >
-            {{- idx + 1 -}}
-        </a>{{ line }}{% if !loop.last %}{{ "\n" }}{% endif %}
+            {{- idx -}}
+        </a>{{ line|safe }}
     {%- endfor -%}
 </code>
 </pre>
