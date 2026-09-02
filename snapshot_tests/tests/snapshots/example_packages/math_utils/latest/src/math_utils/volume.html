@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="../../../../-/static/css/themes.css">
     <link rel="stylesheet" href="../../../../-/static/css/styles.css">
     <link rel="stylesheet" href="../../../../-/static/css/icons.css">
+    <link rel="stylesheet" href="../../../../-/static/css/syntax.css">
     <script src="../../../../-/static/js/settings.js"></script>
 
     
@@ -102,13 +103,13 @@
             id="1"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >1</a><span class="syntax-source syntax-wesl"><span class="syntax-keyword syntax-control syntax-import syntax-wesl">import</span> <span class="syntax-keyword syntax-control syntax-wesl">package</span><span class="syntax-keyword syntax-operator syntax-module syntax-wesl">::</span><span class="syntax-variable syntax-other syntax-wgsl">constants</span><span class="syntax-keyword syntax-operator syntax-module syntax-wesl">::</span><span class="syntax-entity syntax-name syntax-type syntax-wgsl">PI</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
+        >1</a><span class="syntax-keyword syntax-keyword-control syntax-keyword-control-import">import</span> <span class="syntax-namespace">package</span><span class="syntax-punctuation syntax-punctuation-delimiter">::</span><span class="syntax-namespace">constants</span><span class="syntax-punctuation syntax-punctuation-delimiter">::</span><span class="syntax-constant">PI</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#2"
             id="2"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >2</a><span class="syntax-keyword syntax-control syntax-import syntax-wesl">import</span> <span class="syntax-variable syntax-other syntax-wgsl">my_primitives</span><span class="syntax-keyword syntax-operator syntax-module syntax-wesl">::</span><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">{</span><span class="syntax-variable syntax-other syntax-wgsl">cuboid</span><span class="syntax-keyword syntax-operator syntax-module syntax-wesl">::</span><span class="syntax-entity syntax-name syntax-type syntax-wgsl">Cuboid</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-variable syntax-other syntax-wgsl">cylinder</span><span class="syntax-keyword syntax-operator syntax-module syntax-wesl">::</span><span class="syntax-entity syntax-name syntax-type syntax-wgsl">Cylinder</span><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
+        >2</a><span class="syntax-keyword syntax-keyword-control syntax-keyword-control-import">import</span> <span class="syntax-namespace">my_primitives</span><span class="syntax-punctuation syntax-punctuation-delimiter">::</span><span class="syntax-punctuation syntax-punctuation-bracket">{</span><span class="syntax-namespace">cuboid</span><span class="syntax-punctuation syntax-punctuation-delimiter">::</span><span class="syntax-type">Cuboid</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span> <span class="syntax-namespace">cylinder</span><span class="syntax-punctuation syntax-punctuation-delimiter">::</span><span class="syntax-type">Cylinder</span><span class="syntax-punctuation syntax-punctuation-bracket">}</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#3"
             id="3"
@@ -120,25 +121,25 @@
             id="4"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >4</a><span class="syntax-comment syntax-line syntax-documentation syntax-wgsl">/// Calculates the volume of a [`Cuboid`].</span>
+        >4</a><span class="syntax-comment syntax-comment-line">/// Calculates the volume of a [`Cuboid`].</span>
 <a
             href="#5"
             id="5"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >5</a><span class="syntax-meta syntax-function syntax-definition syntax-wgsl">fn cuboid_volume(<span class="syntax-variable syntax-other syntax-wgsl">cuboid</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">Cuboid</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span> <span class="syntax-keyword syntax-operator syntax-arrow syntax-skinny syntax-wgsl">-&gt;</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span> {</span>
+        >5</a><span class="syntax-keyword syntax-keyword-control syntax-keyword-control-function">fn</span> <span class="syntax-function">cuboid_volume</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable syntax-variable-parameter">cuboid</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">Cuboid</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span> <span class="syntax-operator">-&gt;</span> <span class="syntax-type">f32</span> <span class="syntax-punctuation syntax-punctuation-bracket">{</span>
 <a
             href="#6"
             id="6"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >6</a>    <span class="syntax-keyword syntax-control syntax-wgsl">return</span> <span class="syntax-variable syntax-other syntax-wgsl">cuboid</span><span class="syntax-keyword syntax-operator syntax-access syntax-dot syntax-wgsl">.</span><span class="syntax-variable syntax-other syntax-wgsl">half_size</span><span class="syntax-keyword syntax-operator syntax-access syntax-dot syntax-wgsl">.</span><span class="syntax-variable syntax-other syntax-wgsl">x</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-variable syntax-other syntax-wgsl">cuboid</span><span class="syntax-keyword syntax-operator syntax-access syntax-dot syntax-wgsl">.</span><span class="syntax-variable syntax-other syntax-wgsl">half_size</span><span class="syntax-keyword syntax-operator syntax-access syntax-dot syntax-wgsl">.</span><span class="syntax-variable syntax-other syntax-wgsl">y</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-variable syntax-other syntax-wgsl">cuboid</span><span class="syntax-keyword syntax-operator syntax-access syntax-dot syntax-wgsl">.</span><span class="syntax-variable syntax-other syntax-wgsl">half_size</span><span class="syntax-keyword syntax-operator syntax-access syntax-dot syntax-wgsl">.</span><span class="syntax-variable syntax-other syntax-wgsl">z</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">8</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
+        >6</a>    <span class="syntax-keyword syntax-keyword-control syntax-keyword-control-return">return</span> <span class="syntax-variable">cuboid</span><span class="syntax-punctuation syntax-punctuation-delimiter">.</span><span class="syntax-variable syntax-variable-other syntax-variable-other-member">half_size</span><span class="syntax-punctuation syntax-punctuation-delimiter">.</span><span class="syntax-variable syntax-variable-other syntax-variable-other-member">x</span> <span class="syntax-operator">*</span> <span class="syntax-variable">cuboid</span><span class="syntax-punctuation syntax-punctuation-delimiter">.</span><span class="syntax-variable syntax-variable-other syntax-variable-other-member">half_size</span><span class="syntax-punctuation syntax-punctuation-delimiter">.</span><span class="syntax-variable syntax-variable-other syntax-variable-other-member">y</span> <span class="syntax-operator">*</span> <span class="syntax-variable">cuboid</span><span class="syntax-punctuation syntax-punctuation-delimiter">.</span><span class="syntax-variable syntax-variable-other syntax-variable-other-member">half_size</span><span class="syntax-punctuation syntax-punctuation-delimiter">.</span><span class="syntax-variable syntax-variable-other syntax-variable-other-member">z</span> <span class="syntax-operator">*</span> <span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-float">8.0</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#7"
             id="7"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >7</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span>
+        >7</a><span class="syntax-punctuation syntax-punctuation-bracket">}</span>
 <a
             href="#8"
             id="8"
@@ -150,31 +151,31 @@
             id="9"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >9</a><span class="syntax-comment syntax-line syntax-documentation syntax-wgsl">/// Calculates the volume of a [`Cylinder`].</span>
+        >9</a><span class="syntax-comment syntax-comment-line">/// Calculates the volume of a [`Cylinder`].</span>
 <a
             href="#10"
             id="10"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >10</a><span class="syntax-meta syntax-function syntax-definition syntax-wgsl">fn cylinder_volume(<span class="syntax-variable syntax-other syntax-wgsl">cylinder</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">Cylinder</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span> <span class="syntax-keyword syntax-operator syntax-arrow syntax-skinny syntax-wgsl">-&gt;</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span> {</span>
+        >10</a><span class="syntax-keyword syntax-keyword-control syntax-keyword-control-function">fn</span> <span class="syntax-function">cylinder_volume</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable syntax-variable-parameter">cylinder</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">Cylinder</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span> <span class="syntax-operator">-&gt;</span> <span class="syntax-type">f32</span> <span class="syntax-punctuation syntax-punctuation-bracket">{</span>
 <a
             href="#11"
             id="11"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >11</a>    <span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">let</span> <span class="syntax-variable syntax-other syntax-wgsl">base_area</span> <span class="syntax-keyword syntax-operator syntax-assignment syntax-equal syntax-wgsl">=</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">PI</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-variable syntax-other syntax-wgsl">cylinder</span><span class="syntax-keyword syntax-operator syntax-access syntax-dot syntax-wgsl">.</span><span class="syntax-variable syntax-other syntax-wgsl">radius</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-variable syntax-other syntax-wgsl">cylinder</span><span class="syntax-keyword syntax-operator syntax-access syntax-dot syntax-wgsl">.</span><span class="syntax-variable syntax-other syntax-wgsl">radius</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
+        >11</a>    <span class="syntax-keyword syntax-keyword-storage syntax-keyword-storage-type">let</span> <span class="syntax-variable">base_area</span> <span class="syntax-operator">=</span> <span class="syntax-constant">PI</span> <span class="syntax-operator">*</span> <span class="syntax-variable">cylinder</span><span class="syntax-punctuation syntax-punctuation-delimiter">.</span><span class="syntax-variable syntax-variable-other syntax-variable-other-member">radius</span> <span class="syntax-operator">*</span> <span class="syntax-variable">cylinder</span><span class="syntax-punctuation syntax-punctuation-delimiter">.</span><span class="syntax-variable syntax-variable-other syntax-variable-other-member">radius</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#12"
             id="12"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >12</a>    <span class="syntax-keyword syntax-control syntax-wgsl">return</span> <span class="syntax-variable syntax-other syntax-wgsl">base_area</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-variable syntax-other syntax-wgsl">cylinder</span><span class="syntax-keyword syntax-operator syntax-access syntax-dot syntax-wgsl">.</span><span class="syntax-variable syntax-other syntax-wgsl">half_height</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">2</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
+        >12</a>    <span class="syntax-keyword syntax-keyword-control syntax-keyword-control-return">return</span> <span class="syntax-variable">base_area</span> <span class="syntax-operator">*</span> <span class="syntax-variable">cylinder</span><span class="syntax-punctuation syntax-punctuation-delimiter">.</span><span class="syntax-variable syntax-variable-other syntax-variable-other-member">half_height</span> <span class="syntax-operator">*</span> <span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-float">2.0</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#13"
             id="13"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >13</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span></span></code>
+        >13</a><span class="syntax-punctuation syntax-punctuation-bracket">}</span></code>
 </pre>
 
         </div>

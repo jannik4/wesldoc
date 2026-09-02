@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="../../../../-/static/css/themes.css">
     <link rel="stylesheet" href="../../../../-/static/css/styles.css">
     <link rel="stylesheet" href="../../../../-/static/css/icons.css">
+    <link rel="stylesheet" href="../../../../-/static/css/syntax.css">
     <script src="../../../../-/static/js/settings.js"></script>
 
     
@@ -102,37 +103,37 @@
             id="1"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >1</a><span class="syntax-source syntax-wesl"><span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">struct</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">FullscreenVertexOutput</span> <span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">{</span>
+        >1</a><span class="syntax-keyword syntax-keyword-storage syntax-keyword-storage-type">struct</span> <span class="syntax-type">FullscreenVertexOutput</span> <span class="syntax-punctuation syntax-punctuation-bracket">{</span>
 <a
             href="#2"
             id="2"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >2</a>    <span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@builtin</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-variable syntax-other syntax-wgsl">position</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span>
+        >2</a>    <span class="syntax-attribute">@<span class="syntax-attribute">builtin</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable syntax-variable-builtin">position</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span></span>
 <a
             href="#3"
             id="3"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >3</a>    <span class="syntax-variable syntax-other syntax-wgsl">position</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-meta syntax-type syntax-template syntax-wgsl">vec4&lt;<span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span>&gt;</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
+        >3</a>    <span class="syntax-variable syntax-variable-other syntax-variable-other-member">position</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">vec4</span><span class="syntax-punctuation">&lt;<span class="syntax-type">f32</span>&gt;</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span>
 <a
             href="#4"
             id="4"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >4</a>    <span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@location</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">0</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span>
+        >4</a>    <span class="syntax-attribute">@<span class="syntax-attribute">location</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-integer">0</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span></span>
 <a
             href="#5"
             id="5"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >5</a>    <span class="syntax-variable syntax-other syntax-wgsl">uv</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-meta syntax-type syntax-template syntax-wgsl">vec2&lt;<span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span>&gt;</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span>
+        >5</a>    <span class="syntax-variable syntax-variable-other syntax-variable-other-member">uv</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">vec2</span><span class="syntax-punctuation">&lt;<span class="syntax-type">f32</span>&gt;</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span>
 <a
             href="#6"
             id="6"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >6</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span>
+        >6</a><span class="syntax-punctuation syntax-punctuation-bracket">}</span>
 <a
             href="#7"
             id="7"
@@ -144,37 +145,37 @@
             id="8"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >8</a><span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@vertex</span>
+        >8</a><span class="syntax-attribute">@<span class="syntax-attribute">vertex</span></span>
 <a
             href="#9"
             id="9"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >9</a><span class="syntax-meta syntax-function syntax-definition syntax-wgsl">fn fullscreen_vertex_shader(<span class="syntax-entity syntax-other syntax-attribute syntax-wgsl">@builtin</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">(</span><span class="syntax-variable syntax-other syntax-wgsl">vertex_index</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span> <span class="syntax-variable syntax-other syntax-wgsl">vertex_index</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-integer syntax-wgsl">u32</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span> <span class="syntax-keyword syntax-operator syntax-arrow syntax-skinny syntax-wgsl">-&gt;</span> <span class="syntax-entity syntax-name syntax-type syntax-wgsl">FullscreenVertexOutput</span> {</span>
+        >9</a><span class="syntax-keyword syntax-keyword-control syntax-keyword-control-function">fn</span> <span class="syntax-function">fullscreen_vertex_shader</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-attribute">@<span class="syntax-attribute">builtin</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable syntax-variable-builtin">vertex_index</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span></span> <span class="syntax-variable syntax-variable-parameter">vertex_index</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">u32</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span> <span class="syntax-operator">-&gt;</span> <span class="syntax-type">FullscreenVertexOutput</span> <span class="syntax-punctuation syntax-punctuation-bracket">{</span>
 <a
             href="#10"
             id="10"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >10</a>    <span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">let</span> <span class="syntax-variable syntax-other syntax-wgsl">uv</span> <span class="syntax-keyword syntax-operator syntax-assignment syntax-equal syntax-wgsl">=</span> <span class="syntax-meta syntax-function syntax-wgsl">vec2&lt;f32&gt;(<span class="syntax-meta syntax-function syntax-wgsl">f32(<span class="syntax-variable syntax-other syntax-wgsl">vertex_index</span> <span class="syntax-keyword syntax-operator syntax-logical syntax-wgsl">&gt;&gt;</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">1u</span>)</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-meta syntax-function syntax-wgsl">f32(<span class="syntax-variable syntax-other syntax-wgsl">vertex_index</span> <span class="syntax-keyword syntax-operator syntax-address-of syntax-and syntax-wgsl">&amp;</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">1u</span>)</span>)</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">2</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
+        >10</a>    <span class="syntax-keyword syntax-keyword-storage syntax-keyword-storage-type">let</span> <span class="syntax-variable">uv</span> <span class="syntax-operator">=</span> <span class="syntax-function syntax-function-call">vec2</span><span class="syntax-punctuation">&lt;<span class="syntax-variable">f32</span>&gt;</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-function syntax-function-call">f32</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable">vertex_index</span> <span class="syntax-operator">&gt;&gt;</span> <span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-integer">1u</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span> <span class="syntax-function syntax-function-call">f32</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable">vertex_index</span> <span class="syntax-operator">&amp;</span> <span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-integer">1u</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span> <span class="syntax-operator">*</span> <span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-float">2.0</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#11"
             id="11"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >11</a>    <span class="syntax-keyword syntax-other syntax-declarations-and-types syntax-wgsl">let</span> <span class="syntax-variable syntax-other syntax-wgsl">clip_position</span> <span class="syntax-keyword syntax-operator syntax-assignment syntax-equal syntax-wgsl">=</span> <span class="syntax-meta syntax-function syntax-wgsl">vec4&lt;f32&gt;(<span class="syntax-variable syntax-other syntax-wgsl">uv</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-meta syntax-function syntax-wgsl">vec2&lt;f32&gt;(<span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">2</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">-</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">2</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span>)</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">+</span> <span class="syntax-meta syntax-function syntax-wgsl">vec2&lt;f32&gt;(<span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">-</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">1</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">1</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span>)</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">0</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">1</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span>)</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
+        >11</a>    <span class="syntax-keyword syntax-keyword-storage syntax-keyword-storage-type">let</span> <span class="syntax-variable">clip_position</span> <span class="syntax-operator">=</span> <span class="syntax-function syntax-function-call">vec4</span><span class="syntax-punctuation">&lt;<span class="syntax-variable">f32</span>&gt;</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable">uv</span> <span class="syntax-operator">*</span> <span class="syntax-function syntax-function-call">vec2</span><span class="syntax-punctuation">&lt;<span class="syntax-variable">f32</span>&gt;</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-float">2.0</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span> <span class="syntax-operator">-</span><span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-float">2.0</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span> <span class="syntax-operator">+</span> <span class="syntax-function syntax-function-call">vec2</span><span class="syntax-punctuation">&lt;<span class="syntax-variable">f32</span>&gt;</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-operator">-</span><span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-float">1.0</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span> <span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-float">1.0</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span> <span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-float">0.0</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span> <span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-float">1.0</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#12"
             id="12"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >12</a>    <span class="syntax-keyword syntax-control syntax-wgsl">return</span> <span class="syntax-meta syntax-function syntax-wgsl">FullscreenVertexOutput(<span class="syntax-variable syntax-other syntax-wgsl">clip_position</span><span class="syntax-punctuation syntax-comma syntax-wgsl">,</span> <span class="syntax-variable syntax-other syntax-wgsl">uv</span>)</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
+        >12</a>    <span class="syntax-keyword syntax-keyword-control syntax-keyword-control-return">return</span> <span class="syntax-function syntax-function-call">FullscreenVertexOutput</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable">clip_position</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span> <span class="syntax-variable">uv</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#13"
             id="13"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >13</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span></span></code>
+        >13</a><span class="syntax-punctuation syntax-punctuation-bracket">}</span></code>
 </pre>
 
         </div>

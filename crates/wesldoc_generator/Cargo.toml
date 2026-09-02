@@ -10,6 +10,8 @@ readme.workspace = true
 
 [dependencies]
 wesldoc_ast = { path = "../wesldoc_ast" }
+wesldoc_report = { path = "../wesldoc_report" }
+
 askama = "0.16.0"
 include_dir = "0.7.4"
 serde = { version = "1.0.193", features = ["derive"] }
@@ -20,4 +22,6 @@ syntect = { version = "5.3.0", default-features = false, features = [
     "yaml-load",
     "html",
 ] }
+tree-sitter-highlight = "0.27.0"
+tree-sitter-wesl = { git = "https://github.com/jannik4/tree-sitter-wesl", rev = "277822f0a381ffaeb28cc68c1bbc2332824199ce" }
 thiserror = "2.0.20"

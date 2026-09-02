@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="../../../../-/static/css/themes.css">
     <link rel="stylesheet" href="../../../../-/static/css/styles.css">
     <link rel="stylesheet" href="../../../../-/static/css/icons.css">
+    <link rel="stylesheet" href="../../../../-/static/css/syntax.css">
     <script src="../../../../-/static/js/settings.js"></script>
 
     
@@ -102,13 +103,13 @@
             id="1"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >1</a><span class="syntax-source syntax-wesl"><span class="syntax-keyword syntax-control syntax-import syntax-wesl">import</span> <span class="syntax-keyword syntax-control syntax-wesl">package</span><span class="syntax-keyword syntax-operator syntax-module syntax-wesl">::</span><span class="syntax-variable syntax-other syntax-wgsl">constants</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
+        >1</a><span class="syntax-keyword syntax-keyword-control syntax-keyword-control-import">import</span> <span class="syntax-namespace">package</span><span class="syntax-punctuation syntax-punctuation-delimiter">::</span><span class="syntax-namespace">constants</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#2"
             id="2"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >2</a><span class="syntax-keyword syntax-control syntax-import syntax-wesl">import</span> <span class="syntax-keyword syntax-control syntax-wesl">package</span><span class="syntax-keyword syntax-operator syntax-module syntax-wesl">::</span><span class="syntax-variable syntax-other syntax-wgsl">constants</span><span class="syntax-keyword syntax-operator syntax-module syntax-wesl">::</span><span class="syntax-entity syntax-name syntax-type syntax-wgsl">PI</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
+        >2</a><span class="syntax-keyword syntax-keyword-control syntax-keyword-control-import">import</span> <span class="syntax-namespace">package</span><span class="syntax-punctuation syntax-punctuation-delimiter">::</span><span class="syntax-namespace">constants</span><span class="syntax-punctuation syntax-punctuation-delimiter">::</span><span class="syntax-constant">PI</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#3"
             id="3"
@@ -120,19 +121,19 @@
             id="4"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >4</a><span class="syntax-meta syntax-function syntax-definition syntax-wgsl">fn ease_in_cubic(<span class="syntax-variable syntax-other syntax-wgsl">t</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span> <span class="syntax-keyword syntax-operator syntax-arrow syntax-skinny syntax-wgsl">-&gt;</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span> {</span>
+        >4</a><span class="syntax-keyword syntax-keyword-control syntax-keyword-control-function">fn</span> <span class="syntax-function">ease_in_cubic</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable syntax-variable-parameter">t</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">f32</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span> <span class="syntax-operator">-&gt;</span> <span class="syntax-type">f32</span> <span class="syntax-punctuation syntax-punctuation-bracket">{</span>
 <a
             href="#5"
             id="5"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >5</a>    <span class="syntax-keyword syntax-control syntax-wgsl">return</span> <span class="syntax-variable syntax-other syntax-wgsl">t</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-variable syntax-other syntax-wgsl">t</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-variable syntax-other syntax-wgsl">t</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
+        >5</a>    <span class="syntax-keyword syntax-keyword-control syntax-keyword-control-return">return</span> <span class="syntax-variable">t</span> <span class="syntax-operator">*</span> <span class="syntax-variable">t</span> <span class="syntax-operator">*</span> <span class="syntax-variable">t</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#6"
             id="6"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >6</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span>
+        >6</a><span class="syntax-punctuation syntax-punctuation-bracket">}</span>
 <a
             href="#7"
             id="7"
@@ -144,19 +145,19 @@
             id="8"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >8</a><span class="syntax-meta syntax-function syntax-definition syntax-wgsl">fn ease_in_quadratic(<span class="syntax-variable syntax-other syntax-wgsl">t</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span> <span class="syntax-keyword syntax-operator syntax-arrow syntax-skinny syntax-wgsl">-&gt;</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span> {</span>
+        >8</a><span class="syntax-keyword syntax-keyword-control syntax-keyword-control-function">fn</span> <span class="syntax-function">ease_in_quadratic</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable syntax-variable-parameter">t</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">f32</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span> <span class="syntax-operator">-&gt;</span> <span class="syntax-type">f32</span> <span class="syntax-punctuation syntax-punctuation-bracket">{</span>
 <a
             href="#9"
             id="9"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >9</a>    <span class="syntax-keyword syntax-control syntax-wgsl">return</span> <span class="syntax-variable syntax-other syntax-wgsl">t</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-variable syntax-other syntax-wgsl">t</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
+        >9</a>    <span class="syntax-keyword syntax-keyword-control syntax-keyword-control-return">return</span> <span class="syntax-variable">t</span> <span class="syntax-operator">*</span> <span class="syntax-variable">t</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#10"
             id="10"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >10</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span>
+        >10</a><span class="syntax-punctuation syntax-punctuation-bracket">}</span>
 <a
             href="#11"
             id="11"
@@ -168,19 +169,19 @@
             id="12"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >12</a><span class="syntax-meta syntax-function syntax-definition syntax-wgsl">fn ease_in_sine(<span class="syntax-variable syntax-other syntax-wgsl">t</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span><span class="syntax-punctuation syntax-brackets syntax-round syntax-wgsl">)</span> <span class="syntax-keyword syntax-operator syntax-arrow syntax-skinny syntax-wgsl">-&gt;</span> <span class="syntax-storage syntax-type syntax-floating-point syntax-wgsl">f32</span> {</span>
+        >12</a><span class="syntax-keyword syntax-keyword-control syntax-keyword-control-function">fn</span> <span class="syntax-function">ease_in_sine</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable syntax-variable-parameter">t</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">f32</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span> <span class="syntax-operator">-&gt;</span> <span class="syntax-type">f32</span> <span class="syntax-punctuation syntax-punctuation-bracket">{</span>
 <a
             href="#13"
             id="13"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >13</a>    <span class="syntax-keyword syntax-control syntax-wgsl">return</span> <span class="syntax-constant syntax-numeric syntax-decimal syntax-int syntax-wgsl">1</span><span class="syntax-constant syntax-numeric syntax-decimal syntax-float syntax-wgsl">.0</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">-</span> <span class="syntax-meta syntax-function syntax-wgsl">cos(<span class="syntax-variable syntax-other syntax-wgsl">t</span> <span class="syntax-keyword syntax-operator syntax-math syntax-wgsl">*</span> <span class="syntax-variable syntax-other syntax-wgsl">constants</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span><span class="syntax-keyword syntax-operator syntax-type syntax-annotation syntax-wgsl">:</span><span class="syntax-entity syntax-name syntax-type syntax-wgsl">HALF_PI</span>)</span><span class="syntax-punctuation syntax-semi syntax-wgsl">;</span>
+        >13</a>    <span class="syntax-keyword syntax-keyword-control syntax-keyword-control-return">return</span> <span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-float">1.0</span> <span class="syntax-operator">-</span> <span class="syntax-function syntax-function-call">cos</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable">t</span> <span class="syntax-operator">*</span> <span class="syntax-namespace">constants</span><span class="syntax-punctuation syntax-punctuation-delimiter">::</span><span class="syntax-constant">HALF_PI</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#14"
             id="14"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >14</a><span class="syntax-punctuation syntax-brackets syntax-curly syntax-wgsl">}</span></span></code>
+        >14</a><span class="syntax-punctuation syntax-punctuation-bracket">}</span></code>
 </pre>
 
         </div>

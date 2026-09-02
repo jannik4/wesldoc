@@ -18,7 +18,7 @@ pub struct SourceTemplate<'a> {
 
 impl SourceTemplate<'_> {
     pub fn source_lines(&self) -> impl Iterator<Item = (usize, String)> + '_ {
-        syntax::lines(self.source)
+        syntax::lines(self.source).into_iter()
     }
 }
 
