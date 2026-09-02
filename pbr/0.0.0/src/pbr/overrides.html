@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="../../../../-/static/css/themes.css">
     <link rel="stylesheet" href="../../../../-/static/css/styles.css">
     <link rel="stylesheet" href="../../../../-/static/css/icons.css">
+    <link rel="stylesheet" href="../../../../-/static/css/syntax.css">
     <script src="../../../../-/static/js/settings.js"></script>
 
     
@@ -102,7 +103,7 @@
             id="1"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >1</a>@id(0) override has_directional_light: bool = true;
+        >1</a><span class="syntax-attribute">@<span class="syntax-attribute">id</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-integer">0</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span></span> <span class="syntax-keyword syntax-keyword-storage syntax-keyword-storage-type">override</span> <span class="syntax-variable">has_directional_light</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">bool</span> <span class="syntax-operator">=</span> <span class="syntax-constant syntax-constant-builtin syntax-constant-builtin-boolean">true</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#2"
             id="2"
@@ -114,7 +115,7 @@
             id="3"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >3</a>@id(100) override has_spot_light: bool = true;
+        >3</a><span class="syntax-attribute">@<span class="syntax-attribute">id</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-integer">100</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span></span> <span class="syntax-keyword syntax-keyword-storage syntax-keyword-storage-type">override</span> <span class="syntax-variable">has_spot_light</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">bool</span> <span class="syntax-operator">=</span> <span class="syntax-constant syntax-constant-builtin syntax-constant-builtin-boolean">true</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#4"
             id="4"
@@ -126,19 +127,19 @@
             id="5"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >5</a>/// The magnitude of the speed. This must be overriden.
+        >5</a><span class="syntax-comment syntax-comment-line">/// The magnitude of the speed. This must be overriden.</span>
 <a
             href="#6"
             id="6"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >6</a>override speed_magnitude: f32;
+        >6</a><span class="syntax-keyword syntax-keyword-storage syntax-keyword-storage-type">override</span> <span class="syntax-variable">speed_magnitude</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">f32</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#7"
             id="7"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >7</a>override direction: vec3;
+        >7</a><span class="syntax-keyword syntax-keyword-storage syntax-keyword-storage-type">override</span> <span class="syntax-variable">direction</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">vec3</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#8"
             id="8"
@@ -150,13 +151,13 @@
             id="9"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >9</a>/// The speed. This is computed from the [`speed_magnitude`] and [`direction`].
+        >9</a><span class="syntax-comment syntax-comment-line">/// The speed. This is computed from the [`speed_magnitude`] and [`direction`].</span>
 <a
             href="#10"
             id="10"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >10</a>override speed = speed_magnitude * direction;
+        >10</a><span class="syntax-keyword syntax-keyword-storage syntax-keyword-storage-type">override</span> <span class="syntax-variable">speed</span> <span class="syntax-operator">=</span> <span class="syntax-variable">speed_magnitude</span> <span class="syntax-operator">*</span> <span class="syntax-variable">direction</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#11"
             id="11"

@@ -1,0 +1,47 @@
+:root[data-theme="dark"] {
+  --syn-keyword: #ab8ac1;
+  --syn-comment: #8d8d8b;
+  --syn-attribute:#ee6868;
+  --syn-const-boolean: #ee6868;
+  --syn-const-number: #83a300;
+  --syn-type: #d2991d;
+  --syn-function: #6ab656;
+}
+
+:root[data-theme="light"] {
+  --syn-keyword: #8959a8;
+  --syn-comment: #8e908c;
+  --syn-attribute: #c82829;
+  --syn-const-boolean: #c82829;
+  --syn-const-number: #718c00;
+  --syn-type: #3873ad;
+  --syn-function: #9d6a24;
+}
+
+.syntax-keyword {
+  color: var(--syn-keyword);
+}
+
+.syntax-comment {
+  color: var(--syn-comment);
+}
+
+.syntax-attribute {
+  color: var(--syn-attribute);
+}
+
+.syntax-constant-builtin-boolean {
+  color: var(--syn-const-boolean);
+}
+
+.syntax-constant-numeric {
+  color: var(--syn-const-number);
+}
+
+.syntax-type {
+  color: var(--syn-type);
+}
+
+.syntax-function {
+  color: var(--syn-function);
+}
