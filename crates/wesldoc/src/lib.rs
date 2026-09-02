@@ -63,7 +63,14 @@ impl From<MissingDocsArg> for MissingDocumentation {
 }
 
 impl Args {
-    pub fn run(self) -> Result<()> {
+    pub fn run(self) {
+        if let Err(e) = self.try_run() {
+            wesldoc_report::error!("{:?}", e);
+            std::process::exit(1);
+        }
+    }
+
+    fn try_run(self) -> Result<()> {
         // Check Cargo.toml exist
         if !self.package.join("Cargo.toml").is_file() {
             bail!("Cargo.toml not found");
@@ -71,68 +78,101 @@ impl Args {
 
         // Resolve cargo dependencies
         let cargo_metadata = Arc::new(wesldoc_report::spinner(
-            "Fetching cargo metadata...",
+            "Resolving cargo dependencies",
             || CargoMetadata::resolve(&self.package),
         )?);
+        let cargo_packages = cargo_metadata
+            .iter_packages(self.max_dependency_depth())
+            .collect::<Vec<_>>();
+        wesldoc_report::info!(
+            "Resolved" =>
+            "{} cargo package{}",
+            cargo_packages.len(),
+            if cargo_packages.len() == 1 { "" } else { "s" },
+        );
 
-        // Cache
-        let mut cache = BuildCache::new(Arc::clone(&cargo_metadata));
+        // Find wesl packages
+        let mut packages = Vec::new();
+        wesldoc_report::progress("Indexing", cargo_packages.len() as u64, |pb| {
+            for cargo_package in cargo_packages {
+                // Package from cargo package and check if it is a wesl package
+                let package = Package::from_cargo_package(cargo_package)?;
+                if package.is_wesl_package()? {
+                    packages.push((package, cargo_package));
+                }
 
-        // Doc packages
-        let mut wesl_package_found = false;
-        for cargo_package in cargo_metadata.iter_packages(self.max_dependency_depth()) {
-            // Package from cargo package and check if it is a wesl package
-            let package = Package::from_cargo_package(cargo_package)?;
-            if !package.is_wesl_package()? {
-                continue;
-            }
-            wesl_package_found = true;
-
-            wesldoc_report::info!(
-                "Documenting" =>
-                "{} v{}",
-                package.package_name,
-                package.version
-            );
-
-            // Build wesl module
-            let wesl_module = Arc::clone(
-                &cache
-                    .get_or_build(package.id.clone())?
-                    .context("expected wesl package")?
-                    .build,
-            );
-
-            // Compile to docs
-            let resolver = CompilePackageResolver::new(&mut cache, Arc::clone(&cargo_metadata))?;
-            let (docs, compile_stats) = wesldoc_compiler::compile(
-                resolver,
-                &package.id,
-                package.version,
-                &wesl_module,
-                cargo_package.homepage(),
-                cargo_package.repository(),
-                cargo_package.license(),
-                &wesldoc_compiler::CompileOptions {
-                    missing_documentation: self.missing_docs.into(),
-                },
-            )
-            .with_context(|| format!("failed to compile package '{}'", wesl_module.name))?;
-            if self.statistics {
-                wesldoc_report::metric!(
-                    "Coverage" =>
-                    "{:.2}%",
-                    compile_stats.documented_percentage()
-                );
+                pb.inc(1);
             }
 
-            // Generate docs
-            wesldoc_generator::generate(&docs, &self.output)?;
-        }
-
-        if !wesl_package_found {
+            Ok::<_, anyhow::Error>(())
+        })?;
+        if packages.is_empty() {
             bail!("No wesl packages found in the specified path");
         }
+        wesldoc_report::info!(
+            "Indexed" =>
+            "{} wesl package{}",
+            packages.len(),
+            if packages.len() == 1 { "" } else { "s" },
+        );
+
+        // Document packages
+        let mut cache = BuildCache::new(Arc::clone(&cargo_metadata));
+        wesldoc_report::progress("Documenting", packages.len() as u64, |pb| {
+            for (package, cargo_package) in packages {
+                wesldoc_report::info!(
+                    "Documenting" =>
+                    "{} v{}",
+                    package.package_name,
+                    package.version
+                );
+
+                // Build wesl module
+                let wesl_module = Arc::clone(
+                    &cache
+                        .get_or_build(package.id.clone())?
+                        .context("expected wesl package")?
+                        .build,
+                );
+
+                // Compile to docs
+                let resolver =
+                    CompilePackageResolver::new(&mut cache, Arc::clone(&cargo_metadata))?;
+                let (docs, compile_stats) = wesldoc_compiler::compile(
+                    resolver,
+                    &package.id,
+                    package.version,
+                    &wesl_module,
+                    cargo_package.homepage(),
+                    cargo_package.repository(),
+                    cargo_package.license(),
+                    &wesldoc_compiler::CompileOptions {
+                        missing_documentation: self.missing_docs.into(),
+                    },
+                )
+                .with_context(|| format!("failed to compile package '{}'", wesl_module.name))?;
+                if self.statistics {
+                    wesldoc_report::metric!(
+                        "Coverage" =>
+                        "{:.2}%",
+                        compile_stats.documented_percentage()
+                    );
+                }
+
+                // Generate docs
+                wesldoc_generator::generate(&docs, &self.output)?;
+
+                pb.inc(1);
+            }
+
+            Ok::<(), anyhow::Error>(())
+        })?;
+
+        wesldoc_report::info!(
+            "Success" =>
+            "Wrote documentation to {}",
+            self.output.display()
+        );
 
         Ok(())
     }

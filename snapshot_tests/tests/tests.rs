@@ -19,7 +19,7 @@ fn snapshot_test(name: &str, packages: &[&str]) -> Result<()> {
     let tmp_dir = tempfile::tempdir()?;
 
     for package in packages {
-        build_package(package, &tmp_dir)?;
+        build_package(package, &tmp_dir);
     }
 
     Assert::new()
@@ -30,7 +30,7 @@ fn snapshot_test(name: &str, packages: &[&str]) -> Result<()> {
     Ok(())
 }
 
-fn build_package(package_path: &str, tmp_dir: &tempfile::TempDir) -> Result<()> {
+fn build_package(package_path: &str, tmp_dir: &tempfile::TempDir) {
     let output_path = tmp_dir.path();
 
     Args::parse_from([
@@ -39,7 +39,5 @@ fn build_package(package_path: &str, tmp_dir: &tempfile::TempDir) -> Result<()> 
         "--output",
         output_path.to_str().unwrap(),
     ])
-    .run()?;
-
-    Ok(())
+    .run();
 }

@@ -1,11 +1,9 @@
 use clap::Parser;
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     human_panic::setup_panic!();
     init_logger();
-    wesldoc::Args::parse().run()?;
-
-    Ok(())
+    wesldoc::Args::parse().run();
 }
 
 #[cfg(debug_assertions)]

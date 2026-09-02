@@ -1,7 +1,7 @@
 use clap::Parser;
 use wesldoc::Args;
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn")).init();
     for package in ["primitives", "math_utils", "pbr"] {
         Args::parse_from([
@@ -10,7 +10,6 @@ fn main() -> anyhow::Result<()> {
             "--no-deps",
             "--statistics",
         ])
-        .run()?;
+        .run();
     }
-    Ok(())
 }
