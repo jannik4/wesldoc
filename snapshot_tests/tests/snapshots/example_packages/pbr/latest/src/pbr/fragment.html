@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="../../../../-/static/css/themes.css">
     <link rel="stylesheet" href="../../../../-/static/css/styles.css">
     <link rel="stylesheet" href="../../../../-/static/css/icons.css">
+    <link rel="stylesheet" href="../../../../-/static/css/syntax.css">
     <script src="../../../../-/static/js/settings.js"></script>
 
     
@@ -102,19 +103,19 @@
             id="1"
             class="line-number line-number-digits-1"
             data-nosnippet
-        >1</a>struct FragmentInput {
+        >1</a><span class="syntax-keyword syntax-keyword-storage syntax-keyword-storage-type">struct</span> <span class="syntax-type">FragmentInput</span> <span class="syntax-punctuation syntax-punctuation-bracket">{</span>
 <a
             href="#2"
             id="2"
             class="line-number line-number-digits-1"
             data-nosnippet
-        >2</a>    @location(0) blend_color: vec4&#60;f32&#62;,
+        >2</a>    <span class="syntax-attribute">@<span class="syntax-attribute">location</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-integer">0</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span></span> <span class="syntax-variable syntax-variable-other syntax-variable-other-member">blend_color</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">vec4</span><span class="syntax-punctuation">&lt;<span class="syntax-type">f32</span>&gt;</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span>
 <a
             href="#3"
             id="3"
             class="line-number line-number-digits-1"
             data-nosnippet
-        >3</a>}
+        >3</a><span class="syntax-punctuation syntax-punctuation-bracket">}</span>
 <a
             href="#4"
             id="4"
@@ -126,25 +127,25 @@
             id="5"
             class="line-number line-number-digits-1"
             data-nosnippet
-        >5</a>@fragment
+        >5</a><span class="syntax-attribute">@<span class="syntax-attribute">fragment</span></span>
 <a
             href="#6"
             id="6"
             class="line-number line-number-digits-1"
             data-nosnippet
-        >6</a>fn fragment(input: FragmentInput) -&#62; @location(0) vec4&#60;f32&#62; {
+        >6</a><span class="syntax-keyword syntax-keyword-control syntax-keyword-control-function">fn</span> <span class="syntax-function">fragment</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable syntax-variable-parameter">input</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">FragmentInput</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span> <span class="syntax-operator">-&gt;</span> <span class="syntax-attribute">@<span class="syntax-attribute">location</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-constant syntax-constant-numeric syntax-constant-numeric-integer">0</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span></span> <span class="syntax-type">vec4</span><span class="syntax-punctuation">&lt;<span class="syntax-type">f32</span>&gt;</span> <span class="syntax-punctuation syntax-punctuation-bracket">{</span>
 <a
             href="#7"
             id="7"
             class="line-number line-number-digits-1"
             data-nosnippet
-        >7</a>    return input.blend_color;
+        >7</a>    <span class="syntax-keyword syntax-keyword-control syntax-keyword-control-return">return</span> <span class="syntax-variable">input</span><span class="syntax-punctuation syntax-punctuation-delimiter">.</span><span class="syntax-variable syntax-variable-other syntax-variable-other-member">blend_color</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#8"
             id="8"
             class="line-number line-number-digits-1"
             data-nosnippet
-        >8</a>}</code>
+        >8</a><span class="syntax-punctuation syntax-punctuation-bracket">}</span></code>
 </pre>
 
         </div>

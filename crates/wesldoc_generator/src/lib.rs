@@ -3,6 +3,7 @@ mod context;
 mod index;
 mod render;
 mod static_files;
+mod syntax;
 
 use crate::{context::Context, render::*};
 use askama::Template;

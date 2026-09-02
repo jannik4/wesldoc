@@ -1,4 +1,4 @@
-use crate::context::Context;
+use crate::{context::Context, syntax};
 use askama::Template;
 use wesldoc_ast::{
     Attribute, BuiltinValue, ConservativeDepth, Constant, DiagnosticSeverity, Expression, Function,
@@ -14,6 +14,12 @@ pub struct SourceTemplate<'a> {
     pub source: &'a str,
     #[expect(unused)] // Only used as a flag in the template
     pub is_source_view: (),
+}
+
+impl SourceTemplate<'_> {
+    pub fn source_lines(&self) -> impl Iterator<Item = (usize, String)> + '_ {
+        syntax::lines(self.source).into_iter()
+    }
 }
 
 #[derive(Template)]

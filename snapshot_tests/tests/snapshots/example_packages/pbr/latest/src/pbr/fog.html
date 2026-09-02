@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="../../../../-/static/css/themes.css">
     <link rel="stylesheet" href="../../../../-/static/css/styles.css">
     <link rel="stylesheet" href="../../../../-/static/css/icons.css">
+    <link rel="stylesheet" href="../../../../-/static/css/syntax.css">
     <script src="../../../../-/static/js/settings.js"></script>
 
     
@@ -102,7 +103,7 @@
             id="1"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >1</a>import math_utils::constants::PI;
+        >1</a><span class="syntax-keyword syntax-keyword-control syntax-keyword-control-import">import</span> <span class="syntax-namespace">math_utils</span><span class="syntax-punctuation syntax-punctuation-delimiter">::</span><span class="syntax-namespace">constants</span><span class="syntax-punctuation syntax-punctuation-delimiter">::</span><span class="syntax-constant">PI</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#2"
             id="2"
@@ -114,7 +115,7 @@
             id="3"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >3</a>const FOG_PI: f32 = PI;
+        >3</a><span class="syntax-keyword syntax-keyword-storage syntax-keyword-storage-type">const</span> <span class="syntax-constant">FOG_PI</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">f32</span> <span class="syntax-operator">=</span> <span class="syntax-constant">PI</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#4"
             id="4"
@@ -126,67 +127,67 @@
             id="5"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >5</a>struct Fog {
+        >5</a><span class="syntax-keyword syntax-keyword-storage syntax-keyword-storage-type">struct</span> <span class="syntax-type">Fog</span> <span class="syntax-punctuation syntax-punctuation-bracket">{</span>
 <a
             href="#6"
             id="6"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >6</a>    base_color: vec4&#60;f32&#62;,
+        >6</a>    <span class="syntax-variable syntax-variable-other syntax-variable-other-member">base_color</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">vec4</span><span class="syntax-punctuation">&lt;<span class="syntax-type">f32</span>&gt;</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span>
 <a
             href="#7"
             id="7"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >7</a>    @if(emissive)
+        >7</a>    <span class="syntax-attribute">@<span class="syntax-attribute">if</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable">emissive</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span></span>
 <a
             href="#8"
             id="8"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >8</a>    emissive: vec4&#60;f32&#62;,
+        >8</a>    <span class="syntax-variable syntax-variable-other syntax-variable-other-member">emissive</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">vec4</span><span class="syntax-punctuation">&lt;<span class="syntax-type">f32</span>&gt;</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span>
 <a
             href="#9"
             id="9"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >9</a>    @if(fog_flags_unsigned)
+        >9</a>    <span class="syntax-attribute">@<span class="syntax-attribute">if</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable">fog_flags_unsigned</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span></span>
 <a
             href="#10"
             id="10"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >10</a>    flags: u32,
+        >10</a>    <span class="syntax-variable syntax-variable-other syntax-variable-other-member">flags</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">u32</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span>
 <a
             href="#11"
             id="11"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >11</a>    @elif(fog_flags_signed)
+        >11</a>    <span class="syntax-attribute">@<span class="syntax-attribute">elif</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable">fog_flags_signed</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span></span>
 <a
             href="#12"
             id="12"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >12</a>    flags: i32,
+        >12</a>    <span class="syntax-variable syntax-variable-other syntax-variable-other-member">flags</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">i32</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span>
 <a
             href="#13"
             id="13"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >13</a>    @else
+        >13</a>    <span class="syntax-attribute">@<span class="syntax-attribute">else</span></span>
 <a
             href="#14"
             id="14"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >14</a>    flags: bool,
+        >14</a>    <span class="syntax-variable syntax-variable-other syntax-variable-other-member">flags</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">bool</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span>
 <a
             href="#15"
             id="15"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >15</a>}
+        >15</a><span class="syntax-punctuation syntax-punctuation-bracket">}</span>
 <a
             href="#16"
             id="16"
@@ -198,7 +199,7 @@
             id="17"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >17</a>// Empty lines to make this page scrollable in the browser
+        >17</a><span class="syntax-comment syntax-comment-line">// Empty lines to make this page scrollable in the browser</span>
 <a
             href="#18"
             id="18"
@@ -258,7 +259,7 @@
             id="27"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >27</a>// ...
+        >27</a><span class="syntax-comment syntax-comment-line">// ...</span>
 <a
             href="#28"
             id="28"
@@ -318,7 +319,7 @@
             id="37"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >37</a>// ...
+        >37</a><span class="syntax-comment syntax-comment-line">// ...</span>
 <a
             href="#38"
             id="38"
@@ -378,7 +379,7 @@
             id="47"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >47</a>// ...
+        >47</a><span class="syntax-comment syntax-comment-line">// ...</span>
 <a
             href="#48"
             id="48"
@@ -438,7 +439,7 @@
             id="57"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >57</a>// ...
+        >57</a><span class="syntax-comment syntax-comment-line">// ...</span>
 <a
             href="#58"
             id="58"
@@ -498,7 +499,7 @@
             id="67"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >67</a>// ...
+        >67</a><span class="syntax-comment syntax-comment-line">// ...</span>
 <a
             href="#68"
             id="68"
@@ -558,7 +559,7 @@
             id="77"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >77</a>// ...
+        >77</a><span class="syntax-comment syntax-comment-line">// ...</span>
 <a
             href="#78"
             id="78"
@@ -582,61 +583,61 @@
             id="81"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >81</a>@if(linear_fog)
+        >81</a><span class="syntax-attribute">@<span class="syntax-attribute">if</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable">linear_fog</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span></span>
 <a
             href="#82"
             id="82"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >82</a>fn linear_fog(
+        >82</a><span class="syntax-keyword syntax-keyword-control syntax-keyword-control-function">fn</span> <span class="syntax-function">linear_fog</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span>
 <a
             href="#83"
             id="83"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >83</a>    fog: Fog,
+        >83</a>    <span class="syntax-variable syntax-variable-parameter">fog</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">Fog</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span>
 <a
             href="#84"
             id="84"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >84</a>    input_color: vec4&#60;f32&#62;,
+        >84</a>    <span class="syntax-variable syntax-variable-parameter">input_color</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">vec4</span><span class="syntax-punctuation">&lt;<span class="syntax-type">f32</span>&gt;</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span>
 <a
             href="#85"
             id="85"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >85</a>    distance: f32,
+        >85</a>    <span class="syntax-variable syntax-variable-parameter">distance</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">f32</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span>
 <a
             href="#86"
             id="86"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >86</a>    @if(fog_extra_flags)
+        >86</a>    <span class="syntax-attribute">@<span class="syntax-attribute">if</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable">fog_extra_flags</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span></span>
 <a
             href="#87"
             id="87"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >87</a>    extra_flags: u32,
+        >87</a>    <span class="syntax-variable syntax-variable-parameter">extra_flags</span><span class="syntax-punctuation syntax-punctuation-delimiter">:</span> <span class="syntax-type">u32</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span>
 <a
             href="#88"
             id="88"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >88</a>) -&#62; vec4&#60;f32&#62; {
+        >88</a><span class="syntax-punctuation syntax-punctuation-bracket">)</span> <span class="syntax-operator">-&gt;</span> <span class="syntax-type">vec4</span><span class="syntax-punctuation">&lt;<span class="syntax-type">f32</span>&gt;</span> <span class="syntax-punctuation syntax-punctuation-bracket">{</span>
 <a
             href="#89"
             id="89"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >89</a>    return mix(input_color, fog.base_color, distance) * PI;
+        >89</a>    <span class="syntax-keyword syntax-keyword-control syntax-keyword-control-return">return</span> <span class="syntax-function syntax-function-call">mix</span><span class="syntax-punctuation syntax-punctuation-bracket">(</span><span class="syntax-variable">input_color</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span> <span class="syntax-variable">fog</span><span class="syntax-punctuation syntax-punctuation-delimiter">.</span><span class="syntax-variable syntax-variable-other syntax-variable-other-member">base_color</span><span class="syntax-punctuation syntax-punctuation-delimiter">,</span> <span class="syntax-variable">distance</span><span class="syntax-punctuation syntax-punctuation-bracket">)</span> <span class="syntax-operator">*</span> <span class="syntax-constant">PI</span><span class="syntax-punctuation syntax-punctuation-delimiter">;</span>
 <a
             href="#90"
             id="90"
             class="line-number line-number-digits-2"
             data-nosnippet
-        >90</a>}</code>
+        >90</a><span class="syntax-punctuation syntax-punctuation-bracket">}</span></code>
 </pre>
 
         </div>
