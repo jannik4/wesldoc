@@ -98,7 +98,7 @@ pub fn progress<T>(msg: &str, len: u64, f: impl FnOnce(ProgressBarHandle) -> T) 
     pb.set_style(
         ProgressStyle::with_template(&format!("{prefix} [{{wide_bar}}] {{pos}}/{{len}}"))
             .unwrap()
-            .progress_chars("=> "), //
+            .progress_chars("=> "),
     );
 
     let res = f(ProgressBarHandle { pb: &pb });
