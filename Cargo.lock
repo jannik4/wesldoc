@@ -1945,7 +1945,7 @@ checksum = "ca0d1bf6fdd806e43ae5198f82f527056d359def39e54e67a0f478ac09dac081"
 [[package]]
 name = "tree-sitter-wesl"
 version = "0.0.1"
-source = "git+https://github.com/jannik4/tree-sitter-wesl?rev=277822f0a381ffaeb28cc68c1bbc2332824199ce#277822f0a381ffaeb28cc68c1bbc2332824199ce"
+source = "git+https://github.com/webgpu-tools/tree-sitter-wesl?rev=9c3277a3347776e3af12011792b9e9dde3c13ccf#9c3277a3347776e3af12011792b9e9dde3c13ccf"
 dependencies = [
  "cc",
  "tree-sitter-language",
