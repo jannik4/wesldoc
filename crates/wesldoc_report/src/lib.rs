@@ -60,8 +60,9 @@ pub fn spinner<T>(msg: &str, f: impl FnOnce() -> T) -> T {
     PROGRESS.add(pb.clone());
     pb.set_style(
         ProgressStyle::default_spinner()
-            .template("{spinner:.green} {msg}")
-            .unwrap(),
+            .template("{spinner:.cyan} {msg}")
+            .unwrap()
+            .tick_strings(&["∙∙∙", "●∙∙", "∙●∙", "∙∙●", "∙∙∙"]),
     );
     pb.set_message(msg.style(Style::new().bold().cyan()).to_string());
     pb.enable_steady_tick(Duration::from_millis(100));
@@ -95,7 +96,9 @@ pub fn progress<T>(msg: &str, len: u64, f: impl FnOnce(ProgressBarHandle) -> T) 
     let pb = ProgressBar::new(len);
     PROGRESS.add(pb.clone());
     pb.set_style(
-        ProgressStyle::with_template(&format!("{prefix} {{wide_bar}} {{pos}}/{{len}}")).unwrap(),
+        ProgressStyle::with_template(&format!("{prefix} [{{wide_bar}}] {{pos}}/{{len}}"))
+            .unwrap()
+            .progress_chars("=> "), //
     );
 
     let res = f(ProgressBarHandle { pb: &pb });
