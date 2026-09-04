@@ -1,16 +1,8 @@
-mod build;
-mod cargo;
-mod package;
-mod resolver;
-mod wesl_toml;
-
-use self::{
-    build::BuildCache, cargo::CargoMetadata, package::Package, resolver::CompilePackageResolver,
-};
 use anyhow::{Context, Result, bail};
 use clap::ValueEnum;
-use std::{path::PathBuf, sync::Arc};
+use std::path::PathBuf;
 use wesldoc_compiler::MissingDocumentation;
+use wesldoc_resolver::Resolver;
 
 pub use clap::Parser;
 
@@ -71,34 +63,36 @@ impl Args {
     }
 
     fn try_run(self) -> Result<()> {
-        // Check Cargo.toml exist
-        if !self.package.join("Cargo.toml").is_file() {
-            bail!("Cargo.toml not found");
-        }
+        // Resolve dependencies
+        let resolver_backend = {
+            let (backend_name, create_resolver_backend) =
+                wesldoc_resolver_auto::resolver_backend(&self.package)
+                    .with_context(|| "failed to determine package manager")?;
 
-        // Resolve cargo dependencies
-        let cargo_metadata = Arc::new(wesldoc_report::spinner(
-            "Resolving cargo dependencies",
-            || CargoMetadata::resolve(&self.package),
-        )?);
-        let cargo_packages = cargo_metadata
+            wesldoc_report::spinner(
+                &format!("Resolving {} dependencies", backend_name),
+                create_resolver_backend,
+            )?
+        };
+        let backend_packages = resolver_backend
             .iter_packages(self.max_dependency_depth())
             .collect::<Vec<_>>();
         wesldoc_report::info!(
             "Resolved" =>
-            "{} cargo package{}",
-            cargo_packages.len(),
-            if cargo_packages.len() == 1 { "" } else { "s" },
+            "{} {} package{}",
+            backend_packages.len(),
+            resolver_backend.name(),
+            if backend_packages.len() == 1 { "" } else { "s" },
         );
 
         // Find wesl packages
         let mut packages = Vec::new();
-        wesldoc_report::progress("Indexing", cargo_packages.len() as u64, |pb| {
-            for cargo_package in cargo_packages {
-                // Package from cargo package and check if it is a wesl package
-                let package = Package::from_cargo_package(cargo_package)?;
+        wesldoc_report::progress("Indexing", backend_packages.len() as u64, |pb| {
+            for backend_package in backend_packages {
+                // Package from backend package and check if it is a wesl package
+                let package = backend_package.to_package()?;
                 if package.is_wesl_package()? {
-                    packages.push((package, cargo_package));
+                    packages.push(package);
                 }
 
                 pb.inc(1);
@@ -117,9 +111,9 @@ impl Args {
         );
 
         // Document packages
-        let mut cache = BuildCache::new(Arc::clone(&cargo_metadata));
+        let mut resolver = Resolver::new(&*resolver_backend);
         wesldoc_report::progress("Documenting", packages.len() as u64, |pb| {
-            for (package, cargo_package) in packages {
+            for package in packages {
                 wesldoc_report::info!(
                     "Documenting" =>
                     "{} v{}",
@@ -127,30 +121,19 @@ impl Args {
                     package.version
                 );
 
-                // Build wesl module
-                let wesl_module = Arc::clone(
-                    &cache
-                        .get_or_build(package.id.clone())?
-                        .context("expected wesl package")?
-                        .build,
-                );
-
                 // Compile to docs
-                let resolver =
-                    CompilePackageResolver::new(&mut cache, Arc::clone(&cargo_metadata))?;
                 let (docs, compile_stats) = wesldoc_compiler::compile(
-                    resolver,
+                    &mut resolver,
                     &package.id,
                     package.version,
-                    &wesl_module,
-                    cargo_package.homepage(),
-                    cargo_package.repository(),
-                    cargo_package.license(),
+                    package.homepage,
+                    package.repository,
+                    package.license,
                     &wesldoc_compiler::CompileOptions {
                         missing_documentation: self.missing_docs.into(),
                     },
                 )
-                .with_context(|| format!("failed to compile package '{}'", wesl_module.name))?;
+                .with_context(|| format!("failed to compile package '{}'", package.package_name))?;
                 if self.statistics {
                     wesldoc_report::metric!(
                         "Coverage" =>

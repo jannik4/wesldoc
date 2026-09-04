@@ -1,6 +1,10 @@
 use anyhow::{Result, bail};
 use serde::Deserialize;
-use std::{collections::HashMap, path::PathBuf};
+use std::{
+    collections::HashMap,
+    fs,
+    path::{Path, PathBuf},
+};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct WeslToml {
@@ -10,16 +14,23 @@ pub struct WeslToml {
 }
 
 impl WeslToml {
-    pub fn validate(&self) -> Result<()> {
-        if self.package.edition != "unstable_2025" {
-            bail!("only edition 'unstable_2025' is supported");
+    pub fn load(path: impl AsRef<Path>) -> Result<Option<Self>> {
+        let path = path.as_ref();
+        if !path.is_file() {
+            return Ok(None);
         }
 
-        match self.package.package_manager {
-            Some(WeslTomlPackageManager::Cargo) | None => (),
-            Some(WeslTomlPackageManager::Npm) => {
-                bail!("npm package manager is not supported yet");
-            }
+        let this = toml::from_slice::<WeslToml>(&fs::read(path)?)?;
+        this.validate()?;
+        Ok(Some(this))
+    }
+
+    fn validate(&self) -> Result<()> {
+        if self.package.edition != latest_known_edition() {
+            wesldoc_report::warn!(
+                "unrecognized edition in wesl.toml: {}",
+                self.package.edition,
+            );
         }
 
         if self.package.dependencies == Some(DependenciesAuto::Auto)
@@ -81,7 +92,7 @@ pub struct WeslTomlDependency {
 }
 
 fn latest_known_edition() -> String {
-    "unstable_2025".to_string()
+    "2026_pre".to_string()
 }
 
 fn default_root() -> PathBuf {

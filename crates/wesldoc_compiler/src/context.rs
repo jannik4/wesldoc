@@ -1,11 +1,12 @@
-use crate::{CompileOptions, ResolveItemKind, Resolver, compile_state::CompileState};
+use crate::{CompileOptions, Resolver, compile_state::CompileState};
 use std::sync::Mutex;
 use wesldoc_ast::{DefinitionPath, Ident, ItemKind};
+use wesldoc_resolver::{ResolveItemKind, package::PackageId};
 use wgsl_parse::syntax::{ModulePath, TranslationUnit};
 
-pub struct Context<'a, T> {
-    resolver: Mutex<&'a mut dyn Resolver<PackageId = T>>,
-    package_id: &'a T,
+pub struct Context<'a, 'b> {
+    resolver: Mutex<&'a mut Resolver<'b>>,
+    package_id: &'a PackageId,
     path: &'a [String],
 
     syntax: &'a TranslationUnit,
@@ -15,10 +16,10 @@ pub struct Context<'a, T> {
     compile_state: &'a CompileState,
 }
 
-impl<'a, T> Context<'a, T> {
+impl<'a, 'b> Context<'a, 'b> {
     pub fn init(
-        resolver: &'a mut dyn Resolver<PackageId = T>,
-        package_id: &'a T,
+        resolver: &'a mut Resolver<'b>,
+        package_id: &'a PackageId,
         path: &'a [String],
 
         syntax: &'a TranslationUnit,

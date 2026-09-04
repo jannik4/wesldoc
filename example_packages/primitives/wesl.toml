@@ -1,4 +1,4 @@
 [package]
-edition = "unstable_2025"
+edition = "2026_pre"
 root = "shaders"
 package-manager = "cargo"

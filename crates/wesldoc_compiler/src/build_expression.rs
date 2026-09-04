@@ -2,7 +2,7 @@ use crate::{Context, build_type, calculate_span, map};
 use wesldoc_ast::*;
 use wgsl_parse::syntax;
 
-pub fn build_expression<T>(expr: &syntax::ExpressionNode, ctx: &Context<T>) -> Expression {
+pub fn build_expression(expr: &syntax::ExpressionNode, ctx: &Context) -> Expression {
     match expr.node() {
         syntax::Expression::Literal(lit) => Expression::Literal(map(lit)),
         syntax::Expression::Parenthesized(parenthesized_expression) => Expression::Parenthesized(

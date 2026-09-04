@@ -1,5 +1,5 @@
 [package]
-name = "wesldoc_compiler"
+name = "wesldoc_resolver_auto"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -11,8 +11,8 @@ readme.workspace = true
 [dependencies]
 wesldoc_ast = { path = "../wesldoc_ast" }
 wesldoc_resolver = { path = "../wesldoc_resolver" }
+wesldoc_resolver_cargo = { path = "../wesldoc_resolver_cargo" }
+wesldoc_resolver_npm = { path = "../wesldoc_resolver_npm" }
 wesldoc_report = { path = "../wesldoc_report" }
 
-wgsl-parse = { workspace = true }
-thiserror = "2.0.20"
-miette = { version = "7.6.0", features = ["fancy"] }
+anyhow = "1.0.104" # TODO: thiserror

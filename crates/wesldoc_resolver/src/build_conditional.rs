@@ -1,4 +1,4 @@
-use crate::{ATTRIBUTE_CONDITIONAL, map};
+use crate::ATTRIBUTE_CONDITIONAL;
 use wesldoc_ast::*;
 use wgsl_parse::syntax;
 
@@ -66,7 +66,9 @@ fn conditional_from_expr(expr: &syntax::Expression) -> Option<Conditional> {
                 );
                 None
             } else {
-                Some(Conditional::Feature(map(&type_or_ident.ident)))
+                Some(Conditional::Feature(Ident(
+                    type_or_ident.ident.name().clone(),
+                )))
             }
         }
         _ => {

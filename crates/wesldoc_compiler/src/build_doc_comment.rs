@@ -1,20 +1,17 @@
-use crate::{Context, ResolveItemKind};
+use crate::Context;
 use wesldoc_ast::*;
+use wesldoc_resolver::ResolveItemKind;
 use wgsl_parse::syntax;
 
-pub fn build_inner_doc_comment<T>(raw_comment: &str, ctx: &Context<T>) -> Option<DocComment> {
+pub fn build_inner_doc_comment(raw_comment: &str, ctx: &Context) -> Option<DocComment> {
     build_doc_comment(raw_comment, "//!", ctx)
 }
 
-pub fn build_outer_doc_comment<T>(raw_comment: &str, ctx: &Context<T>) -> Option<DocComment> {
+pub fn build_outer_doc_comment(raw_comment: &str, ctx: &Context) -> Option<DocComment> {
     build_doc_comment(raw_comment, "///", ctx)
 }
 
-fn build_doc_comment<T>(
-    raw_comment: &str,
-    comment_prefix: &str,
-    ctx: &Context<T>,
-) -> Option<DocComment> {
+fn build_doc_comment(raw_comment: &str, comment_prefix: &str, ctx: &Context) -> Option<DocComment> {
     // Strip the comment prefix
     let comment = raw_comment
         .lines()
@@ -138,7 +135,7 @@ fn raise_heading_level(level: md::HeadingLevel) -> md::HeadingLevel {
     }
 }
 
-fn resolve_intra_doc_links<T>(events: &mut [md::Event], ctx: &Context<T>) {
+fn resolve_intra_doc_links(events: &mut [md::Event], ctx: &Context) {
     for event in events {
         let md::Event::Start(md::Tag::Link { dest_url, .. }) = event else {
             continue;

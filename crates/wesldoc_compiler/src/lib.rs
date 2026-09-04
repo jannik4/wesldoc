@@ -10,11 +10,8 @@ mod extract_comments;
 mod map;
 mod post_process;
 
-pub mod build_conditional;
-
 use self::{
     build_attributes::build_attributes,
-    build_conditional::conditional_from_attributes,
     build_doc_comment::{build_inner_doc_comment, build_outer_doc_comment},
     build_expression::build_expression,
     build_type::build_type,
@@ -25,53 +22,19 @@ use self::{
     extract_comments::{extract_comments_inner, extract_comments_outer},
     map::map,
 };
-use std::sync::Arc;
 use thiserror::Error;
 use wesldoc_ast::*;
-use wgsl_parse::syntax::{self, ModulePath, TranslationUnit};
-
-pub const ATTRIBUTE_CONDITIONAL: &str = "computed_cfg";
+use wesldoc_resolver::{Resolver, WeslModule, conditional_from_attributes, package::PackageId};
+use wgsl_parse::syntax;
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum ResolveItemKind {
-    Declaration,
-    DeclarationOrModule,
-}
-
-#[derive(Debug, Clone)]
-pub struct ResolvedItem {
-    pub kind: ItemKind,
-    pub def_path: DefinitionPath,
-    pub name: Ident,
-    pub conditional: Option<Conditional>,
-}
-
-pub trait Resolver {
-    type PackageId;
-
-    fn resolve_item(
-        &mut self,
-        caller_package: &Self::PackageId,
-        caller_path: &[String],
-        item_path: &ModulePath,
-        item_kind: ResolveItemKind,
-    ) -> Vec<ResolvedItem>;
-
-    fn resolve_dependency(
-        &mut self,
-        caller_package: &Self::PackageId,
-        dependency_name: &str,
-    ) -> Option<Self::PackageId>;
-
-    fn resolved_dependencies(&self, package_id: &Self::PackageId) -> Vec<(String, Version)>;
-}
 
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("package has missing documentation")]
     MissingDocumentation,
+    #[error("package build failed")]
+    BuildFailed,
 }
 
 impl From<FatalError> for Error {
@@ -96,32 +59,22 @@ pub struct CompileOptions {
     pub missing_documentation: MissingDocumentation,
 }
 
-pub struct WeslModule {
-    pub name: String,
-    pub code: Option<(Arc<TranslationUnit>, String)>,
-    pub submodules: Vec<WeslModule>,
-}
-
-#[expect(clippy::too_many_arguments)]
-pub fn compile<T>(
-    mut resolver: impl Resolver<PackageId = T>,
-    package_id: &T,
+pub fn compile(
+    resolver: &mut Resolver,
+    package_id: &PackageId,
     package_version: Version,
-    root: &WeslModule,
     homepage: Option<String>,
     repository: Option<String>,
     license: Option<String>,
     options: &CompileOptions,
 ) -> Result<(WeslDocs, CompileStats)> {
     let compile_state = CompileState::default();
-    let root = compile_module(
-        &mut resolver,
-        package_id,
-        root,
-        &[],
-        options,
-        &compile_state,
-    )?;
+    let root = resolver.get_or_build(package_id.clone()).map_err(|e| {
+        // TODO: not report here but propagate the error up?
+        wesldoc_report::error!("failed to build package: {:?}", e);
+        Error::BuildFailed
+    })?;
+    let root = compile_module(resolver, package_id, &root, &[], options, &compile_state)?;
     let mut docs = WeslDocs {
         version: package_version,
         dependencies: resolver.resolved_dependencies(package_id),
@@ -137,9 +90,9 @@ pub fn compile<T>(
     Ok((docs, compile_stats))
 }
 
-fn compile_module<T>(
-    resolver: &mut dyn Resolver<PackageId = T>,
-    package_id: &T,
+fn compile_module(
+    resolver: &mut Resolver,
+    package_id: &PackageId,
     wesl_module: &WeslModule,
     path: &[String],
     compile_options: &CompileOptions,
@@ -198,9 +151,9 @@ fn compile_module<T>(
     Ok(module)
 }
 
-fn compile_decls<T>(
+fn compile_decls(
     decls: &[syntax::GlobalDeclarationNode],
-    ctx: &Context<T>,
+    ctx: &Context,
     module: &mut Module,
 ) -> Result<(), FatalError> {
     for decl in decls {
@@ -390,7 +343,7 @@ impl Severity {
     }
 }
 
-fn validate_module_doc_comment<T>(module: &Module, ctx: &Context<T>) {
+fn validate_module_doc_comment(module: &Module, ctx: &Context) {
     let is_documented = module.comment.is_some();
     ctx.compile_state().track_documented(is_documented);
     if is_documented {
@@ -419,10 +372,10 @@ fn validate_module_doc_comment<T>(module: &Module, ctx: &Context<T>) {
     }
 }
 
-fn validate_item_doc_comment<T>(
+fn validate_item_doc_comment(
     comment: &Option<DocComment>,
     span: wgsl_parse::syntax::Span,
-    ctx: &Context<T>,
+    ctx: &Context,
 ) {
     let is_documented = comment.is_some();
     ctx.compile_state().track_documented(is_documented);

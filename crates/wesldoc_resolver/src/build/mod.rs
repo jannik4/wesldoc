@@ -1,7 +1,7 @@
 mod preprocess;
 
 use crate::{
-    cargo::CargoMetadata,
+    ResolverBackend, WeslModule,
     package::{Package, PackageId},
     wesl_toml::DependenciesAuto,
 };
@@ -13,26 +13,22 @@ use std::{
     path::Path,
     sync::Arc,
 };
-use wesldoc_compiler::WeslModule;
 
+#[derive(Default)]
 pub struct BuildCache {
     packages: HashMap<PackageId, PackageBuild>,
-    cargo_metadata: Arc<CargoMetadata>,
 }
 
 impl BuildCache {
-    pub fn new(cargo_metadata: Arc<CargoMetadata>) -> Self {
-        Self {
-            packages: HashMap::new(),
-            cargo_metadata,
-        }
-    }
-
-    pub fn get_or_build(&mut self, package_id: PackageId) -> Result<Option<&mut PackageBuild>> {
+    pub fn get_or_build(
+        &mut self,
+        package_id: PackageId,
+        backend: &dyn ResolverBackend,
+    ) -> Result<Option<&mut PackageBuild>> {
         match self.packages.entry(package_id) {
             Entry::Occupied(pkg) => Ok(Some(pkg.into_mut())),
             Entry::Vacant(entry) => {
-                let package = PackageBuild::new(entry.key(), &self.cargo_metadata)?;
+                let package = PackageBuild::new(entry.key(), backend)?;
                 Ok(Some(entry.insert(package)))
             }
         }
@@ -50,21 +46,27 @@ pub struct PackageBuild {
 }
 
 impl PackageBuild {
-    fn new(package_id: &PackageId, cargo_metadata: &CargoMetadata) -> Result<Self> {
-        let (package, this_package_meta) = match package_id {
-            PackageId::Cargo(package_id) => {
-                let cargo_package = cargo_metadata
+    fn new(package_id: &PackageId, backend: &dyn ResolverBackend) -> Result<Self> {
+        let (package, this_package_extra) = match package_id {
+            PackageId::Backend(package_id) => {
+                let backend_package = backend
                     .package(package_id)
                     .context("expected cargo package")?;
+                (backend_package.to_package()?, Either::Left(backend_package))
+            }
+
+            PackageId::Path { canonical_path } => {
+                let name = canonical_path
+                    .file_name()
+                    .context("path has no file name")?
+                    .to_string_lossy()
+                    .to_string();
+
                 (
-                    Package::from_cargo_package(cargo_package)?,
-                    Either::Left(cargo_package),
+                    Package::from_path(canonical_path, name)?,
+                    Either::Right(&**canonical_path),
                 )
             }
-            PackageId::Path(path, name) => (
-                Package::from_path(path, name.clone())?,
-                Either::Right(&**path),
-            ),
         };
 
         let build = Arc::new(build_package(&package)?);
@@ -81,10 +83,10 @@ impl PackageBuild {
                         Ok((
                             dep_key.clone(),
                             Arc::new(Package::new_dependency(
-                                this_package_meta,
+                                this_package_extra,
                                 dep_key,
                                 Some(dep),
-                                cargo_metadata,
+                                backend,
                             )?),
                         ))
                     })

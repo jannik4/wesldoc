@@ -2154,18 +2154,16 @@ name = "wesldoc"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "cargo_metadata",
  "clap",
- "either",
  "env_logger",
  "human-panic",
- "serde",
- "toml",
  "wesl",
  "wesldoc_ast",
  "wesldoc_compiler",
  "wesldoc_generator",
  "wesldoc_report",
+ "wesldoc_resolver",
+ "wesldoc_resolver_auto",
  "wgsl-parse",
 ]
 
@@ -2186,6 +2184,7 @@ dependencies = [
  "thiserror",
  "wesldoc_ast",
  "wesldoc_report",
+ "wesldoc_resolver",
  "wgsl-parse",
 ]
 
@@ -2212,6 +2211,50 @@ dependencies = [
  "anstream",
  "indicatif",
  "owo-colors",
+]
+
+[[package]]
+name = "wesldoc_resolver"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "either",
+ "serde",
+ "toml",
+ "wesldoc_ast",
+ "wesldoc_report",
+ "wgsl-parse",
+]
+
+[[package]]
+name = "wesldoc_resolver_auto"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "wesldoc_ast",
+ "wesldoc_report",
+ "wesldoc_resolver",
+ "wesldoc_resolver_cargo",
+ "wesldoc_resolver_npm",
+]
+
+[[package]]
+name = "wesldoc_resolver_cargo"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "cargo_metadata",
+ "wesldoc_ast",
+ "wesldoc_resolver",
+]
+
+[[package]]
+name = "wesldoc_resolver_npm"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "wesldoc_ast",
+ "wesldoc_resolver",
 ]
 
 [[package]]

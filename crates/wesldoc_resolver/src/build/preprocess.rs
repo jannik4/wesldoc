@@ -1,5 +1,5 @@
+use crate::ATTRIBUTE_CONDITIONAL;
 use anyhow::Result;
-use wesldoc_compiler::ATTRIBUTE_CONDITIONAL;
 use wgsl_parse::{SyntaxNode, syntax::*};
 
 pub fn preprocess(mut syntax: TranslationUnit) -> Result<TranslationUnit> {
