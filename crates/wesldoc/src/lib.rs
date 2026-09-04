@@ -124,11 +124,7 @@ impl Args {
                 // Compile to docs
                 let (docs, compile_stats) = wesldoc_compiler::compile(
                     &mut resolver,
-                    &package.id,
-                    package.version,
-                    package.homepage,
-                    package.repository,
-                    package.license,
+                    &package,
                     &wesldoc_compiler::CompileOptions {
                         missing_documentation: self.missing_docs.into(),
                     },

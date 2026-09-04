@@ -24,7 +24,10 @@ use self::{
 };
 use thiserror::Error;
 use wesldoc_ast::*;
-use wesldoc_resolver::{Resolver, WeslModule, conditional_from_attributes, package::PackageId};
+use wesldoc_resolver::{
+    Resolver, WeslModule, conditional_from_attributes,
+    package::{Package, PackageId},
+};
 use wgsl_parse::syntax;
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
@@ -61,26 +64,22 @@ pub struct CompileOptions {
 
 pub fn compile(
     resolver: &mut Resolver,
-    package_id: &PackageId,
-    package_version: Version,
-    homepage: Option<String>,
-    repository: Option<String>,
-    license: Option<String>,
+    package: &Package,
     options: &CompileOptions,
 ) -> Result<(WeslDocs, CompileStats)> {
     let compile_state = CompileState::default();
-    let root = resolver.get_or_build(package_id.clone()).map_err(|e| {
+    let root = resolver.get_or_build(package.id.clone()).map_err(|e| {
         // TODO: not report here but propagate the error up?
         wesldoc_report::error!("failed to build package: {:?}", e);
         Error::BuildFailed
     })?;
-    let root = compile_module(resolver, package_id, &root, &[], options, &compile_state)?;
+    let root = compile_module(resolver, &package.id, &root, &[], options, &compile_state)?;
     let mut docs = WeslDocs {
-        version: package_version,
-        dependencies: resolver.resolved_dependencies(package_id),
-        homepage,
-        repository,
-        license,
+        version: package.version.clone(),
+        dependencies: resolver.resolved_dependencies(&package.id),
+        homepage: package.homepage.clone(),
+        repository: package.repository.clone(),
+        license: package.license.clone(),
         root,
     };
     let compile_stats = compile_state.into_result()?;
