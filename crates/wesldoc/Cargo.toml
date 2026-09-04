@@ -16,8 +16,6 @@ wesldoc_compiler = { path = "../wesldoc_compiler" }
 wesldoc_generator = { path = "../wesldoc_generator" }
 wesldoc_report = { path = "../wesldoc_report" }
 
-wesl = { workspace = true }
-wgsl-parse = { workspace = true }
 env_logger = "0.11.8"
 clap = { version = "4.5.36", features = ["derive"] }
 anyhow = "1.0.104"

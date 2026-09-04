@@ -12,6 +12,7 @@ readme.workspace = true
 wesldoc_ast = { path = "../wesldoc_ast" }
 wesldoc_report = { path = "../wesldoc_report" }
 
+wesl = { workspace = true }
 wgsl-parse = { workspace = true }
 toml = "1.1.4"
 either = "1.18.0"
