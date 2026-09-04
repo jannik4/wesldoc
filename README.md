@@ -26,8 +26,12 @@ For a live example, check out the [GitHub Pages site](https://jannik4.github.io/
 
 First install the `wesldoc` CLI:
 
+<!-- TODO: Remove crates.io notice when it's published -->
+
 ```bash
-cargo install wesldoc --locked --path ./crates/wesldoc
+cargo install wesldoc --locked --path ./crates/wesldoc # from this repository
+cargo install wesldoc --locked --git https://github.com/jannik4/wesldoc # from git
+cargo install wesldoc --locked # from crates.io (not yet published)
 ```
 
 Then use it like this:
@@ -42,22 +46,16 @@ Check `wesldoc --help` for more options.
 
 ### Use as a library
 
-The `wesldoc` CLI is just a wrapper around the `wesldoc_compiler` and `wesldoc_generator` crates. You can use them directly in your own projects.
+The `wesldoc` CLI is just a wrapper around the `wesldoc_resolver`, `wesldoc_compiler` and `wesldoc_generator` crates. You can use them directly in your own projects.
 Look at the `wesldoc` crate for an example on how to use them.
 
 ## How it works
 
-<!-- TODO: Update this section to reflect the current implementation. -->
-
-> [!NOTE]
-> **This is partially outdated since [#7](https://github.com/jannik4/wesldoc/pull/7).**
-
-- [`wesldoc_ast`](crates/wesldoc_ast/): This crate provides the AST for the WESL documentation. It is fully standalone and does not depend on `wesl-rs`.
-- [`wesldoc_generator`](crates/wesldoc_generator/): This crate takes a `WeslDocs` from `wesldoc_ast` and generates the documentation in HTML format.
-- [`wesldoc_compiler`](crates/wesldoc_compiler/): This crate takes the compile results from `wesl-rs` and compiles them into a `WeslDocs` object. It is agnostic to how the packages where resolved and compiled, but requires the availability of source maps to work properly.
-- [`wesldoc`](crates/wesldoc/): This crate is a wrapper around `wesldoc_compiler` and `wesldoc_generator`. It provides a CLI to generate the documentation from WESL packages. It uses `wesl-rs` to resolve and compile the packages, and then generates the documentation using `wesldoc_compiler` and `wesldoc_generator`.
-
-> **Note**: Certain features of `wesldoc` may be migrated to `wesldoc_compiler` in the future once a standardized method for packaging WESL projects is established.
+- [`wesldoc_ast`](crates/wesldoc_ast/): Provides the AST for the WESL documentation. It is fully standalone and does not depend on any `wesl` related crates.
+- [`wesldoc_generator`](crates/wesldoc_generator/): Takes a `wesldoc_ast::WeslDocs` and generates the documentation in HTML format.
+- [`wesldoc_resolver`](crates/wesldoc_resolver/): Resolves items and packages in a WESL project. It is agnostic to the underlying package manager used, e.g. [`wesldoc_resolver_cargo`](crates/wesldoc_resolver_cargo/) or [`wesldoc_resolver_npm`](crates/wesldoc_resolver_npm/).
+- [`wesldoc_compiler`](crates/wesldoc_compiler/): Compiles a WESL package into a `WeslDocs` object using a `wesldoc_resolver::Resolver`.
+- [`wesldoc`](crates/wesldoc/): Wrapper around `wesldoc_resolver`, `wesldoc_compiler` and `wesldoc_generator`. It provides a CLI to generate the documentation for WESL projects.
 
 ## Development
 
@@ -75,3 +73,7 @@ Licensed under either of
 - Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
 
 at your option.
+
+## Acknowledgements
+
+Thanks to [docs.rs](https://docs.rs) for showing how great code documentation can look. `wesldoc` is heavily inspired by its design.
