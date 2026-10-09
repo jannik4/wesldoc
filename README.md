@@ -1,5 +1,7 @@
 # wesldoc
 
+[![crates.io](https://img.shields.io/crates/v/wesldoc.svg)](https://crates.io/crates/wesldoc)
+[![docs.rs](https://img.shields.io/badge/docs-latest-blue.svg)](https://docs.rs/wesldoc)
 [![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](#license)
 [![Build Status](https://github.com/jannik4/wesldoc/workflows/CI/badge.svg)](https://github.com/jannik4/wesldoc/actions)
 [![Pages Status](https://github.com/jannik4/wesldoc/workflows/pages/badge.svg)](https://github.com/jannik4/wesldoc/actions)
@@ -31,7 +33,7 @@ First install the `wesldoc` CLI:
 ```bash
 cargo install wesldoc --locked --path ./crates/wesldoc # from this repository
 cargo install wesldoc --locked --git https://github.com/jannik4/wesldoc # from git
-cargo install wesldoc --locked # from crates.io (not yet published)
+cargo install wesldoc --locked # from crates.io
 ```
 
 Then use it like this:
