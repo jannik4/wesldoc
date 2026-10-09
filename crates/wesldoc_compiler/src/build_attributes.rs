@@ -77,8 +77,5 @@ fn build_attribute(attr: &syntax::Attribute, ctx: &Context) -> Option<Attribute>
         syntax::Attribute::If(_) | syntax::Attribute::Elif(_) | syntax::Attribute::Else => {
             return None;
         }
-
-        // Publish attribute is handled separately
-        wgsl_parse::syntax::Attribute::Publish => return None,
     })
 }

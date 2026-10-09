@@ -13,6 +13,7 @@ use std::{
     path::Path,
     sync::Arc,
 };
+use wgsl_parse::syntax;
 
 #[derive(Default)]
 pub struct BuildCache {
@@ -157,7 +158,8 @@ fn build_submodules(dir: &Path) -> Result<Vec<WeslModule>> {
                 });
 
             let source = fs::read_to_string(&path)?;
-            let syntax = self::preprocess::preprocess(wgsl_parse::parse_str(&source)?)?;
+            let syntax = parse_and_preprocess(&source)
+                .with_context(|| format!("failed to parse {}", path.display()))?;
 
             sub.code = Some((Arc::new(syntax), source))
         } else if path.is_dir() {
@@ -176,6 +178,11 @@ fn build_submodules(dir: &Path) -> Result<Vec<WeslModule>> {
         .into_values()
         .filter(|module| module.code.is_some() || !module.submodules.is_empty())
         .collect())
+}
+
+fn parse_and_preprocess(source: &str) -> Result<syntax::TranslationUnit> {
+    let syntax = self::preprocess::preprocess(wgsl_parse::parse_str(source)?)?;
+    Ok(syntax)
 }
 
 fn name_from_path(path: &Path) -> Result<String> {

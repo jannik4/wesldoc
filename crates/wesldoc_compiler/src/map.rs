@@ -84,7 +84,9 @@ impl Map<BuiltinValue> for syntax::BuiltinValue {
             syntax::BuiltinValue::LocalInvocationId => BuiltinValue::LocalInvocationId,
             syntax::BuiltinValue::LocalInvocationIndex => BuiltinValue::LocalInvocationIndex,
             syntax::BuiltinValue::GlobalInvocationId => BuiltinValue::GlobalInvocationId,
+            syntax::BuiltinValue::GlobalInvocationIndex => BuiltinValue::GlobalInvocationIndex,
             syntax::BuiltinValue::WorkgroupId => BuiltinValue::WorkgroupId,
+            syntax::BuiltinValue::WorkgroupIndex => BuiltinValue::WorkgroupIndex,
             syntax::BuiltinValue::NumWorkgroups => BuiltinValue::NumWorkgroups,
             syntax::BuiltinValue::SubgroupInvocationId => BuiltinValue::SubgroupInvocationId,
             syntax::BuiltinValue::SubgroupSize => BuiltinValue::SubgroupSize,
@@ -96,6 +98,7 @@ impl Map<BuiltinValue> for syntax::BuiltinValue {
                 BuiltinValue::BarycentricNoPerspective
             }
             syntax::BuiltinValue::ViewIndex => BuiltinValue::ViewIndex,
+            syntax::BuiltinValue::DrawIndex => BuiltinValue::DrawIndex,
             syntax::BuiltinValue::MeshTaskSize => BuiltinValue::MeshTaskSize,
             syntax::BuiltinValue::Vertices => BuiltinValue::Vertices,
             syntax::BuiltinValue::Primitives => BuiltinValue::Primitives,
@@ -103,6 +106,8 @@ impl Map<BuiltinValue> for syntax::BuiltinValue {
             syntax::BuiltinValue::PrimitiveCount => BuiltinValue::PrimitiveCount,
             syntax::BuiltinValue::TriangleIndices => BuiltinValue::TriangleIndices,
             syntax::BuiltinValue::CullPrimitive => BuiltinValue::CullPrimitive,
+            syntax::BuiltinValue::PointIndex => BuiltinValue::PointIndex,
+            syntax::BuiltinValue::LineIndices => BuiltinValue::LineIndices,
             syntax::BuiltinValue::RayInvocationId => BuiltinValue::RayInvocationId,
             syntax::BuiltinValue::NumRayInvocations => BuiltinValue::NumRayInvocations,
             syntax::BuiltinValue::InstanceCustomData => BuiltinValue::InstanceCustomData,
@@ -116,6 +121,7 @@ impl Map<BuiltinValue> for syntax::BuiltinValue {
             syntax::BuiltinValue::ObjectToWorld => BuiltinValue::ObjectToWorld,
             syntax::BuiltinValue::WorldToObject => BuiltinValue::WorldToObject,
             syntax::BuiltinValue::HitKind => BuiltinValue::HitKind,
+            syntax::BuiltinValue::HitBarycentrics => BuiltinValue::HitBarycentrics,
         }
     }
 }

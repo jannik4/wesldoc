@@ -535,7 +535,9 @@ pub enum BuiltinValue {
     LocalInvocationId,
     LocalInvocationIndex,
     GlobalInvocationId,
+    GlobalInvocationIndex,
     WorkgroupId,
+    WorkgroupIndex,
     NumWorkgroups,
     SubgroupInvocationId,
     SubgroupSize,
@@ -545,6 +547,7 @@ pub enum BuiltinValue {
     Barycentric,
     BarycentricNoPerspective,
     ViewIndex,
+    DrawIndex,
     MeshTaskSize,
     Vertices,
     Primitives,
@@ -552,6 +555,8 @@ pub enum BuiltinValue {
     PrimitiveCount,
     TriangleIndices,
     CullPrimitive,
+    PointIndex,
+    LineIndices,
     RayInvocationId,
     NumRayInvocations,
     InstanceCustomData,
@@ -565,6 +570,7 @@ pub enum BuiltinValue {
     ObjectToWorld,
     WorldToObject,
     HitKind,
+    HitBarycentrics,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

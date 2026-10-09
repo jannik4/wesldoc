@@ -326,7 +326,9 @@ impl<'b> Resolver<'b> {
 
         // Lookup name in imports/exports
         for import in &syntax.imports {
-            let is_export = import.attributes.iter().any(|attr| attr.is_publish());
+            // TODO: handle Visibility::Private vs Visibility::Package ???
+            let is_export = import.visibility == syntax::Visibility::Public;
+
             if include_imports || is_export {
                 self.resolve_import(
                     root_package_id,

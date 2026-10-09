@@ -135,7 +135,9 @@ fn builtin_str(builtin: &BuiltinValue) -> &'static str {
         BuiltinValue::LocalInvocationId => "local_invocation_id",
         BuiltinValue::LocalInvocationIndex => "local_invocation_index",
         BuiltinValue::GlobalInvocationId => "global_invocation_id",
+        BuiltinValue::GlobalInvocationIndex => "global_invocation_index",
         BuiltinValue::WorkgroupId => "workgroup_id",
+        BuiltinValue::WorkgroupIndex => "workgroup_index",
         BuiltinValue::NumWorkgroups => "num_workgroups",
         BuiltinValue::SubgroupInvocationId => "subgroup_invocation_id",
         BuiltinValue::SubgroupSize => "subgroup_size",
@@ -145,6 +147,7 @@ fn builtin_str(builtin: &BuiltinValue) -> &'static str {
         BuiltinValue::Barycentric => "barycentric",
         BuiltinValue::BarycentricNoPerspective => "barycentric_no_perspective",
         BuiltinValue::ViewIndex => "view_index",
+        BuiltinValue::DrawIndex => "draw_index",
         BuiltinValue::MeshTaskSize => "mesh_task_size",
         BuiltinValue::Vertices => "vertices",
         BuiltinValue::Primitives => "primitives",
@@ -152,6 +155,8 @@ fn builtin_str(builtin: &BuiltinValue) -> &'static str {
         BuiltinValue::PrimitiveCount => "primitive_count",
         BuiltinValue::TriangleIndices => "triangle_indices",
         BuiltinValue::CullPrimitive => "cull_primitive",
+        BuiltinValue::PointIndex => "point_index",
+        BuiltinValue::LineIndices => "line_indices",
         BuiltinValue::RayInvocationId => "ray_invocation_id",
         BuiltinValue::NumRayInvocations => "num_ray_invocations",
         BuiltinValue::InstanceCustomData => "instance_custom_data",
@@ -165,6 +170,7 @@ fn builtin_str(builtin: &BuiltinValue) -> &'static str {
         BuiltinValue::ObjectToWorld => "object_to_world",
         BuiltinValue::WorldToObject => "world_to_object",
         BuiltinValue::HitKind => "hit_kind",
+        BuiltinValue::HitBarycentrics => "hit_barycentrics",
     }
 }
 
