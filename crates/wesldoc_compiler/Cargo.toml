@@ -9,9 +9,9 @@ license.workspace = true
 readme.workspace = true
 
 [dependencies]
-wesldoc_ast = { path = "../wesldoc_ast" }
-wesldoc_resolver = { path = "../wesldoc_resolver" }
-wesldoc_report = { path = "../wesldoc_report" }
+wesldoc_ast = { workspace = true }
+wesldoc_resolver = { workspace = true }
+wesldoc_report = { workspace = true }
 
 wgsl-parse = { workspace = true }
 thiserror = "2.0.20"

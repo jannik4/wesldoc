@@ -9,12 +9,12 @@ license.workspace = true
 readme.workspace = true
 
 [dependencies]
-wesldoc_ast = { path = "../wesldoc_ast" }
-wesldoc_resolver = { path = "../wesldoc_resolver" }
-wesldoc_resolver_auto = { path = "../wesldoc_resolver_auto" }
-wesldoc_compiler = { path = "../wesldoc_compiler" }
-wesldoc_generator = { path = "../wesldoc_generator" }
-wesldoc_report = { path = "../wesldoc_report" }
+wesldoc_ast = { workspace = true }
+wesldoc_resolver = { workspace = true }
+wesldoc_resolver_auto = { workspace = true }
+wesldoc_compiler = { workspace = true }
+wesldoc_generator = { workspace = true }
+wesldoc_report = { workspace = true }
 
 env_logger = "0.11.8"
 clap = { version = "4.5.36", features = ["derive"] }

@@ -9,10 +9,10 @@ license.workspace = true
 readme.workspace = true
 
 [dependencies]
-wesldoc_ast = { path = "../wesldoc_ast" }
-wesldoc_resolver = { path = "../wesldoc_resolver" }
-wesldoc_resolver_cargo = { path = "../wesldoc_resolver_cargo" }
-wesldoc_resolver_npm = { path = "../wesldoc_resolver_npm" }
-wesldoc_report = { path = "../wesldoc_report" }
+wesldoc_ast = { workspace = true }
+wesldoc_resolver = { workspace = true }
+wesldoc_resolver_cargo = { workspace = true }
+wesldoc_resolver_npm = { workspace = true }
+wesldoc_report = { workspace = true }
 
 anyhow = "1.0.104" # TODO: thiserror

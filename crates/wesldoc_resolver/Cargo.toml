@@ -9,8 +9,8 @@ license.workspace = true
 readme.workspace = true
 
 [dependencies]
-wesldoc_ast = { path = "../wesldoc_ast" }
-wesldoc_report = { path = "../wesldoc_report" }
+wesldoc_ast = { workspace = true }
+wesldoc_report = { workspace = true }
 
 wesl = { workspace = true }
 wgsl-parse = { workspace = true }
