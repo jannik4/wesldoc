@@ -1,10 +1,3 @@
-{% decl this_version %}
-{% if ctx.build_as_latest %}
-{% let this_version = "latest".to_string() %}
-{% else %}
-{% let this_version = ctx.doc.version.to_string() %}
-{% endif %}
-
 {% let root_url = ctx.root_url() %}
 
 <!DOCTYPE html>
@@ -70,7 +63,6 @@
 
     <script>
         window.DOCS_THIS_PACKAGE = {
-            version: "{{ this_version }}",
             name: "{{ ctx.doc.root.name }}",
             root: "{% for _ in 0..ctx.level() %}../{% endfor %}../",
         };

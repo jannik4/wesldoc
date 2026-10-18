@@ -135,11 +135,7 @@ fn gen_doc(doc: &WeslDocs, build_as_latest: bool, base_path: &Path) -> Result<()
     fs::create_dir_all(&base_path_src)?;
 
     // Gen modules
-    gen_module(
-        &Context::new(build_as_latest, doc),
-        &base_path_docs,
-        &base_path_src,
-    )?;
+    gen_module(&Context::new(doc), &base_path_docs, &base_path_src)?;
 
     // Store items
     let items = all_items::all_items(doc);

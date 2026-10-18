@@ -7,16 +7,14 @@ use wesldoc_ast::{
 
 #[derive(Debug)]
 pub struct Context<'a> {
-    pub build_as_latest: bool,
     pub doc: &'a WeslDocs,
     pub module: &'a Module,
     module_path: ModulePath,
 }
 
 impl<'a> Context<'a> {
-    pub fn new(build_as_latest: bool, doc: &'a WeslDocs) -> Self {
+    pub fn new(doc: &'a WeslDocs) -> Self {
         Self {
-            build_as_latest,
             doc,
             module: &doc.root,
             module_path: ModulePath {
@@ -32,7 +30,6 @@ impl<'a> Context<'a> {
 
     pub fn with_submodule(&self, module: &'a Module) -> Self {
         Self {
-            build_as_latest: self.build_as_latest,
             doc: self.doc,
             module,
             module_path: self.module_path.extend(
@@ -46,7 +43,6 @@ impl<'a> Context<'a> {
 
     pub fn with_item(&self, name: impl Into<String>, kind: ItemKind) -> Self {
         Self {
-            build_as_latest: self.build_as_latest,
             doc: self.doc,
             module: self.module,
             module_path: self.module_path.extend(name, "#", kind, false),
