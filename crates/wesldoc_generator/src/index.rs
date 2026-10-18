@@ -1,4 +1,4 @@
-use crate::Result;
+use crate::{Result, render::resolve_static_file_path};
 use askama::Template;
 use std::{
     fs::{self, File},
