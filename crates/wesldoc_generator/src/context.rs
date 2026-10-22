@@ -9,11 +9,16 @@ pub struct Context<'a> {
     pub doc: &'a WeslDocs,
     pub module: &'a Module,
     module_path: ModulePath,
+    index_file_path: Option<&'a str>,
     static_root_path: Option<&'a str>,
 }
 
 impl<'a> Context<'a> {
-    pub fn new(doc: &'a WeslDocs, static_root_path: Option<&'a str>) -> Self {
+    pub fn new(
+        doc: &'a WeslDocs,
+        index_file_path: Option<&'a str>,
+        static_root_path: Option<&'a str>,
+    ) -> Self {
         Self {
             doc,
             module: &doc.root,
@@ -26,6 +31,7 @@ impl<'a> Context<'a> {
                 )],
                 level: 0,
             },
+            index_file_path,
             static_root_path,
         }
     }
@@ -40,6 +46,7 @@ impl<'a> Context<'a> {
                 ItemKind::Module,
                 true,
             ),
+            index_file_path: self.index_file_path,
             static_root_path: self.static_root_path,
         }
     }
@@ -49,6 +56,7 @@ impl<'a> Context<'a> {
             doc: self.doc,
             module: self.module,
             module_path: self.module_path.extend(name, "#", kind, false),
+            index_file_path: self.index_file_path,
             static_root_path: self.static_root_path,
         }
     }
@@ -76,8 +84,8 @@ impl<'a> Context<'a> {
         self.module_path.segments.iter()
     }
 
-    pub fn root_url(&self) -> String {
-        self.module_path.root_url()
+    pub fn rel_root_url(&self) -> String {
+        self.module_path.rel_root_url()
     }
 
     pub fn source_url(&self, span: Option<Span>) -> String {
@@ -204,8 +212,15 @@ impl<'a> Context<'a> {
         event
     }
 
+    pub fn index_file_path(&self) -> String {
+        match self.index_file_path {
+            Some(index_file_path) => index_file_path.to_string(),
+            None => format!("{}index.html", self.rel_root_url()),
+        }
+    }
+
     pub fn resolve_static_file_path(&self, path: &str) -> String {
-        crate::resolve_static_file_path(self.static_root_path, &self.root_url(), path)
+        crate::resolve_static_file_path(self.static_root_path, &self.rel_root_url(), path)
     }
 }
 
@@ -240,7 +255,7 @@ impl ModulePath {
         }
     }
 
-    fn root_url(&self) -> String {
+    fn rel_root_url(&self) -> String {
         (0..self.level + 3).map(|_| "../").collect::<String>()
     }
 

@@ -25,6 +25,11 @@ pub struct Args {
     #[arg(short, long, default_value = "target/wesldoc")]
     output: PathBuf,
 
+    /// Override the default index file path. This is useful if you want to serve the documentation
+    /// from a different path than the default.
+    #[arg(long)]
+    index_file_path: Option<String>,
+
     /// Override the default static root path. This is useful if you want to serve the documentation
     /// from a different path than the default.
     #[arg(long)]
@@ -144,7 +149,12 @@ impl Args {
                 }
 
                 // Generate docs
-                wesldoc_generator::generate(&docs, &self.output, self.static_root_path.as_deref())?;
+                wesldoc_generator::generate(
+                    &docs,
+                    &self.output,
+                    self.index_file_path.as_deref(),
+                    self.static_root_path.as_deref(),
+                )?;
 
                 pb.inc(1);
             }

@@ -27,7 +27,12 @@ pub enum Error {
     Template(#[from] serde_json::Error),
 }
 
-pub fn generate(docs: &WeslDocs, base_path: &Path, static_root_path: Option<&str>) -> Result<()> {
+pub fn generate(
+    docs: &WeslDocs,
+    base_path: &Path,
+    index_file_path: Option<&str>,
+    static_root_path: Option<&str>,
+) -> Result<()> {
     // Write static files
     static_files::write_static_files(base_path)?;
 
@@ -56,9 +61,9 @@ pub fn generate(docs: &WeslDocs, base_path: &Path, static_root_path: Option<&str
     };
 
     // Gen docs
-    gen_doc(docs, false, &base_path, static_root_path)?;
+    gen_doc(docs, false, &base_path, index_file_path, static_root_path)?;
     if is_latest {
-        gen_doc(docs, true, &base_path, static_root_path)?;
+        gen_doc(docs, true, &base_path, index_file_path, static_root_path)?;
     }
 
     // Store versions
@@ -124,6 +129,7 @@ fn gen_doc(
     doc: &WeslDocs,
     build_as_latest: bool,
     base_path: &Path,
+    index_file_path: Option<&str>,
     static_root_path: Option<&str>,
 ) -> Result<()> {
     let base_path = if build_as_latest {
@@ -141,7 +147,7 @@ fn gen_doc(
 
     // Gen modules
     gen_module(
-        &Context::new(doc, static_root_path),
+        &Context::new(doc, index_file_path, static_root_path),
         &base_path_docs,
         &base_path_src,
     )?;
