@@ -27,7 +27,7 @@ pub enum Error {
     Template(#[from] serde_json::Error),
 }
 
-pub fn generate(docs: &WeslDocs, base_path: &Path) -> Result<()> {
+pub fn generate(docs: &WeslDocs, base_path: &Path, static_root_path: Option<&str>) -> Result<()> {
     // Write static files
     static_files::write_static_files(base_path)?;
 
@@ -56,9 +56,9 @@ pub fn generate(docs: &WeslDocs, base_path: &Path) -> Result<()> {
     };
 
     // Gen docs
-    gen_doc(docs, false, &base_path)?;
+    gen_doc(docs, false, &base_path, static_root_path)?;
     if is_latest {
-        gen_doc(docs, true, &base_path)?;
+        gen_doc(docs, true, &base_path, static_root_path)?;
     }
 
     // Store versions
@@ -72,7 +72,7 @@ pub fn generate(docs: &WeslDocs, base_path: &Path) -> Result<()> {
     store_common_json(&base_path, &common)?;
 
     // Update index
-    index::update(&base_path.join(".."))?;
+    index::update(&base_path.join(".."), static_root_path)?;
 
     Ok(())
 }
@@ -120,7 +120,12 @@ fn existing_versions(path: &Path) -> Result<HashSet<Version>> {
     Ok(versions)
 }
 
-fn gen_doc(doc: &WeslDocs, build_as_latest: bool, base_path: &Path) -> Result<()> {
+fn gen_doc(
+    doc: &WeslDocs,
+    build_as_latest: bool,
+    base_path: &Path,
+    static_root_path: Option<&str>,
+) -> Result<()> {
     let base_path = if build_as_latest {
         base_path.join("latest")
     } else {
@@ -135,7 +140,11 @@ fn gen_doc(doc: &WeslDocs, build_as_latest: bool, base_path: &Path) -> Result<()
     fs::create_dir_all(&base_path_src)?;
 
     // Gen modules
-    gen_module(&Context::new(doc), &base_path_docs, &base_path_src)?;
+    gen_module(
+        &Context::new(doc, static_root_path),
+        &base_path_docs,
+        &base_path_src,
+    )?;
 
     // Store items
     let items = all_items::all_items(doc);
@@ -252,4 +261,29 @@ fn gen_module(ctx: &Context, base_path_docs: &Path, base_path_src: &Path) -> Res
     }
 
     Ok(())
+}
+
+fn resolve_static_file_path(
+    static_root_path: Option<&str>,
+    rel_root_url: &str,
+    file_path: &str,
+) -> String {
+    let prefix = match static_root_path {
+        Some(path) => {
+            let mut path = path.to_string();
+            if !path.ends_with('/') {
+                path.push('/');
+            }
+            path
+        }
+        None => format!("{}-/static/", rel_root_url),
+    };
+
+    match static_files::resolve(file_path) {
+        Some(hashed_file_path) => format!("{}{}", prefix, hashed_file_path),
+        None => {
+            wesldoc_report::warn!("Could not find static file: {}", file_path);
+            format!("{}{}", prefix, file_path)
+        }
+    }
 }

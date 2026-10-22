@@ -1,5 +1,4 @@
 use std::str::FromStr;
-
 use wesldoc_ast::{
     Attribute, DefinitionPath, DocComment, Expression, Ident, IntraDocLink, ItemKind, Module, Span,
     TypeExpression, WeslDocs, md,
@@ -10,13 +9,15 @@ pub struct Context<'a> {
     pub doc: &'a WeslDocs,
     pub module: &'a Module,
     module_path: ModulePath,
+    static_root_path: Option<&'a str>,
 }
 
 impl<'a> Context<'a> {
-    pub fn new(doc: &'a WeslDocs) -> Self {
+    pub fn new(doc: &'a WeslDocs, static_root_path: Option<&'a str>) -> Self {
         Self {
             doc,
             module: &doc.root,
+
             module_path: ModulePath {
                 segments: vec![(
                     doc.root.name.clone(),
@@ -25,6 +26,7 @@ impl<'a> Context<'a> {
                 )],
                 level: 0,
             },
+            static_root_path,
         }
     }
 
@@ -38,6 +40,7 @@ impl<'a> Context<'a> {
                 ItemKind::Module,
                 true,
             ),
+            static_root_path: self.static_root_path,
         }
     }
 
@@ -46,6 +49,7 @@ impl<'a> Context<'a> {
             doc: self.doc,
             module: self.module,
             module_path: self.module_path.extend(name, "#", kind, false),
+            static_root_path: self.static_root_path,
         }
     }
 
@@ -198,6 +202,10 @@ impl<'a> Context<'a> {
                 .into();
         }
         event
+    }
+
+    pub fn resolve_static_file_path(&self, path: &str) -> String {
+        crate::resolve_static_file_path(self.static_root_path, &self.root_url(), path)
     }
 }
 

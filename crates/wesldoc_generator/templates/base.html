@@ -14,14 +14,14 @@
         {% endif %}
     </title>
 
-    <link rel="stylesheet" href="{{ root_url }}{{ self::resolve_static_file_path("css/inter/inter.css") }}">
-    <link rel="stylesheet" href="{{ root_url }}{{ self::resolve_static_file_path("css/source_code_pro/source_code_pro.css") }}">
+    <link rel="stylesheet" href="{{ ctx.resolve_static_file_path("css/inter/inter.css") }}">
+    <link rel="stylesheet" href="{{ ctx.resolve_static_file_path("css/source_code_pro/source_code_pro.css") }}">
 
-    <link rel="stylesheet" href="{{ root_url }}{{ self::resolve_static_file_path("css/themes.css") }}">
-    <link rel="stylesheet" href="{{ root_url }}{{ self::resolve_static_file_path("css/styles.css") }}">
-    <link rel="stylesheet" href="{{ root_url }}{{ self::resolve_static_file_path("css/icons.css") }}">
-    <link rel="stylesheet" href="{{ root_url }}{{ self::resolve_static_file_path("css/syntax.css") }}">
-    <script src="{{ root_url }}{{ self::resolve_static_file_path("js/settings.js") }}"></script>
+    <link rel="stylesheet" href="{{ ctx.resolve_static_file_path("css/themes.css") }}">
+    <link rel="stylesheet" href="{{ ctx.resolve_static_file_path("css/styles.css") }}">
+    <link rel="stylesheet" href="{{ ctx.resolve_static_file_path("css/icons.css") }}">
+    <link rel="stylesheet" href="{{ ctx.resolve_static_file_path("css/syntax.css") }}">
+    <script src="{{ ctx.resolve_static_file_path("js/settings.js") }}"></script>
 
     {% block head %}{% endblock %}
 </head>
@@ -67,9 +67,9 @@
             root: "{% for _ in 0..ctx.level() %}../{% endfor %}../",
         };
     </script>
-    <script src="{{ root_url }}{{ self::resolve_static_file_path("js/package.js") }}"></script>
-    <script src="{{ root_url }}{{ self::resolve_static_file_path("js/search.js") }}"></script>
-    <script src="{{ root_url }}{{ self::resolve_static_file_path("js/lineNumbers.js") }}"></script>
+    <script src="{{ ctx.resolve_static_file_path("js/package.js") }}"></script>
+    <script src="{{ ctx.resolve_static_file_path("js/search.js") }}"></script>
+    <script src="{{ ctx.resolve_static_file_path("js/lineNumbers.js") }}"></script>
 </body>
 
 </html>

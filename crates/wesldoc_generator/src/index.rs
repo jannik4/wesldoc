@@ -1,15 +1,16 @@
-use crate::{Result, render::resolve_static_file_path};
+use crate::Result;
 use askama::Template;
 use std::{
     fs::{self, File},
     path::Path,
 };
 
-pub fn update(base_path: &Path) -> Result<()> {
+pub fn update(base_path: &Path, static_root_path: Option<&str>) -> Result<()> {
     let packages = get_packages(base_path)?;
 
     let template = IndexTemplate {
         packages: &packages,
+        static_root_path,
     };
     template.write_into(&mut File::create(base_path.join("index.html"))?)?;
 
@@ -40,4 +41,5 @@ fn get_packages(base_path: &Path) -> Result<Vec<String>> {
 #[template(path = "index.html")]
 struct IndexTemplate<'a> {
     packages: &'a [String],
+    static_root_path: Option<&'a str>,
 }

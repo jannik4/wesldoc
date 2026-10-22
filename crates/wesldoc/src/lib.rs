@@ -25,6 +25,11 @@ pub struct Args {
     #[arg(short, long, default_value = "target/wesldoc")]
     output: PathBuf,
 
+    /// Override the default static root path. This is useful if you want to serve the documentation
+    /// from a different path than the default.
+    #[arg(long)]
+    static_root_path: Option<String>,
+
     /// The missing documentation behavior.
     #[arg(long, value_enum, default_value = "allow")]
     missing_docs: MissingDocsArg,
@@ -139,7 +144,7 @@ impl Args {
                 }
 
                 // Generate docs
-                wesldoc_generator::generate(&docs, &self.output)?;
+                wesldoc_generator::generate(&docs, &self.output, self.static_root_path.as_deref())?;
 
                 pb.inc(1);
             }

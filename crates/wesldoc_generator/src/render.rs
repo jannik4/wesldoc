@@ -1,4 +1,4 @@
-use crate::{context::Context, static_files, syntax};
+use crate::{context::Context, syntax};
 use askama::Template;
 use wesldoc_ast::{
     Attribute, BuiltinValue, ConservativeDepth, Constant, DiagnosticSeverity, Expression, Function,
@@ -206,15 +206,5 @@ fn conservative_depth_str(conservative_depth: &ConservativeDepth) -> &'static st
         ConservativeDepth::GreaterEqual => "greater_equal",
         ConservativeDepth::LessEqual => "less_equal",
         ConservativeDepth::Unchanged => "unchanged",
-    }
-}
-
-pub fn resolve_static_file_path(path: &str) -> String {
-    match static_files::resolve(path) {
-        Some(hashed_path) => format!("-/static/{}", hashed_path),
-        None => {
-            wesldoc_report::warn!("Could not find static file: {}", path);
-            format!("-/static/{}", path)
-        }
     }
 }
