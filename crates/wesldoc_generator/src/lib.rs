@@ -288,7 +288,7 @@ fn resolve_static_file_path(
     match static_files::resolve(file_path) {
         Some(hashed_file_path) => format!("{}{}", prefix, hashed_file_path),
         None => {
-            wesldoc_report::warn!("Could not find static file: {}", file_path);
+            wesldoc_report::warn!("could not find static file: {}", file_path);
             format!("{}{}", prefix, file_path)
         }
     }
