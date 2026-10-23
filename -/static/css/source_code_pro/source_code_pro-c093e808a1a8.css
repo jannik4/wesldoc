@@ -4,7 +4,7 @@
   font-display: swap;
   font-style: normal;
   font-stretch: normal;
-  src: url("SourceCodePro-ExtraLight.otf.woff2") format("woff2");
+  src: url("SourceCodePro-ExtraLight-1d74eca9bda4.otf.woff2") format("woff2");
 }
 
 @font-face {
@@ -13,7 +13,7 @@
   font-display: swap;
   font-style: italic;
   font-stretch: normal;
-  src: url("SourceCodePro-ExtraLightIt.otf.woff2") format("woff2");
+  src: url("SourceCodePro-ExtraLightIt-2d3821f47bd8.otf.woff2") format("woff2");
 }
 
 @font-face {
@@ -22,7 +22,7 @@
   font-display: swap;
   font-style: normal;
   font-stretch: normal;
-  src: url("SourceCodePro-Light.otf.woff2") format("woff2");
+  src: url("SourceCodePro-Light-641250c64ebe.otf.woff2") format("woff2");
 }
 
 @font-face {
@@ -31,7 +31,7 @@
   font-display: swap;
   font-style: italic;
   font-stretch: normal;
-  src: url("SourceCodePro-LightIt.otf.woff2") format("woff2");
+  src: url("SourceCodePro-LightIt-23bf3361186d.otf.woff2") format("woff2");
 }
 
 @font-face {
@@ -40,7 +40,7 @@
   font-display: swap;
   font-style: normal;
   font-stretch: normal;
-  src: url("SourceCodePro-Regular.otf.woff2") format("woff2");
+  src: url("SourceCodePro-Regular-9d76228c6f0a.otf.woff2") format("woff2");
 }
 
 @font-face {
@@ -49,7 +49,7 @@
   font-display: swap;
   font-style: italic;
   font-stretch: normal;
-  src: url("SourceCodePro-It.otf.woff2") format("woff2");
+  src: url("SourceCodePro-It-4493d0215128.otf.woff2") format("woff2");
 }
 
 @font-face {
@@ -58,7 +58,7 @@
   font-display: swap;
   font-style: normal;
   font-stretch: normal;
-  src: url("SourceCodePro-Medium.otf.woff2") format("woff2");
+  src: url("SourceCodePro-Medium-180191999f25.otf.woff2") format("woff2");
 }
 
 @font-face {
@@ -67,7 +67,7 @@
   font-display: swap;
   font-style: italic;
   font-stretch: normal;
-  src: url("SourceCodePro-MediumIt.otf.woff2") format("woff2");
+  src: url("SourceCodePro-MediumIt-ead9b21342f9.otf.woff2") format("woff2");
 }
 
 @font-face {
@@ -76,7 +76,7 @@
   font-display: swap;
   font-style: normal;
   font-stretch: normal;
-  src: url("SourceCodePro-Semibold.otf.woff2") format("woff2");
+  src: url("SourceCodePro-Semibold-bf369cc78c9f.otf.woff2") format("woff2");
 }
 
 @font-face {
@@ -85,7 +85,7 @@
   font-display: swap;
   font-style: italic;
   font-stretch: normal;
-  src: url("SourceCodePro-SemiboldIt.otf.woff2") format("woff2");
+  src: url("SourceCodePro-SemiboldIt-6f1e090de4f0.otf.woff2") format("woff2");
 }
 
 @font-face {
@@ -94,7 +94,7 @@
   font-display: swap;
   font-style: normal;
   font-stretch: normal;
-  src: url("SourceCodePro-Bold.otf.woff2") format("woff2");
+  src: url("SourceCodePro-Bold-3b29687a5c97.otf.woff2") format("woff2");
 }
 
 @font-face {
@@ -103,7 +103,7 @@
   font-display: swap;
   font-style: italic;
   font-stretch: normal;
-  src: url("SourceCodePro-BoldIt.otf.woff2") format("woff2");
+  src: url("SourceCodePro-BoldIt-86a15077a4a4.otf.woff2") format("woff2");
 }
 
 @font-face {
@@ -112,7 +112,7 @@
   font-display: swap;
   font-style: normal;
   font-stretch: normal;
-  src: url("SourceCodePro-Black.otf.woff2") format("woff2");
+  src: url("SourceCodePro-Black-fc43281b25dc.otf.woff2") format("woff2");
 }
 
 @font-face {
@@ -121,5 +121,5 @@
   font-display: swap;
   font-style: italic;
   font-stretch: normal;
-  src: url("SourceCodePro-BlackIt.otf.woff2") format("woff2");
+  src: url("SourceCodePro-BlackIt-b9103d1c6ae2.otf.woff2") format("woff2");
 }
