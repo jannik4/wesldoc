@@ -77,7 +77,7 @@ pub fn generate(
     store_common_json(&base_path, &common)?;
 
     // Update index
-    index::update(&base_path.join(".."), static_root_path)?;
+    index::update(&base_path.join(".."), index_file_path, static_root_path)?;
 
     Ok(())
 }

@@ -5,11 +5,16 @@ use std::{
     path::Path,
 };
 
-pub fn update(base_path: &Path, static_root_path: Option<&str>) -> Result<()> {
+pub fn update(
+    base_path: &Path,
+    index_file_path: Option<&str>,
+    static_root_path: Option<&str>,
+) -> Result<()> {
     let packages = get_packages(base_path)?;
 
     let template = IndexTemplate {
         packages: &packages,
+        index_file_path: index_file_path.unwrap_or(""),
         static_root_path,
     };
     template.write_into(&mut File::create(base_path.join("index.html"))?)?;
@@ -41,5 +46,6 @@ fn get_packages(base_path: &Path) -> Result<Vec<String>> {
 #[template(path = "index.html")]
 struct IndexTemplate<'a> {
     packages: &'a [String],
+    index_file_path: &'a str,
     static_root_path: Option<&'a str>,
 }
