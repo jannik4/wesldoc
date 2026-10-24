@@ -3,7 +3,7 @@ mod preprocess;
 use crate::{
     ResolverBackend, WeslModule,
     package::{Package, PackageId},
-    wesl_toml::DependenciesAuto,
+    wesl_toml,
 };
 use anyhow::{Context, Result};
 use either::Either;
@@ -71,14 +71,14 @@ impl PackageBuild {
         };
 
         let build = Arc::new(build_package(&package)?);
-        let dependencies = match package.wesl_toml.package.dependencies {
-            Some(DependenciesAuto::Auto) => Dependencies::Auto {
-                dependencies: HashMap::new(),
-            },
-            None => Dependencies::Explicit {
-                dependencies: package
-                    .wesl_toml
-                    .dependencies
+        let dependencies = match &package.wesl_toml.dependencies {
+            wesl_toml::Dependencies::Auto(wesl_toml::DependenciesAuto::Auto) => {
+                Dependencies::Auto {
+                    dependencies: HashMap::new(),
+                }
+            }
+            wesl_toml::Dependencies::Explicit(dependencies) => Dependencies::Explicit {
+                dependencies: dependencies
                     .iter()
                     .map(|(dep_key, dep)| {
                         Ok((

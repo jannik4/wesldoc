@@ -1,4 +1,4 @@
-use anyhow::{Result, bail};
+use anyhow::Result;
 use serde::Deserialize;
 use std::{
     collections::HashMap,
@@ -8,9 +8,10 @@ use std::{
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct WeslToml {
-    pub package: WeslTomlPackage,
+    #[serde(flatten)]
+    pub package: Package,
     #[serde(default)]
-    pub dependencies: HashMap<String, WeslTomlDependency>,
+    pub dependencies: Dependencies,
 }
 
 impl WeslToml {
@@ -20,7 +21,7 @@ impl WeslToml {
             return Ok(None);
         }
 
-        let this = toml::from_slice::<WeslToml>(&fs::read(path)?)?;
+        let this = toml::from_slice::<Self>(&fs::read(path)?)?;
         this.validate()?;
         Ok(Some(this))
     }
@@ -33,12 +34,6 @@ impl WeslToml {
             );
         }
 
-        if self.package.dependencies == Some(DependenciesAuto::Auto)
-            && !self.dependencies.is_empty()
-        {
-            bail!("cannot have both 'dependencies = \"auto\"' and explicit dependencies");
-        }
-
         Ok(())
     }
 }
@@ -46,35 +41,45 @@ impl WeslToml {
 impl Default for WeslToml {
     fn default() -> Self {
         Self {
-            package: WeslTomlPackage {
+            package: Package {
                 edition: latest_known_edition(),
                 root: default_root(),
                 package_manager: None,
-                dependencies: Some(DependenciesAuto::Auto),
             },
-            dependencies: HashMap::new(),
+            dependencies: Dependencies::default(),
         }
     }
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct WeslTomlPackage {
+pub struct Package {
     #[serde(default = "latest_known_edition")]
     pub edition: String,
     #[serde(default = "default_root")]
     pub root: PathBuf,
     #[serde(rename = "package-manager")]
-    pub package_manager: Option<WeslTomlPackageManager>,
-    #[serde(default)]
-    pub dependencies: Option<DependenciesAuto>,
+    pub package_manager: Option<PackageManager>,
 }
 
 #[derive(Debug, Deserialize, PartialEq, Eq, Clone, Copy)]
-pub enum WeslTomlPackageManager {
+pub enum PackageManager {
     #[serde(rename = "cargo")]
     Cargo,
     #[serde(rename = "npm")]
     Npm,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[serde(untagged)]
+pub enum Dependencies {
+    Auto(DependenciesAuto),
+    Explicit(HashMap<String, Dependency>),
+}
+
+impl Default for Dependencies {
+    fn default() -> Self {
+        Dependencies::Auto(DependenciesAuto::Auto)
+    }
 }
 
 #[derive(Debug, Deserialize, PartialEq, Eq, Clone, Copy)]
@@ -84,7 +89,7 @@ pub enum DependenciesAuto {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct WeslTomlDependency {
+pub struct Dependency {
     #[serde(default)]
     pub package: Option<String>,
     #[serde(default)]

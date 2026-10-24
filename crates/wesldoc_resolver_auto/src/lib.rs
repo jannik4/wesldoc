@@ -4,7 +4,7 @@ use anyhow::{Result, bail};
 use std::path::Path;
 use wesldoc_resolver::{
     ResolverBackend,
-    wesl_toml::{WeslToml, WeslTomlPackageManager},
+    wesl_toml::{self, WeslToml},
 };
 use wesldoc_resolver_cargo::CargoResolverBackend;
 use wesldoc_resolver_npm::NpmResolverBackend;
@@ -22,8 +22,8 @@ pub fn resolver_backend(
     let package_manager = wesl_toml.as_ref().and_then(|t| t.package.package_manager);
 
     match package_manager {
-        Some(WeslTomlPackageManager::Cargo) => Ok(cargo_backend(package)),
-        Some(WeslTomlPackageManager::Npm) => Ok(npm_backend(package)),
+        Some(wesl_toml::PackageManager::Cargo) => Ok(cargo_backend(package)),
+        Some(wesl_toml::PackageManager::Npm) => Ok(npm_backend(package)),
         None => {
             match (
                 CargoResolverBackend::is_applicable(package)?,

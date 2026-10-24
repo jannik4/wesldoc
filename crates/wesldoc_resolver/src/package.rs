@@ -1,6 +1,6 @@
 use crate::{
     ResolverBackend, ResolverBackendPackage,
-    wesl_toml::{WeslToml, WeslTomlDependency},
+    wesl_toml::{self, WeslToml},
 };
 use anyhow::{Context, Result, bail};
 use either::Either;
@@ -53,7 +53,7 @@ impl Package {
         this_package: Either<&dyn ResolverBackendPackage, &Path>,
 
         dependency_key: impl Into<String>,
-        dependency: Option<&WeslTomlDependency>,
+        dependency: Option<&wesl_toml::Dependency>,
         backend: &dyn ResolverBackend,
     ) -> Result<Self> {
         let dependency_key = dependency_key.into();
