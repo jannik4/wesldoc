@@ -4,7 +4,7 @@ members = ["crates/*", "snapshot_tests"]
 exclude = ["example_packages/"]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.96.0"
 description = "WESL documentation generator"
@@ -16,12 +16,12 @@ readme = "README.md"
 wesl = { version = "0.6.0", features = ["naga-ext"] }
 wgsl-parse = "0.6.0"
 
-wesldoc = { path = "crates/wesldoc", version = "0.1.0" }
-wesldoc_ast = { path = "crates/wesldoc_ast", version = "0.1.0" }
-wesldoc_compiler = { path = "crates/wesldoc_compiler", version = "0.1.0" }
-wesldoc_generator = { path = "crates/wesldoc_generator", version = "0.1.0" }
-wesldoc_report = { path = "crates/wesldoc_report", version = "0.1.0" }
-wesldoc_resolver = { path = "crates/wesldoc_resolver", version = "0.1.0" }
-wesldoc_resolver_auto = { path = "crates/wesldoc_resolver_auto", version = "0.1.0" }
-wesldoc_resolver_cargo = { path = "crates/wesldoc_resolver_cargo", version = "0.1.0" }
-wesldoc_resolver_npm = { path = "crates/wesldoc_resolver_npm", version = "0.1.0" }
+wesldoc = { path = "crates/wesldoc", version = "0.2.0" }
+wesldoc_ast = { path = "crates/wesldoc_ast", version = "0.2.0" }
+wesldoc_compiler = { path = "crates/wesldoc_compiler", version = "0.2.0" }
+wesldoc_generator = { path = "crates/wesldoc_generator", version = "0.2.0" }
+wesldoc_report = { path = "crates/wesldoc_report", version = "0.2.0" }
+wesldoc_resolver = { path = "crates/wesldoc_resolver", version = "0.2.0" }
+wesldoc_resolver_auto = { path = "crates/wesldoc_resolver_auto", version = "0.2.0" }
+wesldoc_resolver_cargo = { path = "crates/wesldoc_resolver_cargo", version = "0.2.0" }
+wesldoc_resolver_npm = { path = "crates/wesldoc_resolver_npm", version = "0.2.0" }

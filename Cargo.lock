@@ -1535,7 +1535,7 @@ checksum = "b9be42f50aa861c555654aa3a37f52f4b1074bacf4e48fe0ef7fa584e80f1f0f"
 
 [[package]]
 name = "snapshot_tests"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "dirsnap",
@@ -2015,7 +2015,7 @@ dependencies = [
 
 [[package]]
 name = "wesldoc"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -2031,7 +2031,7 @@ dependencies = [
 
 [[package]]
 name = "wesldoc_ast"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "indexmap",
  "pulldown-cmark",
@@ -2040,7 +2040,7 @@ dependencies = [
 
 [[package]]
 name = "wesldoc_compiler"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "miette",
  "thiserror",
@@ -2052,7 +2052,7 @@ dependencies = [
 
 [[package]]
 name = "wesldoc_generator"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "ammonia",
  "askama",
@@ -2069,7 +2069,7 @@ dependencies = [
 
 [[package]]
 name = "wesldoc_report"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anstream",
  "indicatif",
@@ -2078,7 +2078,7 @@ dependencies = [
 
 [[package]]
 name = "wesldoc_resolver"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "either",
@@ -2092,7 +2092,7 @@ dependencies = [
 
 [[package]]
 name = "wesldoc_resolver_auto"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "wesldoc_ast",
@@ -2104,7 +2104,7 @@ dependencies = [
 
 [[package]]
 name = "wesldoc_resolver_cargo"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "cargo_metadata",
@@ -2114,7 +2114,7 @@ dependencies = [
 
 [[package]]
 name = "wesldoc_resolver_npm"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "wesldoc_ast",
